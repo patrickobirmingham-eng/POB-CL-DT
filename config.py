@@ -47,3 +47,13 @@ BACKTEST_COMMISSION_PER_TRADE = 0.0 # Alpaca is commission-free; kept for realis
 
 # --- Account / API -----------------------------------------------------------
 PAPER_TRADING = True                # this codebase is paper-only; live_bot.py refuses to run if False
+
+# --- Push notifications (ntfy.sh) --------------------------------------------
+# Free, no-account push notifications to your phone. Install the "ntfy" app
+# (iOS App Store / Google Play), open it, tap "+", and subscribe to the exact
+# topic name below (case-sensitive) — that's the entire setup. Topic names
+# on ntfy.sh act like an unlisted channel: anyone who knows the exact string
+# could subscribe too, so this one was randomly generated to keep it private.
+# Change it any time in this file (then re-subscribe in the app to the new name).
+NTFY_ENABLED = True
+NTFY_TOPIC = "pob-orb-vkfmwlc1yr"

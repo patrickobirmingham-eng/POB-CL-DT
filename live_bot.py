@@ -28,6 +28,7 @@ from dotenv import load_dotenv
 
 import config
 import strategy
+import notify
 
 load_dotenv()
 
@@ -101,12 +102,18 @@ def submit_bracket_order(trading_client, symbol, direction, shares, stop_price, 
     return trading_client.submit_order(order)
 
 
-def flatten_all(trading_client):
-    log("Flatten time reached — closing all open positions.")
+def flatten_all(trading_client, reason: str = "Flatten time reached"):
+    log(f"{reason} — closing all open positions.")
     try:
         trading_client.close_all_positions(cancel_orders=True)
+        notify.send(
+            "ORB Bot: Flattened",
+            f"{reason}. All open positions closed.",
+            tags="stop_sign",
+        )
     except Exception as e:
         log(f"Error flattening positions: {e}")
+        notify.send("ORB Bot: Flatten failed", f"Error closing positions: {e}", priority="high", tags="warning")
 
 
 def wait_for_market_open(trading_client, bounded: bool):
@@ -259,8 +266,7 @@ def main():
         # Circuit breakers
         if daily_pnl_pct <= -config.MAX_DAILY_LOSS_PCT:
             if not day_state["flattened"]:
-                log(f"Daily loss circuit breaker hit ({daily_pnl_pct:.1%}). Flattening and pausing for the day.")
-                flatten_all(trading_client)
+                flatten_all(trading_client, reason=f"Daily loss circuit breaker hit ({daily_pnl_pct:.1%})")
                 day_state["flattened"] = True
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue
@@ -330,8 +336,20 @@ def main():
                     "entry_price": sig.entry_price, "stop": sig.stop_price,
                     "target": sig.target_price, "shares": shares, "order_id": order.id,
                 })
+                notify.send(
+                    f"ORB Bot: Entered {symbol} {sig.direction.upper()}",
+                    f"{shares} shares @ ${sig.entry_price:.2f}\n"
+                    f"Stop: ${sig.stop_price:.2f}  Target: ${sig.target_price:.2f}",
+                    tags="chart_with_upwards_trend" if sig.direction == "long" else "chart_with_downwards_trend",
+                )
             except Exception as e:
                 log(f"Order submission failed for {symbol}: {e}")
+                notify.send(
+                    f"ORB Bot: Order failed ({symbol})",
+                    str(e),
+                    priority="high",
+                    tags="warning",
+                )
 
         # Persist state after every pass so a killed/crashed job (or a GitHub Actions
         # job hitting its time limit) doesn't lose today's progress.
