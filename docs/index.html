@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORB Paper Trading Dashboard</title>
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #131722; --border: #232838;
+    --text: #e6e9ef; --muted: #8b93a7; --pos: #16a34a; --neg: #dc2626; --accent: #3b82f6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .updated { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .card .value { font-size: 22px; font-weight: 600; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .panel h2 { font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  .pos { color: var(--pos); }
+  .neg { color: var(--neg); }
+  .muted { color: var(--muted); }
+  .sparkline { width: 100%; height: 120px; }
+  .spark-range { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .disclaimer { color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>ORB Paper Trading Dashboard</h1>
+    <div class="updated">Last updated: 2026-09-20 07:09 PM ET</div>
+
+    <div class="cards">
+      <div class="card"><div class="label">Equity</div><div class="value">$1,000,000.00</div></div>
+      <div class="card"><div class="label">Cash</div><div class="value">$1,000,000.00</div></div>
+      <div class="card"><div class="label">Buying Power</div><div class="value">$4,000,000.00</div></div>
+      <div class="card"><div class="label">Open Positions</div><div class="value">0</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Equity (last 30 days)</h2>
+      
+    <svg viewBox="0 0 600 120" class="sparkline" preserveAspectRatio="none">
+      <polyline fill="none" stroke="#16a34a" stroke-width="2.5" points="10.0,110.0 36.4,110.0 62.7,110.0 89.1,110.0 115.5,110.0 141.8,110.0 168.2,110.0 194.5,110.0 220.9,110.0 247.3,110.0 273.6,110.0 300.0,110.0 326.4,110.0 352.7,110.0 379.1,110.0 405.5,110.0 431.8,110.0 458.2,110.0 484.5,110.0 510.9,110.0 537.3,110.0 563.6,10.0 590.0,10.0" />
+    </svg>
+    <div class="spark-range">
+      <span>$0</span><span>$1,000,000</span>
+    </div>
+    
+    </div>
+
+    <div class="panel">
+      <h2>Open Positions</h2>
+      <table>
+        <thead><tr><th>Symbol</th><th>Qty</th><th>Avg Entry</th><th>Current</th><th>Unrealized P&amp;L</th></tr></thead>
+        <tbody><tr><td colspan='5' class='muted'>No open positions</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>Recent Orders (last 50)</h2>
+      <table>
+        <thead><tr><th>Submitted</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Status</th><th>Filled Price</th></tr></thead>
+        <tbody><tr><td colspan='6' class='muted'>No orders yet</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="disclaimer">
+      This is a PAPER TRADING account — no real money is involved. This dashboard
+      is regenerated automatically after each trading session and reflects data
+      from Alpaca's paper trading API only.
+    </div>
+  </div>
+</body>
+</html>
