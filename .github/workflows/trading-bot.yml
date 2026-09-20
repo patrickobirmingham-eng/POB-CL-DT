@@ -80,7 +80,13 @@ jobs:
         run: |
           git config user.name "orb-trading-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state.json trade_log.csv docs/index.html docs/.nojekyll 2>/dev/null || true
+          # Add each file individually and only if it exists — trade_log.csv in
+          # particular won't exist yet on days with no trades, and `git add` fails
+          # for ALL listed paths (not just the missing one) if any single path
+          # doesn't match, which was silently dropping every other file too.
+          for f in state.json trade_log.csv docs/index.html docs/.nojekyll; do
+            [ -e "$f" ] && git add "$f"
+          done
           git diff --cached --quiet || git commit -m "Update bot state and dashboard [skip ci]"
 
           # The repo can move ahead between this job's checkout and this push (e.g. you
