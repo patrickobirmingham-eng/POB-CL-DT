@@ -76,4 +76,20 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add state.json trade_log.csv 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Update bot state [skip ci]"
-          git push
+
+          # The repo can move ahead between this job's checkout and this push (e.g. you
+          # pushed a manual edit from GitHub Desktop while this job was running). Rebase
+          # onto whatever's newest on the remote right before pushing, retrying a few
+          # times, instead of failing outright on a non-fast-forward rejection.
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "Push succeeded."
+              break
+            fi
+            echo "Push rejected (attempt $i) — pulling latest and retrying..."
+            git pull --rebase origin main
+            if [ "$i" -eq 5 ]; then
+              echo "Push still failing after 5 attempts — giving up for this run."
+              exit 1
+            fi
+          done
