@@ -153,6 +153,27 @@ will show every trade it's placed.
 - If a run fails (bad API keys, Alpaca outage, etc.), GitHub will email the account that
   owns the repo — check that inbox periodically, especially in the first few weeks.
 
+## Live dashboard (GitHub Pages)
+
+`dashboard.py` generates a self-contained webpage (`docs/index.html`) showing current
+equity, an equity chart, open positions, and recent order history — pulled fresh from
+your Alpaca paper account every time the workflow runs. The workflow already runs it
+automatically after each session and commits the result, so once it's set up you just
+open a URL rather than digging through logs or CSVs.
+
+### One-time setup
+
+1. In your repo on GitHub.com, go to **Settings → Pages**.
+2. Under "Build and deployment", set **Source** to "Deploy from a branch".
+3. Set **Branch** to `main` and the folder to **`/docs`**, then click **Save**.
+4. GitHub will show you a URL (something like
+   `https://<your-username>.github.io/<your-repo-name>/`) — it can take a minute or two
+   to go live the first time. Bookmark it.
+
+After that, the page updates itself automatically — every time the workflow runs (twice
+each weekday) it regenerates and re-publishes the dashboard with the latest data. No
+further action needed; just revisit the URL whenever you want to check in.
+
 ## Suggested next steps once you've paper traded this for a while
 
 - Track results in the same style as your Schwab options tracker — dashboard of win
