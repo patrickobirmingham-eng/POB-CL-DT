@@ -80,7 +80,7 @@ jobs:
         run: |
           git config user.name "orb-trading-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add state.json trade_log.csv docs/index.html 2>/dev/null || true
+          git add state.json trade_log.csv docs/index.html docs/.nojekyll 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Update bot state and dashboard [skip ci]"
 
           # The repo can move ahead between this job's checkout and this push (e.g. you

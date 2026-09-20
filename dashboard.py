@@ -70,6 +70,13 @@ def fmt_money(v):
 
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    # Tell GitHub Pages not to run this folder through Jekyll (its default site
+    # generator) — without this, Jekyll can fail to build a plain hand-written
+    # HTML file and the page never deploys. Recreated every run so it's never
+    # accidentally missing.
+    open(os.path.join(OUTPUT_DIR, ".nojekyll"), "w").close()
+
     client = get_client()
 
     account = client.get_account()
