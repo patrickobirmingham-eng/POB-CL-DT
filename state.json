@@ -65,5 +65,6 @@
   ],
   "trade_count": 3,
   "starting_equity": 1000000.0,
-  "flattened": true
+  "flattened": true,
+  "notional_deployed_today": 0.0
 }
