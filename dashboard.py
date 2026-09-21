@@ -107,21 +107,56 @@ def generate(client=None):
 
     generated_at = datetime.now(ET).strftime("%Y-%m-%d %I:%M %p ET")
 
+    # Company names aren't on the Position object itself — look each one up via
+    # the assets endpoint (cheap, and there are at most a handful of open
+    # positions at once). Falls back to the bare symbol if a lookup fails.
+    def company_name(symbol):
+        try:
+            return client.get_asset(symbol).name
+        except Exception:
+            return symbol
+
     positions_rows = ""
     if positions:
         for p in positions:
+            qty = float(p.qty)
+            current_price = float(p.current_price)
+            avg_entry = float(p.avg_entry_price)
+            cost_basis = float(p.cost_basis)
+            mkt_value = float(p.market_value)
             pl = float(p.unrealized_pl)
+            gain_pct = float(p.unrealized_plpc) * 100
+
+            lastday_price = float(p.lastday_price) if p.lastday_price is not None else current_price
+            daily_price_change = current_price - lastday_price
+            daily_pct_change = (
+                float(p.change_today) * 100 if p.change_today is not None
+                else (daily_price_change / lastday_price * 100 if lastday_price else 0.0)
+            )
+            todays_change = qty * daily_price_change  # today's $ P&L on the position, separate from total unrealized P&L
+
             pl_class = "pos" if pl >= 0 else "neg"
+            gain_class = "pos" if gain_pct >= 0 else "neg"
+            daily_class = "pos" if daily_price_change >= 0 else "neg"
+            todays_class = "pos" if todays_change >= 0 else "neg"
+
             positions_rows += f"""
             <tr>
               <td>{p.symbol}</td>
+              <td>{company_name(p.symbol)}</td>
               <td>{p.qty}</td>
-              <td>{fmt_money(p.avg_entry_price)}</td>
-              <td>{fmt_money(p.current_price)}</td>
+              <td>{fmt_money(current_price)}</td>
+              <td>{fmt_money(avg_entry)}</td>
+              <td>{fmt_money(cost_basis)}</td>
+              <td>{fmt_money(mkt_value)}</td>
               <td class="{pl_class}">{fmt_money(pl)}</td>
+              <td class="{gain_class}">{gain_pct:+.2f}%</td>
+              <td class="{daily_class}">{fmt_money(daily_price_change)}</td>
+              <td class="{daily_class}">{daily_pct_change:+.2f}%</td>
+              <td class="{todays_class}">{fmt_money(todays_change)}</td>
             </tr>"""
     else:
-        positions_rows = "<tr><td colspan='5' class='muted'>No open positions</td></tr>"
+        positions_rows = "<tr><td colspan='12' class='muted'>No open positions</td></tr>"
 
     orders_rows = ""
     if orders:
@@ -170,9 +205,10 @@ def generate(client=None):
   .card .value {{ font-size: 22px; font-weight: 600; }}
   .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }}
   .panel h2 {{ font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }}
+  .table-scroll {{ overflow-x: auto; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-  th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); }}
-  td {{ padding: 8px 6px; border-bottom: 1px solid var(--border); }}
+  th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  td {{ padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   .pos {{ color: var(--pos); }}
   .neg {{ color: var(--neg); }}
   .muted {{ color: var(--muted); }}
@@ -200,10 +236,16 @@ def generate(client=None):
 
     <div class="panel">
       <h2>Open Positions</h2>
+      <div class="table-scroll">
       <table>
-        <thead><tr><th>Symbol</th><th>Qty</th><th>Avg Entry</th><th>Current</th><th>Unrealized P&amp;L</th></tr></thead>
+        <thead><tr>
+          <th>Symbol</th><th>Company Name</th><th># of Shares</th><th>Last Price</th>
+          <th>Purchase Price</th><th>Cost Basis</th><th>Mkt Value</th><th>Profit / (Loss)</th>
+          <th>Gain %</th><th>Daily Price Change</th><th>Daily % Change</th><th>Today's Change</th>
+        </tr></thead>
         <tbody>{positions_rows}</tbody>
       </table>
+      </div>
     </div>
 
     <div class="panel">
