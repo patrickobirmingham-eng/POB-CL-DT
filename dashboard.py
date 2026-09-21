@@ -68,7 +68,13 @@ def fmt_money(v):
         return "—"
 
 
-def main():
+def generate(client=None):
+    """Regenerates docs/index.html from the current Alpaca account state.
+
+    Pass an already-connected TradingClient to reuse (e.g. from live_bot.py,
+    so this doesn't open a second connection); omit it to create one, which
+    is what happens when dashboard.py is run standalone.
+    """
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     # Tell GitHub Pages not to run this folder through Jekyll (its default site
@@ -77,7 +83,8 @@ def main():
     # accidentally missing.
     open(os.path.join(OUTPUT_DIR, ".nojekyll"), "w").close()
 
-    client = get_client()
+    if client is None:
+        client = get_client()
 
     account = client.get_account()
     positions = client.get_all_positions()
@@ -220,6 +227,10 @@ def main():
         f.write(html)
 
     print(f"Dashboard written to {OUTPUT_FILE}")
+
+
+def main():
+    generate()
 
 
 if __name__ == "__main__":

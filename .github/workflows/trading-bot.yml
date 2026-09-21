@@ -14,11 +14,20 @@ name: ORB Paper Trading Bot
 #
 # Morning session: 9:30 AM - 1:00 PM ET  = 13:30 UTC (EDT) / 14:30 UTC (EST)
 # Afternoon session: 1:00 PM - 3:50 PM ET = 17:00 UTC (EDT) / 18:00 UTC (EST)
+#
+# NOTE on the exact minutes below: GitHub documents that scheduled workflows can
+# be delayed, or silently dropped, during high load — and load is worst right at
+# the top of the hour and half-hour (":00"/":30"), since that's where most repos'
+# crons cluster. The original schedule used exactly "13:30" and "17:00", which is
+# the likely reason neither run fired on its own. Offsetting by a few minutes
+# avoids that congestion. The "Determine session window" step below just checks
+# whether the UTC hour is before 15, so this small shift doesn't change when the
+# bot actually starts trading.
 
 on:
   schedule:
-    - cron: "30 13 * * 1-5"   # 9:30 AM ET (EDT) — session start, weekdays
-    - cron: "0 17 * * 1-5"    # 1:00 PM ET (EDT) — session continue, weekdays
+    - cron: "33 13 * * 1-5"   # ~9:33 AM ET (EDT) — session start, weekdays (off :30 to dodge peak load)
+    - cron: "4 17 * * 1-5"    # ~1:04 PM ET (EDT) — session continue, weekdays (off :00 to dodge peak load)
   workflow_dispatch:            # lets you trigger a run manually from the Actions tab
 
 permissions:
@@ -59,6 +68,14 @@ jobs:
             echo "start=13:00" >> "$GITHUB_OUTPUT"
             echo "end=15:50" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Configure git identity
+        # live_bot.py now commits + pushes docs/index.html itself after every
+        # trade (so the dashboard updates live, not just at end of session), so
+        # git needs an identity set up before that step runs, not only at the end.
+        run: |
+          git config user.name "orb-trading-bot"
+          git config user.email "actions@users.noreply.github.com"
 
       - name: Run bot session
         env:

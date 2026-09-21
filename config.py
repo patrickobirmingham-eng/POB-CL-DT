@@ -30,6 +30,15 @@ MAX_DAILY_LOSS_PCT = 0.03           # circuit breaker: stop trading for the day 
 MAX_CONCURRENT_POSITIONS = 3        # don't hold more than N open positions at once
 ONE_TRADE_PER_SYMBOL_PER_DAY = True # don't re-enter a symbol after it's been stopped out/closed today
 
+# Hard cap on total NOTIONAL capital deployed across all trades in a single day
+# (sum of entry_price * shares at the moment each position is opened), regardless
+# of what the risk-per-trade math alone would size a position at. This is a
+# separate control from RISK_PCT_PER_TRADE: risk sizing limits how much you can
+# LOSE per trade based on stop distance; this limits how much capital gets
+# deployed/exposed in the first place. A trade that would exceed the remaining
+# daily budget is sized down to fit it (or skipped if the budget is exhausted).
+MAX_DAILY_NOTIONAL_TRADED = 100_000  # e.g. 100_000 = never deploy more than $100k/day total
+
 # --- Time stop -------------------------------------------------------------
 FLATTEN_TIME = "15:45"              # ET — close everything by this time, no exceptions
 MARKET_CLOSE_TIME = "16:00"

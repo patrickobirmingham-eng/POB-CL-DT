@@ -18,6 +18,7 @@ import argparse
 import csv
 import json
 import os
+import subprocess
 import sys
 import time as time_module
 from datetime import datetime, time as dtime
@@ -29,6 +30,7 @@ from dotenv import load_dotenv
 import config
 import strategy
 import notify
+import dashboard
 
 load_dotenv()
 
@@ -102,6 +104,43 @@ def submit_bracket_order(trading_client, symbol, direction, shares, stop_price, 
     return trading_client.submit_order(order)
 
 
+def push_dashboard_update(trading_client, reason: str):
+    """Regenerates docs/index.html from live account state and commits + pushes
+    it immediately, so the dashboard reflects each trade as it happens rather
+    than only at the end of the session. Best-effort: a failure here (network
+    blip, transient push rejection) is logged but never stops the bot — trading
+    logic and risk controls are unaffected either way.
+    """
+    try:
+        dashboard.generate(trading_client)
+
+        # Only in a git checkout (e.g. running under GitHub Actions) is there
+        # anything to commit/push. A local ad-hoc run has no repo to push to.
+        if not os.path.isdir(".git"):
+            return
+
+        subprocess.run(["git", "config", "user.name", "orb-trading-bot"], check=False)
+        subprocess.run(["git", "config", "user.email", "actions@users.noreply.github.com"], check=False)
+        subprocess.run(["git", "add", "docs/index.html", "docs/.nojekyll"], check=False)
+
+        diff = subprocess.run(["git", "diff", "--cached", "--quiet"])
+        if diff.returncode == 0:
+            return  # nothing changed, nothing to commit
+
+        subprocess.run(["git", "commit", "-m", f"Live dashboard update: {reason} [skip ci]"], check=False)
+
+        for attempt in range(1, 6):
+            push = subprocess.run(["git", "push"])
+            if push.returncode == 0:
+                log(f"Dashboard pushed live ({reason}).")
+                return
+            log(f"Dashboard push rejected (attempt {attempt}) — pulling latest and retrying...")
+            subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False)
+        log("Dashboard push still failing after 5 attempts — will retry after the next trade/flatten.")
+    except Exception as e:
+        log(f"Live dashboard update failed (non-fatal): {e}")
+
+
 def flatten_all(trading_client, reason: str = "Flatten time reached"):
     log(f"{reason} — closing all open positions.")
     try:
@@ -111,6 +150,7 @@ def flatten_all(trading_client, reason: str = "Flatten time reached"):
             f"{reason}. All open positions closed.",
             tags="stop_sign",
         )
+        push_dashboard_update(trading_client, reason="flatten")
     except Exception as e:
         log(f"Error flattening positions: {e}")
         notify.send("ORB Bot: Flatten failed", f"Error closing positions: {e}", priority="high", tags="warning")
@@ -165,6 +205,7 @@ def load_state(path: str):
         "trade_count": raw.get("trade_count", 0),
         "starting_equity": raw.get("starting_equity"),
         "flattened": raw.get("flattened", False),
+        "notional_deployed_today": raw.get("notional_deployed_today", 0.0),
     }
 
 
@@ -182,6 +223,7 @@ def save_state(path: str, day_state: dict):
         "trade_count": day_state["trade_count"],
         "starting_equity": day_state["starting_equity"],
         "flattened": day_state["flattened"],
+        "notional_deployed_today": day_state["notional_deployed_today"],
     }
     with open(path, "w") as f:
         json.dump(serializable, f, indent=2)
@@ -220,6 +262,7 @@ def main():
             "trade_count": 0,
             "starting_equity": None,
             "flattened": False,
+            "notional_deployed_today": 0.0,
         }
 
     flatten_t = strategy.flatten_time()
@@ -244,7 +287,7 @@ def main():
             day_state.update({
                 "date": today_str, "opening_ranges": {}, "traded_today": set(),
                 "trade_count": 0, "starting_equity": float(trading_client.get_account().equity),
-                "flattened": False,
+                "flattened": False, "notional_deployed_today": 0.0,
             })
 
         now_t = now.time()
@@ -288,6 +331,18 @@ def main():
             continue
 
         open_positions = {p.symbol for p in trading_client.get_all_positions()}
+
+        # A position can close on its own between polls — Alpaca fills the bracket's
+        # stop-loss or take-profit leg server-side, with no action from this script.
+        # Detect that by diffing against what we saw open last pass, and push a
+        # dashboard update so a stop/target hit shows up promptly too, not just entries.
+        previously_open = day_state.get("_last_seen_open_positions")
+        if previously_open is not None and previously_open != open_positions:
+            closed = previously_open - open_positions
+            if closed:
+                push_dashboard_update(trading_client, reason=f"position closed: {', '.join(sorted(closed))}")
+        day_state["_last_seen_open_positions"] = open_positions
+
         if len(open_positions) >= config.MAX_CONCURRENT_POSITIONS:
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue
@@ -322,6 +377,22 @@ def main():
             if shares <= 0:
                 continue
 
+            # Hard daily notional cap — trims (or skips) the risk-sized position so
+            # cumulative capital deployed today never exceeds MAX_DAILY_NOTIONAL_TRADED,
+            # independent of what the risk-per-trade math alone would size it at.
+            remaining_budget = config.MAX_DAILY_NOTIONAL_TRADED - day_state["notional_deployed_today"]
+            if remaining_budget <= 0:
+                log(f"Daily notional cap (${config.MAX_DAILY_NOTIONAL_TRADED:,.0f}) reached — "
+                    f"skipping {symbol} breakout.")
+                continue
+            max_shares_by_budget = int(remaining_budget // sig.entry_price)
+            if max_shares_by_budget < shares:
+                log(f"{symbol}: trimming size from {shares} to {max_shares_by_budget} shares "
+                    f"to stay within daily notional cap (${remaining_budget:,.0f} remaining).")
+                shares = max_shares_by_budget
+            if shares <= 0:
+                continue
+
             log(f"BREAKOUT {symbol} {sig.direction} @ {sig.entry_price:.2f} "
                 f"stop={sig.stop_price:.2f} target={sig.target_price:.2f} shares={shares}")
 
@@ -331,6 +402,7 @@ def main():
                 )
                 day_state["traded_today"].add(symbol)
                 day_state["trade_count"] += 1
+                day_state["notional_deployed_today"] += shares * sig.entry_price
                 log_trade_row({
                     "timestamp": ts, "symbol": symbol, "direction": sig.direction,
                     "entry_price": sig.entry_price, "stop": sig.stop_price,
@@ -342,6 +414,7 @@ def main():
                     f"Stop: ${sig.stop_price:.2f}  Target: ${sig.target_price:.2f}",
                     tags="chart_with_upwards_trend" if sig.direction == "long" else "chart_with_downwards_trend",
                 )
+                push_dashboard_update(trading_client, reason=f"entered {symbol}")
             except Exception as e:
                 log(f"Order submission failed for {symbol}: {e}")
                 notify.send(
