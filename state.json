@@ -1,0 +1,69 @@
+{
+  "date": "2026-09-21",
+  "opening_ranges": {
+    "SPY": {
+      "symbol": "SPY",
+      "date": "2026-09-21",
+      "high": 766.82,
+      "low": 766.04,
+      "avg_volume": 6773.8
+    },
+    "QQQ": {
+      "symbol": "QQQ",
+      "date": "2026-09-21",
+      "high": 730.78,
+      "low": 727.84,
+      "avg_volume": 5905.666666666667
+    },
+    "AAPL": {
+      "symbol": "AAPL",
+      "date": "2026-09-21",
+      "high": 335.49,
+      "low": 333.12,
+      "avg_volume": 6138.6
+    },
+    "MSFT": {
+      "symbol": "MSFT",
+      "date": "2026-09-21",
+      "high": 496.0,
+      "low": 491.59,
+      "avg_volume": 3587.866666666667
+    },
+    "NVDA": {
+      "symbol": "NVDA",
+      "date": "2026-09-21",
+      "high": 224.36,
+      "low": 221.58,
+      "avg_volume": 16884.8
+    },
+    "AMD": {
+      "symbol": "AMD",
+      "date": "2026-09-21",
+      "high": 603.88,
+      "low": 582.55,
+      "avg_volume": 17712.2
+    },
+    "TSLA": {
+      "symbol": "TSLA",
+      "date": "2026-09-21",
+      "high": 376.415,
+      "low": 371.44,
+      "avg_volume": 6648.066666666667
+    },
+    "AMZN": {
+      "symbol": "AMZN",
+      "date": "2026-09-21",
+      "high": 256.56,
+      "low": 254.6,
+      "avg_volume": 4058.6666666666665
+    }
+  },
+  "traded_today": [
+    "AMZN",
+    "NVDA",
+    "SPY"
+  ],
+  "trade_count": 3,
+  "starting_equity": 1000000.0,
+  "flattened": true
+}
