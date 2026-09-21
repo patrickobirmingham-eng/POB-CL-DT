@@ -145,15 +145,56 @@ def flatten_all(trading_client, reason: str = "Flatten time reached"):
     log(f"{reason} — closing all open positions.")
     try:
         trading_client.close_all_positions(cancel_orders=True)
+    except Exception as e:
+        log(f"close_all_positions() raised an error: {e}")
+        # Fall through to the verify/retry loop below rather than trusting this
+        # exception to mean "nothing closed" — some failures are per-symbol and
+        # don't stop others from having gone through.
+
+    # close_all_positions() can report success (or raise nothing) while still
+    # leaving positions open — this happened for real on 2026-09-21, where the
+    # bracket orders' stop/target legs got canceled but the actual closing sell
+    # orders were never placed, silently carrying ~$3M of notional overnight.
+    # Don't trust the call succeeded — verify against get_all_positions() and,
+    # for anything still open, submit an explicit closing market order per
+    # position directly. Retry a few times since a just-submitted close order
+    # takes a moment to fill.
+    still_open = []
+    for attempt in range(1, 6):
+        time_module.sleep(2)
+        still_open = trading_client.get_all_positions()
+        if not still_open:
+            break
+        for p in still_open:
+            qty = abs(float(p.qty))
+            side = OrderSide.SELL if float(p.qty) > 0 else OrderSide.BUY
+            try:
+                log(f"Flatten verify (attempt {attempt}): {p.symbol} still open "
+                    f"({p.qty} shares) — submitting explicit closing {side.value} order.")
+                trading_client.submit_order(MarketOrderRequest(
+                    symbol=p.symbol, qty=qty, side=side, time_in_force=TimeInForce.DAY,
+                ))
+            except Exception as e:
+                log(f"Explicit close order for {p.symbol} failed: {e}")
+
+    if still_open:
+        symbols = ", ".join(p.symbol for p in still_open)
+        log(f"WARNING: still holding positions after flatten attempts: {symbols}")
+        notify.send(
+            "ORB Bot: FLATTEN INCOMPLETE",
+            f"{reason}. Could not confirm these positions closed: {symbols}. "
+            f"Check the account directly.",
+            priority="high",
+            tags="rotating_light",
+        )
+    else:
         notify.send(
             "ORB Bot: Flattened",
-            f"{reason}. All open positions closed.",
+            f"{reason}. All open positions confirmed closed.",
             tags="stop_sign",
         )
-        push_dashboard_update(trading_client, reason="flatten")
-    except Exception as e:
-        log(f"Error flattening positions: {e}")
-        notify.send("ORB Bot: Flatten failed", f"Error closing positions: {e}", priority="high", tags="warning")
+
+    push_dashboard_update(trading_client, reason="flatten")
 
 
 def wait_for_market_open(trading_client, bounded: bool):
