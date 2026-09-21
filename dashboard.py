@@ -117,6 +117,7 @@ def generate(client=None):
             return symbol
 
     positions_rows = ""
+    total_cost_basis = total_mkt_value = total_pl = total_todays_change = 0.0
     if positions:
         for p in positions:
             qty = float(p.qty)
@@ -134,6 +135,11 @@ def generate(client=None):
                 else (daily_price_change / lastday_price * 100 if lastday_price else 0.0)
             )
             todays_change = qty * daily_price_change  # today's $ P&L on the position, separate from total unrealized P&L
+
+            total_cost_basis += cost_basis
+            total_mkt_value += mkt_value
+            total_pl += pl
+            total_todays_change += todays_change
 
             pl_class = "pos" if pl >= 0 else "neg"
             gain_class = "pos" if gain_pct >= 0 else "neg"
@@ -154,6 +160,24 @@ def generate(client=None):
               <td class="{daily_class}">{fmt_money(daily_price_change)}</td>
               <td class="{daily_class}">{daily_pct_change:+.2f}%</td>
               <td class="{todays_class}">{fmt_money(todays_change)}</td>
+            </tr>"""
+
+        total_pl_class = "pos" if total_pl >= 0 else "neg"
+        total_todays_class = "pos" if total_todays_change >= 0 else "neg"
+        positions_rows += f"""
+            <tr class="totals-row">
+              <td>Total</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>{fmt_money(total_cost_basis)}</td>
+              <td>{fmt_money(total_mkt_value)}</td>
+              <td class="{total_pl_class}">{fmt_money(total_pl)}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td class="{total_todays_class}">{fmt_money(total_todays_change)}</td>
             </tr>"""
     else:
         positions_rows = "<tr><td colspan='12' class='muted'>No open positions</td></tr>"
@@ -209,6 +233,7 @@ def generate(client=None):
   table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
   th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   td {{ padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  .totals-row td {{ font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }}
   .pos {{ color: var(--pos); }}
   .neg {{ color: var(--neg); }}
   .muted {{ color: var(--muted); }}
