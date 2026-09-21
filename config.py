@@ -7,8 +7,23 @@ this is the single place to tune and re-run backtests from.
 # --- Watchlist ---------------------------------------------------------
 # Keep this to liquid, high-average-volume names/ETFs. Illiquid stocks blow
 # up slippage assumptions and make the backtest lie to you.
+#
+# Nasdaq-100 constituents as of Sep 2026 (includes both GOOG and GOOGL share
+# classes, which is normal for this index). live_bot.py fetches bars for all
+# candidate symbols in a single batched API call each poll (get_recent_bars_bulk),
+# so a list this size doesn't multiply API requests per symbol the way the old
+# per-symbol fetch would have.
 WATCHLIST = [
-    "SPY", "QQQ", "AAPL", "MSFT", "NVDA", "AMD", "TSLA", "AMZN",
+    "ADBE", "AMD", "ABNB", "ALNY", "GOOGL", "GOOG", "AMZN", "AEP", "AMGN", "ADI",
+    "AAPL", "AMAT", "APP", "ARM", "ASML", "ALAB", "ADSK", "ADP", "AXON", "BKR",
+    "BKNG", "AVGO", "CDNS", "CTAS", "CSCO", "CCEP", "CMCSA", "CEG", "CPRT", "CRWV",
+    "COST", "CRWD", "CSX", "DDOG", "DXCM", "FANG", "DASH", "EA", "EXC", "FAST",
+    "FER", "FTNT", "GEHC", "GILD", "HON", "IDXX", "INTC", "INTU", "ISRG", "KDP",
+    "KLAC", "KHC", "LRCX", "LIN", "LITE", "MAR", "MRVL", "MELI", "META", "MCHP",
+    "MU", "MSFT", "MSTR", "MDLZ", "MPWR", "MNST", "NBIS", "NFLX", "NVDA", "NXPI",
+    "ORLY", "ODFL", "PCAR", "PLTR", "PANW", "PAYX", "PYPL", "PDD", "PEP", "QCOM",
+    "REGN", "RKLB", "ROP", "ROST", "SNDK", "STX", "SHOP", "SBUX", "SNPS", "TMUS",
+    "TTWO", "TER", "TSLA", "TXN", "TRI", "VRTX", "WMT", "WBD", "WDC", "WDAY", "XEL",
 ]
 
 # --- Opening range -------------------------------------------------------
@@ -37,7 +52,7 @@ ONE_TRADE_PER_SYMBOL_PER_DAY = True # don't re-enter a symbol after it's been st
 # LOSE per trade based on stop distance; this limits how much capital gets
 # deployed/exposed in the first place. A trade that would exceed the remaining
 # daily budget is sized down to fit it (or skipped if the budget is exhausted).
-MAX_DAILY_NOTIONAL_TRADED = 100_000  # e.g. 100_000 = never deploy more than $100k/day total
+MAX_DAILY_NOTIONAL_TRADED = 250_000  # e.g. 250_000 = never deploy more than $250k/day total
 
 # --- Time stop -------------------------------------------------------------
 FLATTEN_TIME = "15:45"              # ET — close everything by this time, no exceptions

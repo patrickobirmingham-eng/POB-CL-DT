@@ -90,6 +90,32 @@ def get_recent_bars(data_client, symbol, since):
     return df.set_index("timestamp").sort_index()
 
 
+def get_recent_bars_bulk(data_client, symbols, since):
+    """Fetches minute bars for many symbols in a single API call instead of one
+    call per symbol. Needed once WATCHLIST is large (e.g. the Nasdaq-100) — at
+    that size, looping get_recent_bars() per symbol on every poll would mean
+    ~100 separate requests every POLL_INTERVAL_SECONDS, which is both slow and
+    likely to hit Alpaca's data API rate limits. Returns {symbol: DataFrame}.
+    """
+    if not symbols:
+        return {}
+    req = StockBarsRequest(
+        symbol_or_symbols=list(symbols),
+        timeframe=TimeFrame.Minute,
+        start=since,
+        feed=config.DATA_FEED,
+    )
+    df = data_client.get_stock_bars(req).df
+    if df.empty:
+        return {}
+    df = df.reset_index()
+    df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.tz_convert("US/Eastern")
+    return {
+        sym: group.set_index("timestamp").sort_index()
+        for sym, group in df.groupby("symbol")
+    }
+
+
 def submit_bracket_order(trading_client, symbol, direction, shares, stop_price, target_price):
     side = OrderSide.BUY if direction == "long" else OrderSide.SELL
     order = MarketOrderRequest(
@@ -388,15 +414,20 @@ def main():
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue
 
-        for symbol in config.WATCHLIST:
-            if symbol in open_positions:
-                continue
-            if symbol in day_state["traded_today"] and config.ONE_TRADE_PER_SYMBOL_PER_DAY:
-                continue
+        # Fetch bars for every symbol we might act on this pass in ONE batched
+        # API call rather than one call per symbol — essential once WATCHLIST
+        # is large (e.g. the Nasdaq-100); see get_recent_bars_bulk().
+        candidates = [
+            symbol for symbol in config.WATCHLIST
+            if symbol not in open_positions
+            and not (symbol in day_state["traded_today"] and config.ONE_TRADE_PER_SYMBOL_PER_DAY)
+        ]
+        since = datetime.combine(now.date(), market_open_t, tzinfo=ET)
+        bars_by_symbol = get_recent_bars_bulk(data_client, candidates, since)
 
-            since = datetime.combine(now.date(), market_open_t, tzinfo=ET)
-            bars = get_recent_bars(data_client, symbol, since)
-            if bars.empty:
+        for symbol in candidates:
+            bars = bars_by_symbol.get(symbol)
+            if bars is None or bars.empty:
                 continue
 
             if symbol not in day_state["opening_ranges"]:
