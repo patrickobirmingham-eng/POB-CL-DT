@@ -23,9 +23,10 @@
   .card .value { font-size: 22px; font-weight: 600; }
   .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
   .panel h2 { font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .table-scroll { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); }
-  td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   .pos { color: var(--pos); }
   .neg { color: var(--neg); }
   .muted { color: var(--muted); }
@@ -37,12 +38,12 @@
 <body>
   <div class="wrap">
     <h1>ORB Paper Trading Dashboard</h1>
-    <div class="updated">Last updated: 2026-09-21 04:59 PM ET</div>
+    <div class="updated">Last updated: 2026-09-21 05:23 PM ET</div>
 
     <div class="cards">
-      <div class="card"><div class="label">Equity</div><div class="value">$1,014,437.83</div></div>
+      <div class="card"><div class="label">Equity</div><div class="value">$1,014,744.04</div></div>
       <div class="card"><div class="label">Cash</div><div class="value">$-2,152,677.16</div></div>
-      <div class="card"><div class="label">Buying Power</div><div class="value">$257,213.32</div></div>
+      <div class="card"><div class="label">Buying Power</div><div class="value">$258,070.72</div></div>
       <div class="card"><div class="label">Open Positions</div><div class="value">3</div></div>
     </div>
 
@@ -60,31 +61,58 @@
 
     <div class="panel">
       <h2>Open Positions</h2>
+      <div class="table-scroll">
       <table>
-        <thead><tr><th>Symbol</th><th>Qty</th><th>Avg Entry</th><th>Current</th><th>Unrealized P&amp;L</th></tr></thead>
+        <thead><tr>
+          <th>Symbol</th><th>Company Name</th><th># of Shares</th><th>Last Price</th>
+          <th>Purchase Price</th><th>Cost Basis</th><th>Mkt Value</th><th>Profit / (Loss)</th>
+          <th>Gain %</th><th>Daily Price Change</th><th>Daily % Change</th><th>Today's Change</th>
+        </tr></thead>
         <tbody>
             <tr>
               <td>AMZN</td>
+              <td>Amazon.com, Inc. Common Stock</td>
               <td>4113</td>
+              <td>$258.58</td>
               <td>$257.05</td>
-              <td>$258.57</td>
-              <td class="pos">$6,233.55</td>
+              <td>$1,057,264.86</td>
+              <td>$1,063,527.20</td>
+              <td class="pos">$6,262.34</td>
+              <td class="pos">+0.59%</td>
+              <td class="pos">$4.87</td>
+              <td class="pos">+1.92%</td>
+              <td class="pos">$20,017.97</td>
             </tr>
             <tr>
               <td>NVDA</td>
+              <td>NVIDIA Corporation Common Stock</td>
               <td>2728</td>
+              <td>$226.95</td>
               <td>$225.29</td>
-              <td>$226.96</td>
-              <td class="pos">$4,544.90</td>
+              <td>$614,601.98</td>
+              <td>$619,119.60</td>
+              <td class="pos">$4,517.62</td>
+              <td class="pos">+0.73%</td>
+              <td class="pos">$4.68</td>
+              <td class="pos">+2.11%</td>
+              <td class="pos">$12,767.04</td>
             </tr>
             <tr>
               <td>SPY</td>
+              <td>State Street SPDR S&P 500 ETF Trust</td>
               <td>1920</td>
+              <td>$773.32</td>
               <td>$771.26</td>
-              <td>$773.16</td>
-              <td class="pos">$3,659.38</td>
+              <td>$1,480,810.32</td>
+              <td>$1,484,774.40</td>
+              <td class="pos">$3,964.08</td>
+              <td class="pos">+0.27%</td>
+              <td class="pos">$11.63</td>
+              <td class="pos">+1.53%</td>
+              <td class="pos">$22,329.60</td>
             </tr></tbody>
       </table>
+      </div>
     </div>
 
     <div class="panel">
@@ -92,6 +120,30 @@
       <table>
         <thead><tr><th>Submitted</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Status</th><th>Filled Price</th></tr></thead>
         <tbody>
+            <tr>
+              <td>2026-09-21 05:09 PM</td>
+              <td>NVDA</td>
+              <td class="neg">SELL</td>
+              <td>2728</td>
+              <td>accepted</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>2026-09-21 05:09 PM</td>
+              <td>AMZN</td>
+              <td class="neg">SELL</td>
+              <td>4113</td>
+              <td>accepted</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>2026-09-21 05:09 PM</td>
+              <td>SPY</td>
+              <td class="neg">SELL</td>
+              <td>1920</td>
+              <td>accepted</td>
+              <td>—</td>
+            </tr>
             <tr>
               <td>2026-09-21 12:08 PM</td>
               <td>AMZN</td>
