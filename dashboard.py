@@ -196,7 +196,7 @@ def generate(client=None):
     margin: 0; padding: 24px; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }}
-  .wrap {{ max-width: 900px; margin: 0 auto; }}
+  .wrap {{ max-width: 1800px; width: 100%; margin: 0 auto; }}
   h1 {{ font-size: 22px; margin-bottom: 4px; }}
   .updated {{ color: var(--muted); font-size: 13px; margin-bottom: 24px; }}
   .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }}
