@@ -65,5 +65,5 @@
   ],
   "trade_count": 3,
   "starting_equity": 1000000.0,
-  "flattened": false
+  "flattened": true
 }
