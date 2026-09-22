@@ -17,6 +17,8 @@ load_dotenv()
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import GetOrdersRequest
 from alpaca.trading.enums import QueryOrderStatus
+from alpaca.data.historical import StockHistoricalDataClient
+from alpaca.data.requests import StockSnapshotRequest
 
 ET = ZoneInfo("America/New_York")
 OUTPUT_DIR = "docs"
@@ -68,6 +70,14 @@ def fmt_money(v):
         return "—"
 
 
+def raw_num(v):
+    """Numeric value for a td's data-value attribute (sortable), or '' if unavailable."""
+    try:
+        return f"{float(v):.6f}"
+    except (TypeError, ValueError):
+        return ""
+
+
 def generate(client=None):
     """Regenerates docs/index.html from the current Alpaca account state.
 
@@ -107,14 +117,50 @@ def generate(client=None):
 
     generated_at = datetime.now(ET).strftime("%Y-%m-%d %I:%M %p ET")
 
-    # Company names aren't on the Position object itself — look each one up via
-    # the assets endpoint (cheap, and there are at most a handful of open
-    # positions at once). Falls back to the bare symbol if a lookup fails.
+    # Company names aren't on the Position/Order objects — look each one up via
+    # the assets endpoint. Cached per-symbol since the same symbol often shows
+    # up in both the positions table and many rows of the orders table.
+    _name_cache = {}
+
     def company_name(symbol):
+        if symbol not in _name_cache:
+            try:
+                _name_cache[symbol] = client.get_asset(symbol).name
+            except Exception:
+                _name_cache[symbol] = symbol
+        return _name_cache[symbol]
+
+    # Current/previous-close price snapshots for every symbol that appears in
+    # the orders table, so "Last Price" / "Daily Change" etc. can be shown for
+    # order rows the same way they're shown for open positions (positions get
+    # this data directly from the Position object; orders don't carry it).
+    order_symbols = sorted({o.symbol for o in orders}) if orders else []
+    snapshots = {}
+    if order_symbols:
         try:
-            return client.get_asset(symbol).name
+            data_client = StockHistoricalDataClient(
+                os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_KEY")
+            )
+            snapshots = data_client.get_stock_snapshots(
+                StockSnapshotRequest(symbol_or_symbols=order_symbols, feed="iex")
+            )
         except Exception:
-            return symbol
+            snapshots = {}
+
+    def snapshot_prices(symbol):
+        """Returns (current_price, lastday_price) or (None, None) if unavailable."""
+        snap = snapshots.get(symbol)
+        if not snap:
+            return None, None
+        current = None
+        if getattr(snap, "latest_trade", None) is not None:
+            current = float(snap.latest_trade.price)
+        elif getattr(snap, "daily_bar", None) is not None:
+            current = float(snap.daily_bar.close)
+        lastday = None
+        if getattr(snap, "previous_daily_bar", None) is not None:
+            lastday = float(snap.previous_daily_bar.close)
+        return current, lastday
 
     positions_rows = ""
     total_cost_basis = total_mkt_value = total_pl = total_todays_change = 0.0
@@ -148,18 +194,18 @@ def generate(client=None):
 
             positions_rows += f"""
             <tr>
-              <td>{p.symbol}</td>
-              <td>{company_name(p.symbol)}</td>
-              <td>{p.qty}</td>
-              <td>{fmt_money(current_price)}</td>
-              <td>{fmt_money(avg_entry)}</td>
-              <td>{fmt_money(cost_basis)}</td>
-              <td>{fmt_money(mkt_value)}</td>
-              <td class="{pl_class}">{fmt_money(pl)}</td>
-              <td class="{gain_class}">{gain_pct:+.2f}%</td>
-              <td class="{daily_class}">{fmt_money(daily_price_change)}</td>
-              <td class="{daily_class}">{daily_pct_change:+.2f}%</td>
-              <td class="{todays_class}">{fmt_money(todays_change)}</td>
+              <td data-value="{p.symbol}">{p.symbol}</td>
+              <td data-value="{company_name(p.symbol)}">{company_name(p.symbol)}</td>
+              <td data-value="{raw_num(qty)}">{p.qty}</td>
+              <td data-value="{raw_num(current_price)}">{fmt_money(current_price)}</td>
+              <td data-value="{raw_num(avg_entry)}">{fmt_money(avg_entry)}</td>
+              <td data-value="{raw_num(cost_basis)}">{fmt_money(cost_basis)}</td>
+              <td data-value="{raw_num(mkt_value)}">{fmt_money(mkt_value)}</td>
+              <td class="{pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl)}</td>
+              <td class="{gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
+              <td class="{daily_class}" data-value="{raw_num(daily_price_change)}">{fmt_money(daily_price_change)}</td>
+              <td class="{daily_class}" data-value="{raw_num(daily_pct_change)}">{daily_pct_change:+.2f}%</td>
+              <td class="{todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change)}</td>
             </tr>"""
 
         total_pl_class = "pos" if total_pl >= 0 else "neg"
@@ -183,24 +229,79 @@ def generate(client=None):
         positions_rows = "<tr><td colspan='12' class='muted'>No open positions</td></tr>"
 
     orders_rows = ""
+    order_statuses_seen = set()
     if orders:
         for o in orders:
-            submitted = o.submitted_at.astimezone(ET).strftime("%Y-%m-%d %I:%M %p")
+            submitted_dt = o.submitted_at.astimezone(ET)
+            submitted = submitted_dt.strftime("%Y-%m-%d %I:%M %p")
             side = o.side.value if o.side else "—"
             status = o.status.value if o.status else "—"
-            filled_price = fmt_money(o.filled_avg_price) if o.filled_avg_price else "—"
+            order_statuses_seen.add(status)
+            filled_price = float(o.filled_avg_price) if o.filled_avg_price else None
+            qty = float(o.qty) if o.qty else 0.0
             side_class = "pos" if side == "buy" else "neg"
+
+            current_price, lastday_price = snapshot_prices(o.symbol)
+
+            # "Purchase Price" / "Cost Basis" mirror the open-positions table: the
+            # price this order actually filled at, and qty * that price. Only
+            # meaningful for filled orders — unfilled/canceled orders show "—".
+            cost_basis = qty * filled_price if filled_price is not None else None
+            mkt_value = qty * current_price if current_price is not None else None
+            pl = (mkt_value - cost_basis) if (mkt_value is not None and cost_basis is not None) else None
+            gain_pct = (pl / cost_basis * 100) if (pl is not None and cost_basis not in (None, 0)) else None
+
+            daily_price_change = (
+                current_price - lastday_price
+                if (current_price is not None and lastday_price is not None)
+                else None
+            )
+            daily_pct_change = (
+                daily_price_change / lastday_price * 100
+                if (daily_price_change is not None and lastday_price)
+                else None
+            )
+            todays_change = qty * daily_price_change if daily_price_change is not None else None
+
+            pl_class = "pos" if (pl is not None and pl >= 0) else ("neg" if pl is not None else "")
+            gain_class = "pos" if (gain_pct is not None and gain_pct >= 0) else ("neg" if gain_pct is not None else "")
+            daily_class = "pos" if (daily_price_change is not None and daily_price_change >= 0) else ("neg" if daily_price_change is not None else "")
+            todays_class = "pos" if (todays_change is not None and todays_change >= 0) else ("neg" if todays_change is not None else "")
+
             orders_rows += f"""
-            <tr>
-              <td>{submitted}</td>
-              <td>{o.symbol}</td>
-              <td class="{side_class}">{side.upper()}</td>
-              <td>{o.qty}</td>
-              <td>{status}</td>
-              <td>{filled_price}</td>
+            <tr data-status="{status}">
+              <td data-value="{submitted_dt.isoformat()}">{submitted}</td>
+              <td data-value="{o.symbol}">{o.symbol}</td>
+              <td data-value="{company_name(o.symbol)}">{company_name(o.symbol)}</td>
+              <td class="{side_class}" data-value="{side}">{side.upper()}</td>
+              <td data-value="{raw_num(qty)}">{o.qty}</td>
+              <td data-value="{status}">{status}</td>
+              <td data-value="{raw_num(current_price)}">{fmt_money(current_price) if current_price is not None else "—"}</td>
+              <td data-value="{raw_num(filled_price)}">{fmt_money(filled_price) if filled_price is not None else "—"}</td>
+              <td data-value="{raw_num(cost_basis)}">{fmt_money(cost_basis) if cost_basis is not None else "—"}</td>
+              <td data-value="{raw_num(mkt_value)}">{fmt_money(mkt_value) if mkt_value is not None else "—"}</td>
+              <td class="{pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl) if pl is not None else "—"}</td>
+              <td class="{gain_class}" data-value="{raw_num(gain_pct)}">{f"{gain_pct:+.2f}%" if gain_pct is not None else "—"}</td>
+              <td class="{daily_class}" data-value="{raw_num(daily_price_change)}">{fmt_money(daily_price_change) if daily_price_change is not None else "—"}</td>
+              <td class="{daily_class}" data-value="{raw_num(daily_pct_change)}">{f"{daily_pct_change:+.2f}%" if daily_pct_change is not None else "—"}</td>
+              <td class="{todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change) if todays_change is not None else "—"}</td>
             </tr>"""
     else:
-        orders_rows = "<tr><td colspan='6' class='muted'>No orders yet</td></tr>"
+        orders_rows = "<tr><td colspan='14' class='muted'>No orders yet</td></tr>"
+
+    # Status filter checkboxes — built from whatever statuses actually showed up
+    # in the last 50 orders, so the filter row never shows a status with zero
+    # matching rows. All start checked (nothing filtered out by default).
+    status_filters_html = ""
+    for status in sorted(order_statuses_seen):
+        label = status.replace("_", " ").title()
+        status_filters_html += (
+            f'<label class="filter-chip">'
+            f'<input type="checkbox" class="status-filter" value="{status}" checked '
+            f'onchange="filterOrders()"> {label}</label>'
+        )
+    if not status_filters_html:
+        status_filters_html = '<span class="muted">No orders yet</span>'
 
     sparkline_html = build_equity_sparkline(equity_points)
 
@@ -232,6 +333,11 @@ def generate(client=None):
   .table-scroll {{ overflow-x: auto; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
   th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  th.sortable {{ cursor: pointer; user-select: none; }}
+  th.sortable:hover {{ color: var(--text); }}
+  th.sortable::after {{ content: "⇅"; color: var(--border); margin-left: 6px; font-size: 11px; }}
+  th.sortable[data-dir="asc"]::after {{ content: "▲"; color: var(--accent); }}
+  th.sortable[data-dir="desc"]::after {{ content: "▼"; color: var(--accent); }}
   td {{ padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   .totals-row td {{ font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }}
   .pos {{ color: var(--pos); }}
@@ -240,6 +346,9 @@ def generate(client=None):
   .sparkline {{ width: 100%; height: 120px; }}
   .spark-range {{ display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 4px; }}
   .disclaimer {{ color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }}
+  .filters {{ display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }}
+  .filter-chip {{ display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }}
+  .filter-chip input {{ accent-color: var(--accent); cursor: pointer; }}
 </style>
 </head>
 <body>
@@ -262,11 +371,20 @@ def generate(client=None):
     <div class="panel">
       <h2>Open Positions</h2>
       <div class="table-scroll">
-      <table>
+      <table id="positionsTable">
         <thead><tr>
-          <th>Symbol</th><th>Company Name</th><th># of Shares</th><th>Last Price</th>
-          <th>Purchase Price</th><th>Cost Basis</th><th>Mkt Value</th><th>Profit / (Loss)</th>
-          <th>Gain %</th><th>Daily Price Change</th><th>Daily % Change</th><th>Today's Change</th>
+          <th class="sortable" onclick="sortTable('positionsTable',0,'text')">Symbol</th>
+          <th class="sortable" onclick="sortTable('positionsTable',1,'text')">Company Name</th>
+          <th class="sortable" onclick="sortTable('positionsTable',2,'num')"># of Shares</th>
+          <th class="sortable" onclick="sortTable('positionsTable',3,'num')">Last Price</th>
+          <th class="sortable" onclick="sortTable('positionsTable',4,'num')">Purchase Price</th>
+          <th class="sortable" onclick="sortTable('positionsTable',5,'num')">Cost Basis</th>
+          <th class="sortable" onclick="sortTable('positionsTable',6,'num')">Mkt Value</th>
+          <th class="sortable" onclick="sortTable('positionsTable',7,'num')">Profit / (Loss)</th>
+          <th class="sortable" onclick="sortTable('positionsTable',8,'num')">Gain %</th>
+          <th class="sortable" onclick="sortTable('positionsTable',9,'num')">Daily Price Change</th>
+          <th class="sortable" onclick="sortTable('positionsTable',10,'num')">Daily % Change</th>
+          <th class="sortable" onclick="sortTable('positionsTable',11,'num')">Today's Change</th>
         </tr></thead>
         <tbody>{positions_rows}</tbody>
       </table>
@@ -275,10 +393,28 @@ def generate(client=None):
 
     <div class="panel">
       <h2>Recent Orders (last 50)</h2>
-      <table>
-        <thead><tr><th>Submitted</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Status</th><th>Filled Price</th></tr></thead>
+      <div class="filters">{status_filters_html}</div>
+      <div class="table-scroll">
+      <table id="ordersTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('ordersTable',0,'text')">Submitted</th>
+          <th class="sortable" onclick="sortTable('ordersTable',1,'text')">Symbol</th>
+          <th class="sortable" onclick="sortTable('ordersTable',2,'text')">Company Name</th>
+          <th class="sortable" onclick="sortTable('ordersTable',3,'text')">Side</th>
+          <th class="sortable" onclick="sortTable('ordersTable',4,'num')"># of Shares</th>
+          <th class="sortable" onclick="sortTable('ordersTable',5,'text')">Status</th>
+          <th class="sortable" onclick="sortTable('ordersTable',6,'num')">Last Price</th>
+          <th class="sortable" onclick="sortTable('ordersTable',7,'num')">Purchase Price</th>
+          <th class="sortable" onclick="sortTable('ordersTable',8,'num')">Cost Basis</th>
+          <th class="sortable" onclick="sortTable('ordersTable',9,'num')">Mkt Value</th>
+          <th class="sortable" onclick="sortTable('ordersTable',10,'num')">Profit / (Loss)</th>
+          <th class="sortable" onclick="sortTable('ordersTable',11,'num')">Gain %</th>
+          <th class="sortable" onclick="sortTable('ordersTable',12,'num')">Daily Price Change</th>
+          <th class="sortable" onclick="sortTable('ordersTable',13,'num')">Daily % Change</th>
+        </tr></thead>
         <tbody>{orders_rows}</tbody>
       </table>
+      </div>
     </div>
 
     <div class="disclaimer">
@@ -287,6 +423,48 @@ def generate(client=None):
       from Alpaca's paper trading API only.
     </div>
   </div>
+
+  <script>
+    function sortTable(tableId, colIdx, type) {{
+      const table = document.getElementById(tableId);
+      const tbody = table.tBodies[0];
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row)'));
+      if (rows.length < 2) return;
+      const headerRow = table.tHead.rows[0];
+      const th = headerRow.cells[colIdx];
+      const asc = th.getAttribute('data-dir') !== 'asc';
+      Array.from(headerRow.cells).forEach(c => c.removeAttribute('data-dir'));
+      th.setAttribute('data-dir', asc ? 'asc' : 'desc');
+
+      rows.sort((a, b) => {{
+        const aCell = a.cells[colIdx], bCell = b.cells[colIdx];
+        const av = aCell.getAttribute('data-value') ?? aCell.textContent.trim();
+        const bv = bCell.getAttribute('data-value') ?? bCell.textContent.trim();
+        let cmp;
+        if (type === 'num') {{
+          const an = av === '' ? -Infinity : parseFloat(av);
+          const bn = bv === '' ? -Infinity : parseFloat(bv);
+          cmp = an - bn;
+        }} else {{
+          cmp = av.localeCompare(bv);
+        }}
+        return asc ? cmp : -cmp;
+      }});
+
+      rows.forEach(r => tbody.appendChild(r));
+      // keep the totals row (if any) pinned at the bottom
+      const totalsRow = tbody.querySelector('tr.totals-row');
+      if (totalsRow) tbody.appendChild(totalsRow);
+    }}
+
+    function filterOrders() {{
+      const checked = Array.from(document.querySelectorAll('.status-filter:checked')).map(c => c.value);
+      document.querySelectorAll('#ordersTable tbody tr[data-status]').forEach(row => {{
+        const status = row.getAttribute('data-status');
+        row.style.display = checked.includes(status) ? '' : 'none';
+      }});
+    }}
+  </script>
 </body>
 </html>"""
 
