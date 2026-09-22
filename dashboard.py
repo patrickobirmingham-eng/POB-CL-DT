@@ -350,12 +350,28 @@ def generate(client=None):
     closed_trades = build_closed_trades(orders)
     closed_rows = ""
     total_closed_pl = 0.0
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    total_purchase_cost = 0.0  # sum of shares * buy_price, across all closed trades
+    total_sell_proceeds = 0.0  # sum of shares * sell_price, across all closed trades
+=======
+>>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
+>>>>>>> Stashed changes
     if closed_trades:
         for t in closed_trades:
             tx_dt = t["transaction_date"].astimezone(ET)
             pl = t["pl"]
             gain_pct = t["gain_pct"]
             total_closed_pl += pl
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+            total_purchase_cost += t["shares"] * t["buy_price"]
+            total_sell_proceeds += t["shares"] * t["sell_price"]
+=======
+>>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
+>>>>>>> Stashed changes
             pl_class = "pos" if pl >= 0 else "neg"
             gain_class = "pos" if gain_pct >= 0 else "neg"
             closed_rows += f"""
@@ -370,16 +386,42 @@ def generate(client=None):
               <td class="{gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
             </tr>"""
         total_class = "pos" if total_closed_pl >= 0 else "neg"
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+        # Overall % gain/loss for the totals row: total P&L over total capital put
+        # in (sum of purchase costs) — the same "$ out vs $ back" basis used for
+        # each individual row, just aggregated, rather than an average of the
+        # per-trade percentages (which would let a tiny trade's swing skew the
+        # total as much as a big one).
+        total_gain_pct = (total_closed_pl / total_purchase_cost * 100) if total_purchase_cost else 0.0
+        total_gain_class = "pos" if total_gain_pct >= 0 else "neg"
+=======
+>>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
+>>>>>>> Stashed changes
         closed_rows += f"""
             <tr class="totals-row">
               <td>Total</td>
               <td></td>
               <td></td>
               <td></td>
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+              <td>{fmt_money(total_purchase_cost)}</td>
+              <td>{fmt_money(total_sell_proceeds)}</td>
+              <td class="{total_class}">{fmt_money(total_closed_pl)}</td>
+              <td class="{total_gain_class}">{total_gain_pct:+.2f}%</td>
+=======
+>>>>>>> Stashed changes
               <td></td>
               <td></td>
               <td class="{total_class}">{fmt_money(total_closed_pl)}</td>
               <td></td>
+<<<<<<< Updated upstream
+=======
+>>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
+>>>>>>> Stashed changes
             </tr>"""
     else:
         closed_rows = "<tr><td colspan='8' class='muted'>No closed trades yet</td></tr>"
@@ -524,7 +566,15 @@ def generate(client=None):
           <th class="sortable" onclick="sortTable('closedTable',4,'num')">Purchase Price</th>
           <th class="sortable" onclick="sortTable('closedTable',5,'num')">Sell Price</th>
           <th class="sortable" onclick="sortTable('closedTable',6,'num')">Profit / (Loss)</th>
+<<<<<<< Updated upstream
           <th class="sortable" onclick="sortTable('closedTable',7,'num')">% Gain</th>
+=======
+<<<<<<< HEAD
+          <th class="sortable" onclick="sortTable('closedTable',7,'num')">% Gain / Loss</th>
+=======
+          <th class="sortable" onclick="sortTable('closedTable',7,'num')">% Gain</th>
+>>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
+>>>>>>> Stashed changes
         </tr></thead>
         <tbody>{closed_rows}</tbody>
       </table>
