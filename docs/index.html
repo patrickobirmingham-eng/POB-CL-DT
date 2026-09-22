@@ -26,6 +26,11 @@
   .table-scroll { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--text); }
+  th.sortable::after { content: "⇅"; color: var(--border); margin-left: 6px; font-size: 11px; }
+  th.sortable[data-dir="asc"]::after { content: "▲"; color: var(--accent); }
+  th.sortable[data-dir="desc"]::after { content: "▼"; color: var(--accent); }
   td { padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   .totals-row td { font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }
   .pos { color: var(--pos); }
@@ -34,12 +39,15 @@
   .sparkline { width: 100%; height: 120px; }
   .spark-range { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 4px; }
   .disclaimer { color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }
+  .filters { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }
+  .filter-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+  .filter-chip input { accent-color: var(--accent); cursor: pointer; }
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>ORB Paper Trading Dashboard</h1>
-    <div class="updated">Last updated: 2026-09-22 03:45 PM ET</div>
+    <div class="updated">Last updated: 2026-09-22 03:50 PM ET</div>
 
     <div class="cards">
       <div class="card"><div class="label">Equity</div><div class="value">$1,013,335.69</div></div>
@@ -63,11 +71,20 @@
     <div class="panel">
       <h2>Open Positions</h2>
       <div class="table-scroll">
-      <table>
+      <table id="positionsTable">
         <thead><tr>
-          <th>Symbol</th><th>Company Name</th><th># of Shares</th><th>Last Price</th>
-          <th>Purchase Price</th><th>Cost Basis</th><th>Mkt Value</th><th>Profit / (Loss)</th>
-          <th>Gain %</th><th>Daily Price Change</th><th>Daily % Change</th><th>Today's Change</th>
+          <th class="sortable" onclick="sortTable('positionsTable',0,'text')">Symbol</th>
+          <th class="sortable" onclick="sortTable('positionsTable',1,'text')">Company Name</th>
+          <th class="sortable" onclick="sortTable('positionsTable',2,'num')"># of Shares</th>
+          <th class="sortable" onclick="sortTable('positionsTable',3,'num')">Last Price</th>
+          <th class="sortable" onclick="sortTable('positionsTable',4,'num')">Purchase Price</th>
+          <th class="sortable" onclick="sortTable('positionsTable',5,'num')">Cost Basis</th>
+          <th class="sortable" onclick="sortTable('positionsTable',6,'num')">Mkt Value</th>
+          <th class="sortable" onclick="sortTable('positionsTable',7,'num')">Profit / (Loss)</th>
+          <th class="sortable" onclick="sortTable('positionsTable',8,'num')">Gain %</th>
+          <th class="sortable" onclick="sortTable('positionsTable',9,'num')">Daily Price Change</th>
+          <th class="sortable" onclick="sortTable('positionsTable',10,'num')">Daily % Change</th>
+          <th class="sortable" onclick="sortTable('positionsTable',11,'num')">Today's Change</th>
         </tr></thead>
         <tbody><tr><td colspan='12' class='muted'>No open positions</td></tr></tbody>
       </table>
@@ -76,194 +93,419 @@
 
     <div class="panel">
       <h2>Recent Orders (last 50)</h2>
-      <table>
-        <thead><tr><th>Submitted</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Status</th><th>Filled Price</th></tr></thead>
+      <div class="filters"><label class="filter-chip"><input type="checkbox" class="status-filter" value="canceled" checked onchange="filterOrders()"> Canceled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="filled" checked onchange="filterOrders()"> Filled</label></div>
+      <div class="table-scroll">
+      <table id="ordersTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('ordersTable',0,'text')">Submitted</th>
+          <th class="sortable" onclick="sortTable('ordersTable',1,'text')">Symbol</th>
+          <th class="sortable" onclick="sortTable('ordersTable',2,'text')">Company Name</th>
+          <th class="sortable" onclick="sortTable('ordersTable',3,'text')">Side</th>
+          <th class="sortable" onclick="sortTable('ordersTable',4,'num')"># of Shares</th>
+          <th class="sortable" onclick="sortTable('ordersTable',5,'text')">Status</th>
+          <th class="sortable" onclick="sortTable('ordersTable',6,'num')">Last Price</th>
+          <th class="sortable" onclick="sortTable('ordersTable',7,'num')">Purchase Price</th>
+          <th class="sortable" onclick="sortTable('ordersTable',8,'num')">Cost Basis</th>
+          <th class="sortable" onclick="sortTable('ordersTable',9,'num')">Mkt Value</th>
+          <th class="sortable" onclick="sortTable('ordersTable',10,'num')">Profit / (Loss)</th>
+          <th class="sortable" onclick="sortTable('ordersTable',11,'num')">Gain %</th>
+          <th class="sortable" onclick="sortTable('ordersTable',12,'num')">Daily Price Change</th>
+          <th class="sortable" onclick="sortTable('ordersTable',13,'num')">Daily % Change</th>
+        </tr></thead>
         <tbody>
-            <tr>
-              <td>2026-09-22 03:45 PM</td>
-              <td>MPWR</td>
-              <td class="neg">SELL</td>
-              <td>163</td>
-              <td>filled</td>
-              <td>$1,379.43</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T15:45:13.191419-04:00">2026-09-22 03:45 PM</td>
+              <td data-value="MPWR">MPWR</td>
+              <td data-value="Monolithic Power Systems, Inc. Common Stock">Monolithic Power Systems, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="163.000000">163</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="1379.430000">$1,379.43</td>
+              <td data-value="224847.090000">$224,847.09</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 03:45 PM</td>
-              <td>ASML</td>
-              <td class="neg">SELL</td>
-              <td>18</td>
-              <td>filled</td>
-              <td>$1,748.12</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T15:45:13.173234-04:00">2026-09-22 03:45 PM</td>
+              <td data-value="ASML">ASML</td>
+              <td data-value="ASML Holding N.V. New York Registry Shares">ASML Holding N.V. New York Registry Shares</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="18.000000">18</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="1748.120000">$1,748.12</td>
+              <td data-value="31466.160000">$31,466.16</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:30 AM</td>
-              <td>CTAS</td>
-              <td class="neg">SELL</td>
-              <td>6</td>
-              <td>filled</td>
-              <td>$196.53</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T10:30:14.801721-04:00">2026-09-22 10:30 AM</td>
+              <td data-value="CTAS">CTAS</td>
+              <td data-value="Cintas Corporation Common Stock">Cintas Corporation Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="6.000000">6</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="196.530000">$196.53</td>
+              <td data-value="1179.180000">$1,179.18</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:04 AM</td>
-              <td>CTAS</td>
-              <td class="neg">SELL</td>
-              <td>6</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-22T10:04:10.411682-04:00">2026-09-22 10:04 AM</td>
+              <td data-value="CTAS">CTAS</td>
+              <td data-value="Cintas Corporation Common Stock">Cintas Corporation Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="6.000000">6</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:04 AM</td>
-              <td>CTAS</td>
-              <td class="pos">BUY</td>
-              <td>6</td>
-              <td>filled</td>
-              <td>$197.50</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T10:04:09.569391-04:00">2026-09-22 10:04 AM</td>
+              <td data-value="CTAS">CTAS</td>
+              <td data-value="Cintas Corporation Common Stock">Cintas Corporation Common Stock</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td data-value="6.000000">6</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="197.500000">$197.50</td>
+              <td data-value="1185.000000">$1,185.00</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:03 AM</td>
-              <td>ASML</td>
-              <td class="neg">SELL</td>
-              <td>18</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-22T10:03:19.087757-04:00">2026-09-22 10:03 AM</td>
+              <td data-value="ASML">ASML</td>
+              <td data-value="ASML Holding N.V. New York Registry Shares">ASML Holding N.V. New York Registry Shares</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="18.000000">18</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:03 AM</td>
-              <td>ASML</td>
-              <td class="pos">BUY</td>
-              <td>18</td>
-              <td>filled</td>
-              <td>$1,723.50</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T10:03:17.622279-04:00">2026-09-22 10:03 AM</td>
+              <td data-value="ASML">ASML</td>
+              <td data-value="ASML Holding N.V. New York Registry Shares">ASML Holding N.V. New York Registry Shares</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td data-value="18.000000">18</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="1723.500000">$1,723.50</td>
+              <td data-value="31023.000000">$31,023.00</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:03 AM</td>
-              <td>ASML</td>
-              <td class="neg">SELL</td>
-              <td>18</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-22T10:03:17.617458-04:00">2026-09-22 10:03 AM</td>
+              <td data-value="ASML">ASML</td>
+              <td data-value="ASML Holding N.V. New York Registry Shares">ASML Holding N.V. New York Registry Shares</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="18.000000">18</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:02 AM</td>
-              <td>MPWR</td>
-              <td class="neg">SELL</td>
-              <td>163</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-22T10:02:44.799102-04:00">2026-09-22 10:02 AM</td>
+              <td data-value="MPWR">MPWR</td>
+              <td data-value="Monolithic Power Systems, Inc. Common Stock">Monolithic Power Systems, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="163.000000">163</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:02 AM</td>
-              <td>MPWR</td>
-              <td class="pos">BUY</td>
-              <td>163</td>
-              <td>filled</td>
-              <td>$1,336.02</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T10:02:42.242404-04:00">2026-09-22 10:02 AM</td>
+              <td data-value="MPWR">MPWR</td>
+              <td data-value="Monolithic Power Systems, Inc. Common Stock">Monolithic Power Systems, Inc. Common Stock</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td data-value="163.000000">163</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="1336.019202">$1,336.02</td>
+              <td data-value="217771.129926">$217,771.13</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 10:02 AM</td>
-              <td>MPWR</td>
-              <td class="neg">SELL</td>
-              <td>163</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-22T10:02:42.237881-04:00">2026-09-22 10:02 AM</td>
+              <td data-value="MPWR">MPWR</td>
+              <td data-value="Monolithic Power Systems, Inc. Common Stock">Monolithic Power Systems, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="163.000000">163</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 04:00 AM</td>
-              <td>AMZN</td>
-              <td class="neg">SELL</td>
-              <td>4113</td>
-              <td>filled</td>
-              <td>$255.40</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T04:00:40.223669-04:00">2026-09-22 04:00 AM</td>
+              <td data-value="AMZN">AMZN</td>
+              <td data-value="Amazon.com, Inc. Common Stock">Amazon.com, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="4113.000000">4113</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="255.397877">$255.40</td>
+              <td data-value="1050451.468101">$1,050,451.47</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 04:00 AM</td>
-              <td>SPY</td>
-              <td class="neg">SELL</td>
-              <td>1920</td>
-              <td>filled</td>
-              <td>$774.67</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T04:00:40.220142-04:00">2026-09-22 04:00 AM</td>
+              <td data-value="SPY">SPY</td>
+              <td data-value="State Street SPDR S&P 500 ETF Trust">State Street SPDR S&P 500 ETF Trust</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="1920.000000">1920</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="774.673708">$774.67</td>
+              <td data-value="1487373.519360">$1,487,373.52</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-22 04:00 AM</td>
-              <td>NVDA</td>
-              <td class="neg">SELL</td>
-              <td>2728</td>
-              <td>filled</td>
-              <td>$227.52</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-22T04:00:36.847928-04:00">2026-09-22 04:00 AM</td>
+              <td data-value="NVDA">NVDA</td>
+              <td data-value="NVIDIA Corporation Common Stock">NVIDIA Corporation Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="2728.000000">2728</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="227.520000">$227.52</td>
+              <td data-value="620674.560000">$620,674.56</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 12:08 PM</td>
-              <td>AMZN</td>
-              <td class="neg">SELL</td>
-              <td>4113</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-21T12:08:07.321183-04:00">2026-09-21 12:08 PM</td>
+              <td data-value="AMZN">AMZN</td>
+              <td data-value="Amazon.com, Inc. Common Stock">Amazon.com, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="4113.000000">4113</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 12:08 PM</td>
-              <td>SPY</td>
-              <td class="neg">SELL</td>
-              <td>1920</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-21T12:08:04.204258-04:00">2026-09-21 12:08 PM</td>
+              <td data-value="SPY">SPY</td>
+              <td data-value="State Street SPDR S&P 500 ETF Trust">State Street SPDR S&P 500 ETF Trust</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="1920.000000">1920</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 12:08 PM</td>
-              <td>AMZN</td>
-              <td class="pos">BUY</td>
-              <td>4113</td>
-              <td>filled</td>
-              <td>$257.05</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-21T12:08:03.282784-04:00">2026-09-21 12:08 PM</td>
+              <td data-value="AMZN">AMZN</td>
+              <td data-value="Amazon.com, Inc. Common Stock">Amazon.com, Inc. Common Stock</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td data-value="4113.000000">4113</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="257.054428">$257.05</td>
+              <td data-value="1057264.862364">$1,057,264.86</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 12:08 PM</td>
-              <td>AMZN</td>
-              <td class="neg">SELL</td>
-              <td>4113</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-21T12:08:03.276678-04:00">2026-09-21 12:08 PM</td>
+              <td data-value="AMZN">AMZN</td>
+              <td data-value="Amazon.com, Inc. Common Stock">Amazon.com, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="4113.000000">4113</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 12:08 PM</td>
-              <td>SPY</td>
-              <td class="pos">BUY</td>
-              <td>1920</td>
-              <td>filled</td>
-              <td>$771.26</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-21T12:08:02.496596-04:00">2026-09-21 12:08 PM</td>
+              <td data-value="SPY">SPY</td>
+              <td data-value="State Street SPDR S&P 500 ETF Trust">State Street SPDR S&P 500 ETF Trust</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td data-value="1920.000000">1920</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="771.255375">$771.26</td>
+              <td data-value="1480810.320000">$1,480,810.32</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 12:08 PM</td>
-              <td>SPY</td>
-              <td class="neg">SELL</td>
-              <td>1920</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-21T12:08:02.472423-04:00">2026-09-21 12:08 PM</td>
+              <td data-value="SPY">SPY</td>
+              <td data-value="State Street SPDR S&P 500 ETF Trust">State Street SPDR S&P 500 ETF Trust</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="1920.000000">1920</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 11:07 AM</td>
-              <td>NVDA</td>
-              <td class="neg">SELL</td>
-              <td>2728</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-21T11:07:04.803630-04:00">2026-09-21 11:07 AM</td>
+              <td data-value="NVDA">NVDA</td>
+              <td data-value="NVIDIA Corporation Common Stock">NVIDIA Corporation Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="2728.000000">2728</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 11:07 AM</td>
-              <td>NVDA</td>
-              <td class="pos">BUY</td>
-              <td>2728</td>
-              <td>filled</td>
-              <td>$225.29</td>
+            <tr data-status="filled">
+              <td data-value="2026-09-21T11:07:00.961983-04:00">2026-09-21 11:07 AM</td>
+              <td data-value="NVDA">NVDA</td>
+              <td data-value="NVIDIA Corporation Common Stock">NVIDIA Corporation Common Stock</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td data-value="2728.000000">2728</td>
+              <td data-value="filled">filled</td>
+              <td data-value="">—</td>
+              <td data-value="225.293981">$225.29</td>
+              <td data-value="614601.980168">$614,601.98</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr>
-            <tr>
-              <td>2026-09-21 11:07 AM</td>
-              <td>NVDA</td>
-              <td class="neg">SELL</td>
-              <td>2728</td>
-              <td>canceled</td>
-              <td>—</td>
+            <tr data-status="canceled">
+              <td data-value="2026-09-21T11:07:00.945642-04:00">2026-09-21 11:07 AM</td>
+              <td data-value="NVDA">NVDA</td>
+              <td data-value="NVIDIA Corporation Common Stock">NVIDIA Corporation Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td data-value="2728.000000">2728</td>
+              <td data-value="canceled">canceled</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
+              <td class="" data-value="">—</td>
             </tr></tbody>
       </table>
+      </div>
     </div>
 
     <div class="disclaimer">
@@ -272,5 +514,47 @@
       from Alpaca's paper trading API only.
     </div>
   </div>
+
+  <script>
+    function sortTable(tableId, colIdx, type) {
+      const table = document.getElementById(tableId);
+      const tbody = table.tBodies[0];
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row)'));
+      if (rows.length < 2) return;
+      const headerRow = table.tHead.rows[0];
+      const th = headerRow.cells[colIdx];
+      const asc = th.getAttribute('data-dir') !== 'asc';
+      Array.from(headerRow.cells).forEach(c => c.removeAttribute('data-dir'));
+      th.setAttribute('data-dir', asc ? 'asc' : 'desc');
+
+      rows.sort((a, b) => {
+        const aCell = a.cells[colIdx], bCell = b.cells[colIdx];
+        const av = aCell.getAttribute('data-value') ?? aCell.textContent.trim();
+        const bv = bCell.getAttribute('data-value') ?? bCell.textContent.trim();
+        let cmp;
+        if (type === 'num') {
+          const an = av === '' ? -Infinity : parseFloat(av);
+          const bn = bv === '' ? -Infinity : parseFloat(bv);
+          cmp = an - bn;
+        } else {
+          cmp = av.localeCompare(bv);
+        }
+        return asc ? cmp : -cmp;
+      });
+
+      rows.forEach(r => tbody.appendChild(r));
+      // keep the totals row (if any) pinned at the bottom
+      const totalsRow = tbody.querySelector('tr.totals-row');
+      if (totalsRow) tbody.appendChild(totalsRow);
+    }
+
+    function filterOrders() {
+      const checked = Array.from(document.querySelectorAll('.status-filter:checked')).map(c => c.value);
+      document.querySelectorAll('#ordersTable tbody tr[data-status]').forEach(row => {
+        const status = row.getAttribute('data-status');
+        row.style.display = checked.includes(status) ? '' : 'none';
+      });
+    }
+  </script>
 </body>
 </html>
