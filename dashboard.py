@@ -254,16 +254,16 @@ def generate(client=None):
             <tr>
               <td data-value="{p.symbol}">{p.symbol}</td>
               <td data-value="{company_name(p.symbol)}">{company_name(p.symbol)}</td>
-              <td data-value="{raw_num(qty)}">{p.qty}</td>
-              <td data-value="{raw_num(current_price)}">{fmt_money(current_price)}</td>
-              <td data-value="{raw_num(avg_entry)}">{fmt_money(avg_entry)}</td>
-              <td data-value="{raw_num(cost_basis)}">{fmt_money(cost_basis)}</td>
-              <td data-value="{raw_num(mkt_value)}">{fmt_money(mkt_value)}</td>
-              <td class="{pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl)}</td>
-              <td class="{gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
-              <td class="{daily_class}" data-value="{raw_num(daily_price_change)}">{fmt_money(daily_price_change)}</td>
-              <td class="{daily_class}" data-value="{raw_num(daily_pct_change)}">{daily_pct_change:+.2f}%</td>
-              <td class="{todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change)}</td>
+              <td class="num" data-value="{raw_num(qty)}">{p.qty}</td>
+              <td class="num" data-value="{raw_num(current_price)}">{fmt_money(current_price)}</td>
+              <td class="num" data-value="{raw_num(avg_entry)}">{fmt_money(avg_entry)}</td>
+              <td class="num" data-value="{raw_num(cost_basis)}">{fmt_money(cost_basis)}</td>
+              <td class="num" data-value="{raw_num(mkt_value)}">{fmt_money(mkt_value)}</td>
+              <td class="num {pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl)}</td>
+              <td class="num {gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
+              <td class="num {daily_class}" data-value="{raw_num(daily_price_change)}">{fmt_money(daily_price_change)}</td>
+              <td class="num {daily_class}" data-value="{raw_num(daily_pct_change)}">{daily_pct_change:+.2f}%</td>
+              <td class="num {todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change)}</td>
             </tr>"""
 
         total_pl_class = "pos" if total_pl >= 0 else "neg"
@@ -275,13 +275,13 @@ def generate(client=None):
               <td></td>
               <td></td>
               <td></td>
-              <td>{fmt_money(total_cost_basis)}</td>
-              <td>{fmt_money(total_mkt_value)}</td>
-              <td class="{total_pl_class}">{fmt_money(total_pl)}</td>
+              <td class="num">{fmt_money(total_cost_basis)}</td>
+              <td class="num">{fmt_money(total_mkt_value)}</td>
+              <td class="num {total_pl_class}">{fmt_money(total_pl)}</td>
               <td></td>
               <td></td>
               <td></td>
-              <td class="{total_todays_class}">{fmt_money(total_todays_change)}</td>
+              <td class="num {total_todays_class}">{fmt_money(total_todays_change)}</td>
             </tr>"""
     else:
         positions_rows = "<tr><td colspan='12' class='muted'>No open positions</td></tr>"
@@ -332,17 +332,17 @@ def generate(client=None):
               <td data-value="{o.symbol}">{o.symbol}</td>
               <td data-value="{company_name(o.symbol)}">{company_name(o.symbol)}</td>
               <td class="{side_class}" data-value="{side}">{side.upper()}</td>
-              <td data-value="{raw_num(qty)}">{o.qty}</td>
+              <td class="num" data-value="{raw_num(qty)}">{o.qty}</td>
               <td data-value="{status}">{status}</td>
-              <td data-value="{raw_num(current_price)}">{fmt_money(current_price) if current_price is not None else "—"}</td>
-              <td data-value="{raw_num(filled_price)}">{fmt_money(filled_price) if filled_price is not None else "—"}</td>
-              <td data-value="{raw_num(cost_basis)}">{fmt_money(cost_basis) if cost_basis is not None else "—"}</td>
-              <td data-value="{raw_num(mkt_value)}">{fmt_money(mkt_value) if mkt_value is not None else "—"}</td>
-              <td class="{pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl) if pl is not None else "—"}</td>
-              <td class="{gain_class}" data-value="{raw_num(gain_pct)}">{f"{gain_pct:+.2f}%" if gain_pct is not None else "—"}</td>
-              <td class="{daily_class}" data-value="{raw_num(daily_price_change)}">{fmt_money(daily_price_change) if daily_price_change is not None else "—"}</td>
-              <td class="{daily_class}" data-value="{raw_num(daily_pct_change)}">{f"{daily_pct_change:+.2f}%" if daily_pct_change is not None else "—"}</td>
-              <td class="{todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change) if todays_change is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(current_price)}">{fmt_money(current_price) if current_price is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(filled_price)}">{fmt_money(filled_price) if filled_price is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(cost_basis)}">{fmt_money(cost_basis) if cost_basis is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(mkt_value)}">{fmt_money(mkt_value) if mkt_value is not None else "—"}</td>
+              <td class="num {pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl) if pl is not None else "—"}</td>
+              <td class="num {gain_class}" data-value="{raw_num(gain_pct)}">{f"{gain_pct:+.2f}%" if gain_pct is not None else "—"}</td>
+              <td class="num {daily_class}" data-value="{raw_num(daily_price_change)}">{fmt_money(daily_price_change) if daily_price_change is not None else "—"}</td>
+              <td class="num {daily_class}" data-value="{raw_num(daily_pct_change)}">{f"{daily_pct_change:+.2f}%" if daily_pct_change is not None else "—"}</td>
+              <td class="num {todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change) if todays_change is not None else "—"}</td>
             </tr>"""
     else:
         orders_rows = "<tr><td colspan='14' class='muted'>No orders yet</td></tr>"
@@ -350,28 +350,16 @@ def generate(client=None):
     closed_trades = build_closed_trades(orders)
     closed_rows = ""
     total_closed_pl = 0.0
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
     total_purchase_cost = 0.0  # sum of shares * buy_price, across all closed trades
     total_sell_proceeds = 0.0  # sum of shares * sell_price, across all closed trades
-=======
->>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
->>>>>>> Stashed changes
     if closed_trades:
         for t in closed_trades:
             tx_dt = t["transaction_date"].astimezone(ET)
             pl = t["pl"]
             gain_pct = t["gain_pct"]
             total_closed_pl += pl
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
             total_purchase_cost += t["shares"] * t["buy_price"]
             total_sell_proceeds += t["shares"] * t["sell_price"]
-=======
->>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
->>>>>>> Stashed changes
             pl_class = "pos" if pl >= 0 else "neg"
             gain_class = "pos" if gain_pct >= 0 else "neg"
             closed_rows += f"""
@@ -379,16 +367,13 @@ def generate(client=None):
               <td data-value="{tx_dt.isoformat()}">{tx_dt.strftime("%Y-%m-%d %I:%M %p")}</td>
               <td data-value="{t['symbol']}">{t['symbol']}</td>
               <td data-value="{company_name(t['symbol'])}">{company_name(t['symbol'])}</td>
-              <td data-value="{raw_num(t['shares'])}">{t['shares']:g}</td>
-              <td data-value="{raw_num(t['buy_price'])}">{fmt_money(t['buy_price'])}</td>
-              <td data-value="{raw_num(t['sell_price'])}">{fmt_money(t['sell_price'])}</td>
-              <td class="{pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl)}</td>
-              <td class="{gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
+              <td class="num" data-value="{raw_num(t['shares'])}">{t['shares']:g}</td>
+              <td class="num" data-value="{raw_num(t['buy_price'])}">{fmt_money(t['buy_price'])}</td>
+              <td class="num" data-value="{raw_num(t['sell_price'])}">{fmt_money(t['sell_price'])}</td>
+              <td class="num {pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl)}</td>
+              <td class="num {gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
             </tr>"""
         total_class = "pos" if total_closed_pl >= 0 else "neg"
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
         # Overall % gain/loss for the totals row: total P&L over total capital put
         # in (sum of purchase costs) — the same "$ out vs $ back" basis used for
         # each individual row, just aggregated, rather than an average of the
@@ -396,32 +381,16 @@ def generate(client=None):
         # total as much as a big one).
         total_gain_pct = (total_closed_pl / total_purchase_cost * 100) if total_purchase_cost else 0.0
         total_gain_class = "pos" if total_gain_pct >= 0 else "neg"
-=======
->>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
->>>>>>> Stashed changes
         closed_rows += f"""
             <tr class="totals-row">
               <td>Total</td>
               <td></td>
               <td></td>
               <td></td>
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-              <td>{fmt_money(total_purchase_cost)}</td>
-              <td>{fmt_money(total_sell_proceeds)}</td>
-              <td class="{total_class}">{fmt_money(total_closed_pl)}</td>
-              <td class="{total_gain_class}">{total_gain_pct:+.2f}%</td>
-=======
->>>>>>> Stashed changes
-              <td></td>
-              <td></td>
-              <td class="{total_class}">{fmt_money(total_closed_pl)}</td>
-              <td></td>
-<<<<<<< Updated upstream
-=======
->>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
->>>>>>> Stashed changes
+              <td class="num">{fmt_money(total_purchase_cost)}</td>
+              <td class="num">{fmt_money(total_sell_proceeds)}</td>
+              <td class="num {total_class}">{fmt_money(total_closed_pl)}</td>
+              <td class="num {total_gain_class}">{total_gain_pct:+.2f}%</td>
             </tr>"""
     else:
         closed_rows = "<tr><td colspan='8' class='muted'>No closed trades yet</td></tr>"
@@ -476,6 +445,7 @@ def generate(client=None):
   th.sortable[data-dir="asc"]::after {{ content: "▲"; color: var(--accent); }}
   th.sortable[data-dir="desc"]::after {{ content: "▼"; color: var(--accent); }}
   td {{ padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  td.num, th.num {{ text-align: right; }}
   .totals-row td {{ font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }}
   .pos {{ color: var(--pos); }}
   .neg {{ color: var(--neg); }}
@@ -512,16 +482,16 @@ def generate(client=None):
         <thead><tr>
           <th class="sortable" onclick="sortTable('positionsTable',0,'text')">Symbol</th>
           <th class="sortable" onclick="sortTable('positionsTable',1,'text')">Company Name</th>
-          <th class="sortable" onclick="sortTable('positionsTable',2,'num')"># of Shares</th>
-          <th class="sortable" onclick="sortTable('positionsTable',3,'num')">Last Price</th>
-          <th class="sortable" onclick="sortTable('positionsTable',4,'num')">Purchase Price</th>
-          <th class="sortable" onclick="sortTable('positionsTable',5,'num')">Cost Basis</th>
-          <th class="sortable" onclick="sortTable('positionsTable',6,'num')">Mkt Value</th>
-          <th class="sortable" onclick="sortTable('positionsTable',7,'num')">Profit / (Loss)</th>
-          <th class="sortable" onclick="sortTable('positionsTable',8,'num')">Gain %</th>
-          <th class="sortable" onclick="sortTable('positionsTable',9,'num')">Daily Price Change</th>
-          <th class="sortable" onclick="sortTable('positionsTable',10,'num')">Daily % Change</th>
-          <th class="sortable" onclick="sortTable('positionsTable',11,'num')">Today's Change</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',2,'num')"># of Shares</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',3,'num')">Last Price</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',4,'num')">Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',5,'num')">Cost Basis</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',6,'num')">Mkt Value</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',7,'num')">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',8,'num')">Gain %</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',9,'num')">Daily Price Change</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',10,'num')">Daily % Change</th>
+          <th class="sortable num" onclick="sortTable('positionsTable',11,'num')">Today's Change</th>
         </tr></thead>
         <tbody>{positions_rows}</tbody>
       </table>
@@ -538,16 +508,16 @@ def generate(client=None):
           <th class="sortable" onclick="sortTable('ordersTable',1,'text')">Symbol</th>
           <th class="sortable" onclick="sortTable('ordersTable',2,'text')">Company Name</th>
           <th class="sortable" onclick="sortTable('ordersTable',3,'text')">Side</th>
-          <th class="sortable" onclick="sortTable('ordersTable',4,'num')"># of Shares</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',4,'num')"># of Shares</th>
           <th class="sortable" onclick="sortTable('ordersTable',5,'text')">Status</th>
-          <th class="sortable" onclick="sortTable('ordersTable',6,'num')">Last Price</th>
-          <th class="sortable" onclick="sortTable('ordersTable',7,'num')">Purchase Price</th>
-          <th class="sortable" onclick="sortTable('ordersTable',8,'num')">Cost Basis</th>
-          <th class="sortable" onclick="sortTable('ordersTable',9,'num')">Mkt Value</th>
-          <th class="sortable" onclick="sortTable('ordersTable',10,'num')">Profit / (Loss)</th>
-          <th class="sortable" onclick="sortTable('ordersTable',11,'num')">Gain %</th>
-          <th class="sortable" onclick="sortTable('ordersTable',12,'num')">Daily Price Change</th>
-          <th class="sortable" onclick="sortTable('ordersTable',13,'num')">Daily % Change</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',6,'num')">Last Price</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',7,'num')">Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',8,'num')">Cost Basis</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',9,'num')">Mkt Value</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',10,'num')">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',11,'num')">Gain %</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',12,'num')">Daily Price Change</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',13,'num')">Daily % Change</th>
         </tr></thead>
         <tbody>{orders_rows}</tbody>
       </table>
@@ -562,19 +532,11 @@ def generate(client=None):
           <th class="sortable" onclick="sortTable('closedTable',0,'text')">Transaction Date</th>
           <th class="sortable" onclick="sortTable('closedTable',1,'text')">Symbol</th>
           <th class="sortable" onclick="sortTable('closedTable',2,'text')">Company Name</th>
-          <th class="sortable" onclick="sortTable('closedTable',3,'num')"># of Shares</th>
-          <th class="sortable" onclick="sortTable('closedTable',4,'num')">Purchase Price</th>
-          <th class="sortable" onclick="sortTable('closedTable',5,'num')">Sell Price</th>
-          <th class="sortable" onclick="sortTable('closedTable',6,'num')">Profit / (Loss)</th>
-<<<<<<< Updated upstream
-          <th class="sortable" onclick="sortTable('closedTable',7,'num')">% Gain</th>
-=======
-<<<<<<< HEAD
-          <th class="sortable" onclick="sortTable('closedTable',7,'num')">% Gain / Loss</th>
-=======
-          <th class="sortable" onclick="sortTable('closedTable',7,'num')">% Gain</th>
->>>>>>> 9f59f597bafe7abc2c954fba33e0328ca75de33b
->>>>>>> Stashed changes
+          <th class="sortable num" onclick="sortTable('closedTable',3,'num')"># of Shares</th>
+          <th class="sortable num" onclick="sortTable('closedTable',4,'num')">Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('closedTable',5,'num')">Sell Price</th>
+          <th class="sortable num" onclick="sortTable('closedTable',6,'num')">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('closedTable',7,'num')">% Gain / Loss</th>
         </tr></thead>
         <tbody>{closed_rows}</tbody>
       </table>
