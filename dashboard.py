@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import GetOrdersRequest, GetPortfolioHistoryRequest
+from alpaca.trading.requests import GetOrdersRequest
 from alpaca.trading.enums import QueryOrderStatus
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockSnapshotRequest
@@ -66,9 +66,11 @@ def build_daily_pl_chart(points, width=900, height=240, pad_left=72, pad_right=1
         bottom = y(min(v, 0.0))
         h = max(bottom - top, 1.0)
         color = "#16a34a" if v >= 0 else "#dc2626"
+        # data-date/data-pl feed the JS hover tooltip below; the <title> is a
+        # native-tooltip fallback for anyone viewing the raw SVG.
         bars += (
-            f'<rect x="{x:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" '
-            f'fill="{color}"><title>{d}: {fmt_money(v)}</title></rect>'
+            f'<rect class="pl-bar" x="{x:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" '
+            f'fill="{color}" data-date="{d}" data-pl="{fmt_money(v)}"><title>{d}: {fmt_money(v)}</title></rect>'
         )
 
     # Sample ~8 evenly-spaced date labels across the X axis rather than one per
@@ -210,32 +212,6 @@ def generate(client=None):
     orders = client.get_orders(orders_req)
     orders = sorted(orders, key=lambda o: o.submitted_at, reverse=True)
 
-    # Portfolio history for the Daily P&L chart — one full year of trading
-    # days, so the chart shows every day's $ gain/loss over the last 12
-    # months rather than just a recent equity trend. Alpaca's daily P&L
-    # figure is derived from day-over-day equity changes (not from the
-    # "last 50 orders" window the Closed Orders / Income by Day tables use),
-    # so it reflects a full year regardless of how far back order history
-    # is retained.
-    daily_pl_points = []
-    try:
-        history = client.get_portfolio_history(
-            history_filter=GetPortfolioHistoryRequest(period="1A", timeframe="1D")
-        )
-    except Exception:
-        history = None
-    if history and getattr(history, "timestamp", None) and getattr(history, "equity", None):
-        equity_series = [
-            (datetime.fromtimestamp(ts, tz=ET), float(eq)) if eq is not None else (datetime.fromtimestamp(ts, tz=ET), None)
-            for ts, eq in zip(history.timestamp, history.equity)
-        ]
-        prev_equity = None
-        for dt, eq in equity_series:
-            if eq is None:
-                continue
-            if prev_equity is not None:
-                daily_pl_points.append((dt.strftime("%Y-%m-%d"), eq - prev_equity))
-            prev_equity = eq
 
     generated_at = datetime.now(ET).strftime("%Y-%m-%d %I:%M %p ET")
 
@@ -520,6 +496,9 @@ def generate(client=None):
     if not status_filters_html:
         status_filters_html = '<span class="muted">No orders yet</span>'
 
+    # Chart data mirrors the Income by Day table exactly (same `daily` dict,
+    # same per-day P&L), just sorted oldest-first for left-to-right plotting.
+    daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
     daily_pl_chart_html = build_daily_pl_chart(daily_pl_points)
 
     html = f"""<!DOCTYPE html>
@@ -562,6 +541,15 @@ def generate(client=None):
   .neg {{ color: var(--neg); }}
   .muted {{ color: var(--muted); }}
   .pl-chart {{ width: 100%; height: 240px; }}
+  .chart-wrap {{ position: relative; }}
+  .pl-bar {{ cursor: pointer; }}
+  .pl-bar:hover {{ opacity: 0.75; }}
+  .pl-tooltip {{
+    position: absolute; display: none; pointer-events: none;
+    background: #1b2130; border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: 12px; color: var(--text); white-space: nowrap;
+    transform: translate(-50%, -100%); margin-top: -8px; z-index: 10;
+  }}
   .disclaimer {{ color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }}
   .filters {{ display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }}
   .filter-chip {{ display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }}
@@ -581,8 +569,11 @@ def generate(client=None):
     </div>
 
     <div class="panel">
-      <h2>Daily Profit / (Loss) (last 12 months)</h2>
-      {daily_pl_chart_html}
+      <h2>Daily Profit / (Loss)</h2>
+      <div class="chart-wrap">
+        {daily_pl_chart_html}
+        <div id="plTooltip" class="pl-tooltip"></div>
+      </div>
     </div>
 
     <div class="panel">
@@ -717,6 +708,22 @@ def generate(client=None):
         row.style.display = checked.includes(status) ? '' : 'none';
       }});
     }}
+
+    (function() {{
+      const tooltip = document.getElementById('plTooltip');
+      const chartWrap = document.querySelector('.chart-wrap');
+      if (!tooltip || !chartWrap) return;
+      chartWrap.querySelectorAll('.pl-bar').forEach(bar => {{
+        bar.addEventListener('mousemove', e => {{
+          const wrapRect = chartWrap.getBoundingClientRect();
+          tooltip.textContent = `${{bar.getAttribute('data-date')}}: ${{bar.getAttribute('data-pl')}}`;
+          tooltip.style.left = (e.clientX - wrapRect.left) + 'px';
+          tooltip.style.top = (e.clientY - wrapRect.top) + 'px';
+          tooltip.style.display = 'block';
+        }});
+        bar.addEventListener('mouseleave', () => {{ tooltip.style.display = 'none'; }});
+      }});
+    }})();
   </script>
 </body>
 </html>"""
