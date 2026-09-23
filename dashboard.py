@@ -395,6 +395,53 @@ def generate(client=None):
     else:
         closed_rows = "<tr><td colspan='8' class='muted'>No closed trades yet</td></tr>"
 
+    # Income by Day — closed_trades rolled up per calendar date (ET), so this
+    # reflects the same "last 50 orders" window as the Closed Orders table
+    # above it, just aggregated by day instead of shown trade-by-trade.
+    daily = defaultdict(lambda: {"trades": 0, "cost_basis": 0.0, "sold_cost": 0.0, "pl": 0.0})
+    for t in closed_trades:
+        day = t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d")
+        d = daily[day]
+        d["trades"] += 1
+        d["cost_basis"] += t["shares"] * t["buy_price"]
+        d["sold_cost"] += t["shares"] * t["sell_price"]
+        d["pl"] += t["pl"]
+
+    daily_rows = ""
+    if daily:
+        for day in sorted(daily.keys(), reverse=True):
+            d = daily[day]
+            gain_pct = (d["pl"] / d["cost_basis"] * 100) if d["cost_basis"] else 0.0
+            pl_class = "pos" if d["pl"] >= 0 else "neg"
+            gain_class = "pos" if gain_pct >= 0 else "neg"
+            daily_rows += f"""
+            <tr>
+              <td data-value="{day}">{day}</td>
+              <td class="num" data-value="{raw_num(d['trades'])}">{d['trades']}</td>
+              <td class="num" data-value="{raw_num(d['cost_basis'])}">{fmt_money(d['cost_basis'])}</td>
+              <td class="num" data-value="{raw_num(d['sold_cost'])}">{fmt_money(d['sold_cost'])}</td>
+              <td class="num {pl_class}" data-value="{raw_num(d['pl'])}">{fmt_money(d['pl'])}</td>
+              <td class="num {gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
+            </tr>"""
+        total_daily_trades = sum(d["trades"] for d in daily.values())
+        total_daily_cost_basis = sum(d["cost_basis"] for d in daily.values())
+        total_daily_sold_cost = sum(d["sold_cost"] for d in daily.values())
+        total_daily_pl = sum(d["pl"] for d in daily.values())
+        total_daily_gain_pct = (total_daily_pl / total_daily_cost_basis * 100) if total_daily_cost_basis else 0.0
+        total_daily_pl_class = "pos" if total_daily_pl >= 0 else "neg"
+        total_daily_gain_class = "pos" if total_daily_gain_pct >= 0 else "neg"
+        daily_rows += f"""
+            <tr class="totals-row">
+              <td>Total</td>
+              <td class="num">{total_daily_trades}</td>
+              <td class="num">{fmt_money(total_daily_cost_basis)}</td>
+              <td class="num">{fmt_money(total_daily_sold_cost)}</td>
+              <td class="num {total_daily_pl_class}">{fmt_money(total_daily_pl)}</td>
+              <td class="num {total_daily_gain_class}">{total_daily_gain_pct:+.2f}%</td>
+            </tr>"""
+    else:
+        daily_rows = "<tr><td colspan='6' class='muted'>No closed trades yet</td></tr>"
+
     # Status filter checkboxes — built from whatever statuses actually showed up
     # in the last 50 orders, so the filter row never shows a status with zero
     # matching rows. All start checked (nothing filtered out by default).
@@ -539,6 +586,23 @@ def generate(client=None):
           <th class="sortable num" onclick="sortTable('closedTable',7,'num')">% Gain / Loss</th>
         </tr></thead>
         <tbody>{closed_rows}</tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Income by Day</h2>
+      <div class="table-scroll">
+      <table id="dailyTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('dailyTable',0,'text')">Transaction Date</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',1,'num')">Total # of Trades</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',2,'num')">Total Cost Basis</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',3,'num')">Total Sold Cost</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',4,'num')">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',5,'num')">Gain %</th>
+        </tr></thead>
+        <tbody>{daily_rows}</tbody>
       </table>
       </div>
     </div>
