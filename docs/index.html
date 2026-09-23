@@ -48,12 +48,12 @@
 <body>
   <div class="wrap">
     <h1>ORB Paper Trading Dashboard</h1>
-    <div class="updated">Last updated: 2026-09-22 07:12 PM ET</div>
+    <div class="updated">Last updated: 2026-09-23 10:22 AM ET</div>
 
     <div class="cards">
       <div class="card"><div class="label">Equity</div><div class="value">$1,013,335.69</div></div>
       <div class="card"><div class="label">Cash</div><div class="value">$1,013,335.69</div></div>
-      <div class="card"><div class="label">Buying Power</div><div class="value">$4,053,342.76</div></div>
+      <div class="card"><div class="label">Buying Power</div><div class="value">$3,320,994.60</div></div>
       <div class="card"><div class="label">Open Positions</div><div class="value">0</div></div>
     </div>
 
@@ -61,7 +61,7 @@
       <h2>Equity (last 30 days)</h2>
       
     <svg viewBox="0 0 600 120" class="sparkline" preserveAspectRatio="none">
-      <polyline fill="none" stroke="#16a34a" stroke-width="2.5" points="10.0,110.0 40.5,110.0 71.1,110.0 101.6,110.0 132.1,110.0 162.6,110.0 193.2,110.0 223.7,110.0 254.2,110.0 284.7,110.0 315.3,110.0 345.8,110.0 376.3,110.0 406.8,110.0 437.4,110.0 467.9,110.0 498.4,110.0 528.9,11.5 559.5,11.5 590.0,10.0" />
+      <polyline fill="none" stroke="#16a34a" stroke-width="2.5" points="10.0,110.0 39.0,110.0 68.0,110.0 97.0,110.0 126.0,110.0 155.0,110.0 184.0,110.0 213.0,110.0 242.0,110.0 271.0,110.0 300.0,110.0 329.0,110.0 358.0,110.0 387.0,110.0 416.0,110.0 445.0,110.0 474.0,110.0 503.0,11.5 532.0,11.5 561.0,10.0 590.0,10.2" />
     </svg>
     <div class="spark-range">
       <span>$0</span><span>$1,015,740</span>
@@ -94,7 +94,7 @@
 
     <div class="panel">
       <h2>Recent Orders (last 50)</h2>
-      <div class="filters"><label class="filter-chip"><input type="checkbox" class="status-filter" value="canceled" checked onchange="filterOrders()"> Canceled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="filled" checked onchange="filterOrders()"> Filled</label></div>
+      <div class="filters"><label class="filter-chip"><input type="checkbox" class="status-filter" value="canceled" checked onchange="filterOrders()"> Canceled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="filled" checked onchange="filterOrders()"> Filled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="held" checked onchange="filterOrders()"> Held</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="new" checked onchange="filterOrders()"> New</label></div>
       <div class="table-scroll">
       <table id="ordersTable">
         <thead><tr>
@@ -114,6 +114,57 @@
           <th class="sortable num" onclick="sortTable('ordersTable',13,'num')">Daily % Change</th>
         </tr></thead>
         <tbody>
+            <tr data-status="new">
+              <td data-value="2026-09-23T10:22:25.165459-04:00">2026-09-23 10:22 AM</td>
+              <td data-value="BKR">BKR</td>
+              <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td class="num" data-value="12666.000000">12666</td>
+              <td data-value="new">new</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr data-status="held">
+              <td data-value="2026-09-23T10:22:25.157153-04:00">2026-09-23 10:22 AM</td>
+              <td data-value="BKR">BKR</td>
+              <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="12666.000000">12666</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr data-status="held">
+              <td data-value="2026-09-23T10:22:25.157153-04:00">2026-09-23 10:22 AM</td>
+              <td data-value="BKR">BKR</td>
+              <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="12666.000000">12666</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
             <tr data-status="filled">
               <td data-value="2026-09-22T15:45:13.191419-04:00">2026-09-22 03:45 PM</td>
               <td data-value="MPWR">MPWR</td>
