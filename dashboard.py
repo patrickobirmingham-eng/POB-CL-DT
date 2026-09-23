@@ -199,7 +199,7 @@ def generate(client=None):
             data_client = StockHistoricalDataClient(
                 os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_KEY")
             )
-            snapshots = data_client.get_stock_snapshots(
+            snapshots = data_client.get_stock_snapshot(
                 StockSnapshotRequest(symbol_or_symbols=order_symbols, feed="iex")
             )
         except Exception:
