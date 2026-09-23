@@ -709,6 +709,6 @@
   ],
   "trade_count": 3,
   "starting_equity": 1013335.69,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 749991.065
 }
