@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import GetOrdersRequest
+from alpaca.trading.requests import GetOrdersRequest, GetPortfolioHistoryRequest
 from alpaca.trading.enums import QueryOrderStatus
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockSnapshotRequest
@@ -34,33 +34,82 @@ def get_client():
     return TradingClient(key, secret, paper=True)
 
 
-def build_equity_sparkline(points, width=600, height=120, pad=10):
-    """points: list of (datetime, float equity). Returns an inline SVG string."""
-    if len(points) < 2:
+def build_daily_pl_chart(points, width=900, height=240, pad_left=72, pad_right=16, pad_top=16, pad_bottom=36):
+    """points: list of (date_str, float dollar P&L), oldest first, one entry per
+    trading day over the lookback window. Returns an inline SVG bar chart with a
+    dollar Y axis and a date X axis (green bars for up days, red for down days).
+    """
+    if not points:
         return "<p class='muted'>Not enough history yet for a chart.</p>"
 
     values = [v for _, v in points]
     lo, hi = min(values), max(values)
+    lo = min(lo, 0.0)
+    hi = max(hi, 0.0)
     span = (hi - lo) or 1.0
     n = len(points)
 
-    def x(i):
-        return pad + (i / (n - 1)) * (width - 2 * pad)
+    plot_w = width - pad_left - pad_right
+    plot_h = height - pad_top - pad_bottom
+    gap = plot_w / n
+    bar_w = max(gap * 0.7, 1.0)
 
     def y(v):
-        return height - pad - ((v - lo) / span) * (height - 2 * pad)
+        return pad_top + (hi - v) / span * plot_h
 
-    path_pts = " ".join(f"{x(i):.1f},{y(v):.1f}" for i, (_, v) in enumerate(points))
-    start_val, end_val = values[0], values[-1]
-    color = "#16a34a" if end_val >= start_val else "#dc2626"
+    zero_y = y(0.0)
+
+    bars = ""
+    for i, (d, v) in enumerate(points):
+        x = pad_left + i * gap + (gap - bar_w) / 2
+        top = y(max(v, 0.0))
+        bottom = y(min(v, 0.0))
+        h = max(bottom - top, 1.0)
+        color = "#16a34a" if v >= 0 else "#dc2626"
+        bars += (
+            f'<rect x="{x:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" '
+            f'fill="{color}"><title>{d}: {fmt_money(v)}</title></rect>'
+        )
+
+    # Sample ~8 evenly-spaced date labels across the X axis rather than one per
+    # bar — a year of trading days is far too many to label individually.
+    n_labels = min(8, n)
+    label_idxs = sorted({round(i * (n - 1) / (n_labels - 1)) for i in range(n_labels)}) if n_labels > 1 else [0]
+    x_labels = ""
+    for i in label_idxs:
+        d, _ = points[i]
+        lx = pad_left + i * gap + gap / 2
+        x_labels += (
+            f'<text x="{lx:.1f}" y="{height - pad_bottom + 18}" font-size="10" '
+            f'fill="currentColor" text-anchor="middle" opacity="0.65">{d}</text>'
+        )
+
+    zero_line = (
+        f'<line x1="{pad_left}" y1="{zero_y:.1f}" x2="{width - pad_right}" y2="{zero_y:.1f}" '
+        f'stroke="currentColor" stroke-opacity="0.3" stroke-width="1" />'
+    )
+    y_hi_label = (
+        f'<text x="{pad_left - 8}" y="{pad_top + 8}" font-size="10" fill="currentColor" '
+        f'text-anchor="end" opacity="0.65">{fmt_money(hi)}</text>'
+    )
+    y_lo_label = (
+        f'<text x="{pad_left - 8}" y="{height - pad_bottom}" font-size="10" fill="currentColor" '
+        f'text-anchor="end" opacity="0.65">{fmt_money(lo)}</text>'
+    )
+    y_zero_label = (
+        f'<text x="{pad_left - 8}" y="{zero_y + 3:.1f}" font-size="10" fill="currentColor" '
+        f'text-anchor="end" opacity="0.65">$0</text>'
+    )
 
     return f"""
-    <svg viewBox="0 0 {width} {height}" class="sparkline" preserveAspectRatio="none">
-      <polyline fill="none" stroke="{color}" stroke-width="2.5" points="{path_pts}" />
+    <svg viewBox="0 0 {width} {height}" class="pl-chart" style="color: var(--muted);">
+      {zero_line}
+      {bars}
+      {x_labels}
+      {y_hi_label}
+      {y_zero_label if abs(zero_y - y(hi)) > 12 and abs(zero_y - y(lo)) > 12 else ""}
+      {y_lo_label}
     </svg>
-    <div class="spark-range">
-      <span>${lo:,.0f}</span><span>${hi:,.0f}</span>
-    </div>
     """
 
 
@@ -161,17 +210,32 @@ def generate(client=None):
     orders = client.get_orders(orders_req)
     orders = sorted(orders, key=lambda o: o.submitted_at, reverse=True)
 
-    # Portfolio history for the sparkline (last 30 calendar days, daily)
-    equity_points = []
+    # Portfolio history for the Daily P&L chart — one full year of trading
+    # days, so the chart shows every day's $ gain/loss over the last 12
+    # months rather than just a recent equity trend. Alpaca's daily P&L
+    # figure is derived from day-over-day equity changes (not from the
+    # "last 50 orders" window the Closed Orders / Income by Day tables use),
+    # so it reflects a full year regardless of how far back order history
+    # is retained.
+    daily_pl_points = []
     try:
-        history = client.get_portfolio_history(history_filter=None)
+        history = client.get_portfolio_history(
+            history_filter=GetPortfolioHistoryRequest(period="1A", timeframe="1D")
+        )
     except Exception:
         history = None
     if history and getattr(history, "timestamp", None) and getattr(history, "equity", None):
-        for ts, eq in zip(history.timestamp, history.equity):
+        equity_series = [
+            (datetime.fromtimestamp(ts, tz=ET), float(eq)) if eq is not None else (datetime.fromtimestamp(ts, tz=ET), None)
+            for ts, eq in zip(history.timestamp, history.equity)
+        ]
+        prev_equity = None
+        for dt, eq in equity_series:
             if eq is None:
                 continue
-            equity_points.append((datetime.fromtimestamp(ts, tz=ET), float(eq)))
+            if prev_equity is not None:
+                daily_pl_points.append((dt.strftime("%Y-%m-%d"), eq - prev_equity))
+            prev_equity = eq
 
     generated_at = datetime.now(ET).strftime("%Y-%m-%d %I:%M %p ET")
 
@@ -456,7 +520,7 @@ def generate(client=None):
     if not status_filters_html:
         status_filters_html = '<span class="muted">No orders yet</span>'
 
-    sparkline_html = build_equity_sparkline(equity_points)
+    daily_pl_chart_html = build_daily_pl_chart(daily_pl_points)
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -497,8 +561,7 @@ def generate(client=None):
   .pos {{ color: var(--pos); }}
   .neg {{ color: var(--neg); }}
   .muted {{ color: var(--muted); }}
-  .sparkline {{ width: 100%; height: 120px; }}
-  .spark-range {{ display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 4px; }}
+  .pl-chart {{ width: 100%; height: 240px; }}
   .disclaimer {{ color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }}
   .filters {{ display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }}
   .filter-chip {{ display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }}
@@ -518,8 +581,8 @@ def generate(client=None):
     </div>
 
     <div class="panel">
-      <h2>Equity (last 30 days)</h2>
-      {sparkline_html}
+      <h2>Daily Profit / (Loss) (last 12 months)</h2>
+      {daily_pl_chart_html}
     </div>
 
     <div class="panel">
