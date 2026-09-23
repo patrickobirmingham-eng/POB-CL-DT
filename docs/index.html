@@ -48,13 +48,13 @@
 <body>
   <div class="wrap">
     <h1>ORB Paper Trading Dashboard</h1>
-    <div class="updated">Last updated: 2026-09-23 01:00 PM ET</div>
+    <div class="updated">Last updated: 2026-09-23 03:45 PM ET</div>
 
     <div class="cards">
-      <div class="card"><div class="label">Equity</div><div class="value">$1,013,707.37</div></div>
-      <div class="card"><div class="label">Cash</div><div class="value">$280,829.91</div></div>
-      <div class="card"><div class="label">Buying Power</div><div class="value">$3,175,376.53</div></div>
-      <div class="card"><div class="label">Open Positions</div><div class="value">2</div></div>
+      <div class="card"><div class="label">Equity</div><div class="value">$1,013,854.23</div></div>
+      <div class="card"><div class="label">Cash</div><div class="value">$1,013,854.23</div></div>
+      <div class="card"><div class="label">Buying Power</div><div class="value">$4,055,416.92</div></div>
+      <div class="card"><div class="label">Open Positions</div><div class="value">0</div></div>
     </div>
 
     <div class="panel">
@@ -87,56 +87,14 @@
           <th class="sortable num" onclick="sortTable('positionsTable',10,'num')">Daily % Change</th>
           <th class="sortable num" onclick="sortTable('positionsTable',11,'num')">Today's Change</th>
         </tr></thead>
-        <tbody>
-            <tr>
-              <td data-value="BKR">BKR</td>
-              <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
-              <td class="num" data-value="12666.000000">12666</td>
-              <td class="num" data-value="57.860000">$57.86</td>
-              <td class="num" data-value="57.820000">$57.82</td>
-              <td class="num" data-value="732348.120000">$732,348.12</td>
-              <td class="num" data-value="732854.760000">$732,854.76</td>
-              <td class="num pos" data-value="506.640000">$506.64</td>
-              <td class="num pos" data-value="0.069000">+0.07%</td>
-              <td class="num pos" data-value="0.600000">$0.60</td>
-              <td class="num pos" data-value="1.048000">+1.05%</td>
-              <td class="num pos" data-value="7599.600000">$7,599.60</td>
-            </tr>
-            <tr>
-              <td data-value="CMCSA">CMCSA</td>
-              <td data-value="Comcast Corporation Class A Common Stock">Comcast Corporation Class A Common Stock</td>
-              <td class="num" data-value="1.000000">1</td>
-              <td class="num" data-value="22.700000">$22.70</td>
-              <td class="num" data-value="22.490000">$22.49</td>
-              <td class="num" data-value="22.490000">$22.49</td>
-              <td class="num" data-value="22.700000">$22.70</td>
-              <td class="num pos" data-value="0.210000">$0.21</td>
-              <td class="num pos" data-value="0.934000">+0.93%</td>
-              <td class="num pos" data-value="0.280000">$0.28</td>
-              <td class="num pos" data-value="1.249000">+1.25%</td>
-              <td class="num pos" data-value="0.280000">$0.28</td>
-            </tr>
-            <tr class="totals-row">
-              <td>Total</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td class="num">$732,370.61</td>
-              <td class="num">$732,877.46</td>
-              <td class="num pos">$506.85</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td class="num pos">$7,599.88</td>
-            </tr></tbody>
+        <tbody><tr><td colspan='12' class='muted'>No open positions</td></tr></tbody>
       </table>
       </div>
     </div>
 
     <div class="panel">
       <h2>Recent Orders (last 50)</h2>
-      <div class="filters"><label class="filter-chip"><input type="checkbox" class="status-filter" value="canceled" checked onchange="filterOrders()"> Canceled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="filled" checked onchange="filterOrders()"> Filled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="held" checked onchange="filterOrders()"> Held</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="new" checked onchange="filterOrders()"> New</label></div>
+      <div class="filters"><label class="filter-chip"><input type="checkbox" class="status-filter" value="canceled" checked onchange="filterOrders()"> Canceled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="filled" checked onchange="filterOrders()"> Filled</label></div>
       <div class="table-scroll">
       <table id="ordersTable">
         <thead><tr>
@@ -157,6 +115,40 @@
         </tr></thead>
         <tbody>
             <tr data-status="filled">
+              <td data-value="2026-09-23T15:45:05.870416-04:00">2026-09-23 03:45 PM</td>
+              <td data-value="CMCSA">CMCSA</td>
+              <td data-value="Comcast Corporation Class A Common Stock">Comcast Corporation Class A Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="1.000000">1</td>
+              <td data-value="filled">filled</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="22.630000">$22.63</td>
+              <td class="num" data-value="22.630000">$22.63</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr data-status="filled">
+              <td data-value="2026-09-23T15:45:05.840896-04:00">2026-09-23 03:45 PM</td>
+              <td data-value="BKR">BKR</td>
+              <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="12666.000000">12666</td>
+              <td data-value="filled">filled</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="57.871601">$57.87</td>
+              <td class="num" data-value="733001.698266">$733,001.70</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr data-status="filled">
               <td data-value="2026-09-23T10:55:22.058031-04:00">2026-09-23 10:55 AM</td>
               <td data-value="MDLZ">MDLZ</td>
               <td data-value="Mondelez International, Inc. Class A Common Stock">Mondelez International, Inc. Class A Common Stock</td>
@@ -173,13 +165,13 @@
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
             </tr>
-            <tr data-status="new">
+            <tr data-status="canceled">
               <td data-value="2026-09-23T10:29:03.825959-04:00">2026-09-23 10:29 AM</td>
               <td data-value="CMCSA">CMCSA</td>
               <td data-value="Comcast Corporation Class A Common Stock">Comcast Corporation Class A Common Stock</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1.000000">1</td>
-              <td data-value="new">new</td>
+              <td data-value="canceled">canceled</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
@@ -207,13 +199,13 @@
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
             </tr>
-            <tr data-status="held">
+            <tr data-status="canceled">
               <td data-value="2026-09-23T10:29:03.103639-04:00">2026-09-23 10:29 AM</td>
               <td data-value="CMCSA">CMCSA</td>
               <td data-value="Comcast Corporation Class A Common Stock">Comcast Corporation Class A Common Stock</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1.000000">1</td>
-              <td data-value="held">held</td>
+              <td data-value="canceled">canceled</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
@@ -258,13 +250,13 @@
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
             </tr>
-            <tr data-status="new">
+            <tr data-status="canceled">
               <td data-value="2026-09-23T10:22:25.766364-04:00">2026-09-23 10:22 AM</td>
               <td data-value="BKR">BKR</td>
               <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="12666.000000">12666</td>
-              <td data-value="new">new</td>
+              <td data-value="canceled">canceled</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
@@ -292,13 +284,13 @@
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
             </tr>
-            <tr data-status="held">
+            <tr data-status="canceled">
               <td data-value="2026-09-23T10:22:25.157153-04:00">2026-09-23 10:22 AM</td>
               <td data-value="BKR">BKR</td>
               <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="12666.000000">12666</td>
-              <td data-value="held">held</td>
+              <td data-value="canceled">canceled</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
@@ -720,6 +712,26 @@
         </tr></thead>
         <tbody>
             <tr>
+              <td data-value="2026-09-23T15:45:10.833698-04:00">2026-09-23 03:45 PM</td>
+              <td data-value="BKR">BKR</td>
+              <td data-value="Baker Hughes Company Class A Common Stock">Baker Hughes Company Class A Common Stock</td>
+              <td class="num" data-value="12666.000000">12666</td>
+              <td class="num" data-value="57.820000">$57.82</td>
+              <td class="num" data-value="57.871601">$57.87</td>
+              <td class="num pos" data-value="653.578266">$653.58</td>
+              <td class="num pos" data-value="0.089244">+0.09%</td>
+            </tr>
+            <tr>
+              <td data-value="2026-09-23T15:45:06.893713-04:00">2026-09-23 03:45 PM</td>
+              <td data-value="CMCSA">CMCSA</td>
+              <td data-value="Comcast Corporation Class A Common Stock">Comcast Corporation Class A Common Stock</td>
+              <td class="num" data-value="1.000000">1</td>
+              <td class="num" data-value="22.490000">$22.49</td>
+              <td class="num" data-value="22.630000">$22.63</td>
+              <td class="num pos" data-value="0.140000">$0.14</td>
+              <td class="num pos" data-value="0.622499">+0.62%</td>
+            </tr>
+            <tr>
               <td data-value="2026-09-23T10:55:23.016368-04:00">2026-09-23 10:55 AM</td>
               <td data-value="MDLZ">MDLZ</td>
               <td data-value="Mondelez International, Inc. Class A Common Stock">Mondelez International, Inc. Class A Common Stock</td>
@@ -794,10 +806,10 @@
               <td></td>
               <td></td>
               <td></td>
-              <td class="num">$3,420,279.52</td>
-              <td class="num">$3,433,480.04</td>
-              <td class="num pos">$13,200.52</td>
-              <td class="num pos">+0.39%</td>
+              <td class="num">$4,152,650.13</td>
+              <td class="num">$4,166,504.37</td>
+              <td class="num pos">$13,854.23</td>
+              <td class="num pos">+0.33%</td>
             </tr></tbody>
       </table>
       </div>
