@@ -537,14 +537,14 @@ def generate(client=None):
   }}
   * {{ box-sizing: border-box; }}
   body {{
-    margin: 0; padding: 24px 24px 24px 76px; background: var(--bg); color: var(--text);
+    margin: 0; padding: 24px 76px 24px 24px; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     transition: background 0.15s ease, color 0.15s ease;
   }}
   .wrap {{ max-width: 1800px; width: 100%; margin: 0 auto; }}
   h1 {{ font-size: 22px; margin-bottom: 4px; }}
   #themeToggleBtn {{
-    position: fixed; top: 16px; left: 16px; z-index: 100;
+    position: fixed; top: 16px; right: 16px; z-index: 100;
     background: var(--panel); color: var(--text); border: 1px solid var(--border);
     border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
   }}
