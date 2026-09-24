@@ -696,5 +696,7 @@
   "trade_count": 3,
   "starting_equity": 1013854.23,
   "flattened": true,
-  "notional_deployed_today": 749988.0
+  "notional_deployed_today": 749988.0,
+  "trade_meta": {},
+  "breakeven_moved": []
 }
