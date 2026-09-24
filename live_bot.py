@@ -1,4 +1,4 @@
-"""
+—"""
 Live (paper) execution of the ORB strategy against Alpaca.
 
 This refuses to run unless config.PAPER_TRADING is True and the API base URL
@@ -449,6 +449,16 @@ def main():
             if shares <= 0:
                 continue
 
+            # Hard per-trade notional cap — no single trade may deploy more
+            # than MAX_NOTIONAL_PER_TRADE, independent of risk-per-trade sizing
+            # or the remaining daily budget checked below.
+            max_shares_by_trade_cap = int(config.MAX_NOTIONAL_PER_TRADE // sig.entry_price)
+            if max_shares_by_trade_cap < shares:
+                log(f"{symbol}: trimming size from {shares} to {max_shares_by_trade_cap} shares "
+                    f"to stay within per-trade notional cap (${config.MAX_NOTIONAL_PER_TRADE:,.0f}).")
+                shares = max_shares_by_trade_cap
+            if shares <= 0:
+                continue
             # Hard daily notional cap — trims (or skips) the risk-sized position so
             # cumulative capital deployed today never exceeds MAX_DAILY_NOTIONAL_TRADED,
             # independent of what the risk-per-trade math alone would size it at.
