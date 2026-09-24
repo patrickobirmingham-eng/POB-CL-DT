@@ -1,9 +1,9 @@
 {
-  "date": null,
+  "date": "2026-09-24",
   "opening_ranges": {},
-  "traded_today": [],
-  "trade_count": 0,
-  "starting_equity": null,
+  "traded_today": ["ASML", "KLAC"],
+  "trade_count": 2,
+  "starting_equity": 1013854.23,
   "flattened": false,
-  "notional_deployed_today": 0.0
+  "notional_deployed_today": 749863.68
 }
