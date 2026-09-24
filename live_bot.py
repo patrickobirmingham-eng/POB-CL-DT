@@ -1,4 +1,4 @@
-—"""
+"""
 Live (paper) execution of the ORB strategy against Alpaca.
 
 This refuses to run unless config.PAPER_TRADING is True and the API base URL
