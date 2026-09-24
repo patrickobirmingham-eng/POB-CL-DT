@@ -25,6 +25,17 @@ ET = ZoneInfo("America/New_York")
 OUTPUT_DIR = "docs"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "index.html")
 
+# Optional "Refresh" button on the dashboard: pulls live account/positions/
+# orders on demand via a small read-only PHP proxy (holds the Alpaca keys
+# server-side, e.g. hosted on Bluehost) rather than only showing the snapshot
+# from whenever the bot last pushed. Both come from GitHub Actions repo
+# variables (Settings -> Secrets and variables -> Actions -> Variables) —
+# not secrets, since the token ends up embedded in this public page anyway;
+# it only deters casual random hits, it's not a real access boundary. Leave
+# DASHBOARD_REFRESH_URL unset to hide the button entirely (default today).
+REFRESH_ENDPOINT = os.getenv("DASHBOARD_REFRESH_URL", "")
+REFRESH_TOKEN = os.getenv("DASHBOARD_REFRESH_TOKEN", "")
+
 
 def get_client():
     key = os.getenv("APCA_API_KEY_ID")
@@ -501,6 +512,11 @@ def generate(client=None):
     daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
     daily_pl_chart_html = build_daily_pl_chart(daily_pl_points)
 
+    refresh_button_html = (
+        '<button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>'
+        if REFRESH_ENDPOINT else ""
+    )
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -554,12 +570,22 @@ def generate(client=None):
   .filters {{ display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }}
   .filter-chip {{ display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }}
   .filter-chip input {{ accent-color: var(--accent); cursor: pointer; }}
+  #refreshBtn {{
+    margin-left: 10px; background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+  }}
+  #refreshBtn:hover {{ border-color: var(--accent); }}
+  #refreshBtn:disabled {{ opacity: 0.5; cursor: default; }}
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>ORB Paper Trading Dashboard</h1>
-    <div class="updated">Last updated: {generated_at}</div>
+    <div class="updated">
+      Last updated: <span id="lastUpdated">{generated_at}</span>
+      {refresh_button_html}
+      <span id="refreshStatus" class="muted"></span>
+    </div>
 
     <div class="cards">
       <div class="card"><div class="label">Equity</div><div class="value">{fmt_money(account.equity)}</div></div>
@@ -724,6 +750,163 @@ def generate(client=None):
         bar.addEventListener('mouseleave', () => {{ tooltip.style.display = 'none'; }});
       }});
     }})();
+
+    // --- Live refresh: pulls fresh account/positions/orders from a small
+    // read-only proxy (holds the Alpaca keys server-side) and re-renders the
+    // Open Positions / Recent Orders tables + header cards in place. Only
+    // active if a proxy URL was configured when this page was generated;
+    // Closed Orders / Income by Day / the P&L chart are NOT updated here —
+    // those only change once a position actually closes, which requires a
+    // real bot session, so they still only refresh via the normal pipeline.
+    const REFRESH_ENDPOINT = {REFRESH_ENDPOINT!r};
+    const REFRESH_TOKEN = {REFRESH_TOKEN!r};
+
+    function fmtMoneyJS(v) {{
+      if (v === null || v === undefined || isNaN(v)) return '—';
+      const n = Number(v);
+      const sign = n < 0 ? '-' : '';
+      return sign + '$' + Math.abs(n).toLocaleString('en-US', {{minimumFractionDigits: 2, maximumFractionDigits: 2}});
+    }}
+    function pctJS(v) {{
+      if (v === null || v === undefined || isNaN(v)) return '—';
+      return (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+    }}
+    function cls(v) {{ return (v === null || v === undefined || isNaN(v)) ? '' : (v >= 0 ? 'pos' : 'neg'); }}
+
+    function snapshotPrices(snapshots, symbol) {{
+      const snap = snapshots ? snapshots[symbol] : null;
+      if (!snap) return [null, null];
+      let current = null;
+      if (snap.latestTrade && snap.latestTrade.p != null) current = Number(snap.latestTrade.p);
+      else if (snap.dailyBar && snap.dailyBar.c != null) current = Number(snap.dailyBar.c);
+      let lastday = null;
+      if (snap.prevDailyBar && snap.prevDailyBar.c != null) lastday = Number(snap.prevDailyBar.c);
+      return [current, lastday];
+    }}
+
+    function buildPositionsRows(positions, names) {{
+      if (!positions || positions.length === 0) {{
+        return "<tr><td colspan='12' class='muted'>No open positions</td></tr>";
+      }}
+      let rows = '';
+      let totalCost = 0, totalMkt = 0, totalPl = 0, totalToday = 0;
+      positions.forEach(p => {{
+        const qty = Number(p.qty);
+        const current = Number(p.current_price);
+        const avgEntry = Number(p.avg_entry_price);
+        const costBasis = Number(p.cost_basis);
+        const mktValue = Number(p.market_value);
+        const pl = Number(p.unrealized_pl);
+        const gainPct = Number(p.unrealized_plpc) * 100;
+        const lastday = p.lastday_price != null ? Number(p.lastday_price) : current;
+        const dailyChange = current - lastday;
+        const dailyPct = p.change_today != null ? Number(p.change_today) * 100
+          : (lastday ? (dailyChange / lastday * 100) : 0);
+        const todaysChange = qty * dailyChange;
+        totalCost += costBasis; totalMkt += mktValue; totalPl += pl; totalToday += todaysChange;
+        const name = (names && names[p.symbol]) || p.symbol;
+        rows += `<tr>
+          <td data-value="${{p.symbol}}">${{p.symbol}}</td>
+          <td data-value="${{name}}">${{name}}</td>
+          <td class="num" data-value="${{qty}}">${{p.qty}}</td>
+          <td class="num" data-value="${{current}}">${{fmtMoneyJS(current)}}</td>
+          <td class="num" data-value="${{avgEntry}}">${{fmtMoneyJS(avgEntry)}}</td>
+          <td class="num" data-value="${{costBasis}}">${{fmtMoneyJS(costBasis)}}</td>
+          <td class="num" data-value="${{mktValue}}">${{fmtMoneyJS(mktValue)}}</td>
+          <td class="num ${{cls(pl)}}" data-value="${{pl}}">${{fmtMoneyJS(pl)}}</td>
+          <td class="num ${{cls(gainPct)}}" data-value="${{gainPct}}">${{pctJS(gainPct)}}</td>
+          <td class="num ${{cls(dailyChange)}}" data-value="${{dailyChange}}">${{fmtMoneyJS(dailyChange)}}</td>
+          <td class="num ${{cls(dailyPct)}}" data-value="${{dailyPct}}">${{pctJS(dailyPct)}}</td>
+          <td class="num ${{cls(todaysChange)}}" data-value="${{todaysChange}}">${{fmtMoneyJS(todaysChange)}}</td>
+        </tr>`;
+      }});
+      rows += `<tr class="totals-row">
+        <td>Total</td><td></td><td></td><td></td><td></td>
+        <td class="num">${{fmtMoneyJS(totalCost)}}</td>
+        <td class="num">${{fmtMoneyJS(totalMkt)}}</td>
+        <td class="num ${{cls(totalPl)}}">${{fmtMoneyJS(totalPl)}}</td>
+        <td></td><td></td><td></td>
+        <td class="num ${{cls(totalToday)}}">${{fmtMoneyJS(totalToday)}}</td>
+      </tr>`;
+      return rows;
+    }}
+
+    function buildOrdersRows(orders, names, snapshots) {{
+      if (!orders || orders.length === 0) {{
+        return "<tr><td colspan='14' class='muted'>No orders yet</td></tr>";
+      }}
+      let rows = '';
+      orders.forEach(o => {{
+        const submittedDt = new Date(o.submitted_at);
+        const submitted = submittedDt.toLocaleString('en-US', {{
+          timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit',
+        }});
+        const side = o.side || '—';
+        const status = o.status || '—';
+        const filledPrice = o.filled_avg_price != null ? Number(o.filled_avg_price) : null;
+        const qty = o.qty != null ? Number(o.qty) : 0;
+        const [current, lastday] = snapshotPrices(snapshots, o.symbol);
+        const costBasis = filledPrice != null ? qty * filledPrice : null;
+        const mktValue = current != null ? qty * current : null;
+        const pl = (mktValue != null && costBasis != null) ? (mktValue - costBasis) : null;
+        const gainPct = (pl != null && costBasis) ? (pl / costBasis * 100) : null;
+        const dailyChange = (current != null && lastday != null) ? (current - lastday) : null;
+        const dailyPct = (dailyChange != null && lastday) ? (dailyChange / lastday * 100) : null;
+        const name = (names && names[o.symbol]) || o.symbol;
+        rows += `<tr data-status="${{status}}">
+          <td data-value="${{submittedDt.toISOString()}}">${{submitted}}</td>
+          <td data-value="${{o.symbol}}">${{o.symbol}}</td>
+          <td data-value="${{name}}">${{name}}</td>
+          <td class="${{side === 'buy' ? 'pos' : 'neg'}}" data-value="${{side}}">${{side.toUpperCase()}}</td>
+          <td class="num" data-value="${{qty}}">${{o.qty}}</td>
+          <td data-value="${{status}}">${{status}}</td>
+          <td class="num" data-value="${{current ?? ''}}">${{current != null ? fmtMoneyJS(current) : '—'}}</td>
+          <td class="num" data-value="${{filledPrice ?? ''}}">${{filledPrice != null ? fmtMoneyJS(filledPrice) : '—'}}</td>
+          <td class="num" data-value="${{costBasis ?? ''}}">${{costBasis != null ? fmtMoneyJS(costBasis) : '—'}}</td>
+          <td class="num" data-value="${{mktValue ?? ''}}">${{mktValue != null ? fmtMoneyJS(mktValue) : '—'}}</td>
+          <td class="num ${{cls(pl)}}" data-value="${{pl ?? ''}}">${{pl != null ? fmtMoneyJS(pl) : '—'}}</td>
+          <td class="num ${{cls(gainPct)}}" data-value="${{gainPct ?? ''}}">${{gainPct != null ? pctJS(gainPct) : '—'}}</td>
+          <td class="num ${{cls(dailyChange)}}" data-value="${{dailyChange ?? ''}}">${{dailyChange != null ? fmtMoneyJS(dailyChange) : '—'}}</td>
+          <td class="num ${{cls(dailyPct)}}" data-value="${{dailyPct ?? ''}}">${{dailyPct != null ? pctJS(dailyPct) : '—'}}</td>
+        </tr>`;
+      }});
+      return rows;
+    }}
+
+    async function refreshDashboard() {{
+      if (!REFRESH_ENDPOINT) return;
+      const btn = document.getElementById('refreshBtn');
+      const statusEl = document.getElementById('refreshStatus');
+      btn.disabled = true;
+      statusEl.textContent = ' Refreshing…';
+      try {{
+        const url = REFRESH_ENDPOINT + '?token=' + encodeURIComponent(REFRESH_TOKEN) + '&_=' + Date.now();
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+
+        document.querySelector('.card:nth-child(1) .value').textContent = fmtMoneyJS(data.account.equity);
+        document.querySelector('.card:nth-child(2) .value').textContent = fmtMoneyJS(data.account.cash);
+        document.querySelector('.card:nth-child(3) .value').textContent = fmtMoneyJS(data.account.buying_power);
+        document.querySelector('.card:nth-child(4) .value').textContent = (data.positions || []).length;
+
+        document.querySelector('#positionsTable tbody').innerHTML = buildPositionsRows(data.positions, data.names);
+        document.querySelector('#ordersTable tbody').innerHTML = buildOrdersRows(data.orders, data.names, data.snapshots);
+        filterOrders();
+
+        const now = new Date().toLocaleString('en-US', {{
+          timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit',
+        }});
+        document.getElementById('lastUpdated').textContent = now + ' ET (live refresh — Closed Orders/Income by Day still reflect the last full session)';
+        statusEl.textContent = '';
+      }} catch (e) {{
+        statusEl.textContent = ' Refresh failed: ' + e.message;
+      }} finally {{
+        btn.disabled = false;
+      }}
+    }}
   </script>
 </body>
 </html>"""
