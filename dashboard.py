@@ -537,7 +537,7 @@ def generate(client=None):
   }}
   * {{ box-sizing: border-box; }}
   body {{
-    margin: 0; padding: 24px 76px 24px 24px; background: var(--bg); color: var(--text);
+    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     transition: background 0.15s ease, color 0.15s ease;
   }}
