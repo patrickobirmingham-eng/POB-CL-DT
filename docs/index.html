@@ -3,19 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ORB Paper Trading Dashboard</title>
+<title>Claude.AI Paper Day Trading</title>
 <style>
   :root {
     --bg: #0b0e14; --panel: #131722; --border: #232838;
     --text: #e6e9ef; --muted: #8b93a7; --pos: #16a34a; --neg: #dc2626; --accent: #3b82f6;
   }
+  :root[data-theme="light"] {
+    --bg: #f5f7fa; --panel: #ffffff; --border: #dde2ec;
+    --text: #1a1f2b; --muted: #5b6577; --pos: #158a41; --neg: #c92a2a; --accent: #2563eb;
+  }
   * { box-sizing: border-box; }
   body {
-    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
+    margin: 0; padding: 24px 24px 24px 76px; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: background 0.15s ease, color 0.15s ease;
   }
   .wrap { max-width: 1800px; width: 100%; margin: 0 auto; }
   h1 { font-size: 22px; margin-bottom: 4px; }
+  #themeToggleBtn {
+    position: fixed; top: 16px; left: 16px; z-index: 100;
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  }
+  #themeToggleBtn:hover { border-color: var(--accent); }
   .updated { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
@@ -57,13 +68,32 @@
   }
   #refreshBtn:hover { border-color: var(--accent); }
   #refreshBtn:disabled { opacity: 0.5; cursor: default; }
+
+  @media (max-width: 720px) {
+    body { padding: 16px 12px 16px 12px; }
+    #themeToggleBtn {
+      position: static; display: inline-block; margin-bottom: 12px;
+    }
+    h1 { font-size: 18px; }
+    .cards { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+    .card { padding: 12px; }
+    .card .value { font-size: 17px; }
+    .panel { padding: 12px; margin-bottom: 14px; }
+    .panel h2 { font-size: 13px; }
+    table { font-size: 12px; }
+    th, td { padding: 6px 7px; }
+    .filters { gap: 8px; }
+    .updated { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .pl-chart { height: 180px; }
+  }
 </style>
 </head>
 <body>
+  <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
   <div class="wrap">
-    <h1>ORB Paper Trading Dashboard</h1>
+    <h1>Claude.AI Paper Day Trading</h1>
     <div class="updated">
-      Last updated: <span id="lastUpdated">2026-09-24 04:18 PM ET</span>
+      Last updated: <span id="lastUpdated">2026-09-24 07:20 PM ET</span>
       <button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>
       <span id="refreshStatus" class="muted"></span>
     </div>
@@ -93,6 +123,55 @@
     </div>
 
     <div class="panel">
+      <h2>Income by Day</h2>
+      <div class="table-scroll">
+      <table id="dailyTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('dailyTable',0,'text')">Transaction Date</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',1,'num')">Total # of Trades</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',2,'num')">Total Cost Basis</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',3,'num')">Total Sold Cost</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',4,'num')">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',5,'num')">Gain %</th>
+        </tr></thead>
+        <tbody>
+            <tr>
+              <td data-value="2026-09-24">2026-09-24</td>
+              <td class="num" data-value="4.000000">4</td>
+              <td class="num" data-value="851193.870000">$851,193.87</td>
+              <td class="num" data-value="852962.790000">$852,962.79</td>
+              <td class="num pos" data-value="1768.920000">$1,768.92</td>
+              <td class="num pos" data-value="0.207816">+0.21%</td>
+            </tr>
+            <tr>
+              <td data-value="2026-09-23">2026-09-23</td>
+              <td class="num" data-value="3.000000">3</td>
+              <td class="num" data-value="749993.839910">$749,993.84</td>
+              <td class="num" data-value="750512.388284">$750,512.39</td>
+              <td class="num pos" data-value="518.548374">$518.55</td>
+              <td class="num pos" data-value="0.069140">+0.07%</td>
+            </tr>
+            <tr>
+              <td data-value="2026-09-22">2026-09-22</td>
+              <td class="num" data-value="6.000000">6</td>
+              <td class="num" data-value="3402656.292458">$3,402,656.29</td>
+              <td class="num" data-value="3415991.977461">$3,415,991.98</td>
+              <td class="num pos" data-value="13335.685003">$13,335.69</td>
+              <td class="num pos" data-value="0.391920">+0.39%</td>
+            </tr>
+            <tr class="totals-row">
+              <td>Total</td>
+              <td class="num">13</td>
+              <td class="num">$5,003,844.00</td>
+              <td class="num">$5,019,467.16</td>
+              <td class="num pos">$15,623.15</td>
+              <td class="num pos">+0.31%</td>
+            </tr></tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="panel">
       <h2>Open Positions</h2>
       <div class="table-scroll">
       <table id="positionsTable">
@@ -117,7 +196,7 @@
 
     <div class="panel">
       <h2>Recent Orders (last 50)</h2>
-      <div class="filters"><label class="filter-chip"><input type="checkbox" class="status-filter" value="canceled" checked onchange="filterOrders()"> Canceled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="filled" checked onchange="filterOrders()"> Filled</label></div>
+      <div class="filters"><label class="filter-chip"><input type="checkbox" class="status-filter" value="canceled" onchange="filterOrders()"> Canceled</label><label class="filter-chip"><input type="checkbox" class="status-filter" value="filled" checked onchange="filterOrders()"> Filled</label></div>
       <div class="table-scroll">
       <table id="ordersTable">
         <thead><tr>
@@ -807,15 +886,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="2728.000000">2728</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="224.580000">$224.58</td>
+              <td class="num" data-value="223.710000">$223.71</td>
               <td class="num" data-value="227.520000">$227.52</td>
               <td class="num" data-value="620674.560000">$620,674.56</td>
-              <td class="num" data-value="612654.240000">$612,654.24</td>
-              <td class="num neg" data-value="-8020.320000">$-8,020.32</td>
-              <td class="num neg" data-value="-1.292194">-1.29%</td>
-              <td class="num neg" data-value="-1.040000">$-1.04</td>
-              <td class="num neg" data-value="-0.460952">-0.46%</td>
-              <td class="num neg" data-value="-2837.120000">$-2,837.12</td>
+              <td class="num" data-value="610280.880000">$610,280.88</td>
+              <td class="num neg" data-value="-10393.680000">$-10,393.68</td>
+              <td class="num neg" data-value="-1.674578">-1.67%</td>
+              <td class="num neg" data-value="-1.910000">$-1.91</td>
+              <td class="num neg" data-value="-0.846556">-0.85%</td>
+              <td class="num neg" data-value="-5210.480000">$-5,210.48</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-21T12:08:07.321183-04:00">2026-09-21 12:08 PM</td>
@@ -926,15 +1005,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="2728.000000">2728</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="224.580000">$224.58</td>
+              <td class="num" data-value="223.710000">$223.71</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="612654.240000">$612,654.24</td>
+              <td class="num" data-value="610280.880000">$610,280.88</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-1.040000">$-1.04</td>
-              <td class="num neg" data-value="-0.460952">-0.46%</td>
-              <td class="num neg" data-value="-2837.120000">$-2,837.12</td>
+              <td class="num neg" data-value="-1.910000">$-1.91</td>
+              <td class="num neg" data-value="-0.846556">-0.85%</td>
+              <td class="num neg" data-value="-5210.480000">$-5,210.48</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-21T11:07:00.961983-04:00">2026-09-21 11:07 AM</td>
@@ -943,15 +1022,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="2728.000000">2728</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="224.580000">$224.58</td>
+              <td class="num" data-value="223.710000">$223.71</td>
               <td class="num" data-value="225.293981">$225.29</td>
               <td class="num" data-value="614601.980168">$614,601.98</td>
-              <td class="num" data-value="612654.240000">$612,654.24</td>
-              <td class="num neg" data-value="-1947.740168">$-1,947.74</td>
-              <td class="num neg" data-value="-0.316911">-0.32%</td>
-              <td class="num neg" data-value="-1.040000">$-1.04</td>
-              <td class="num neg" data-value="-0.460952">-0.46%</td>
-              <td class="num neg" data-value="-2837.120000">$-2,837.12</td>
+              <td class="num" data-value="610280.880000">$610,280.88</td>
+              <td class="num neg" data-value="-4321.100168">$-4,321.10</td>
+              <td class="num neg" data-value="-0.703073">-0.70%</td>
+              <td class="num neg" data-value="-1.910000">$-1.91</td>
+              <td class="num neg" data-value="-0.846556">-0.85%</td>
+              <td class="num neg" data-value="-5210.480000">$-5,210.48</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-21T11:07:00.945642-04:00">2026-09-21 11:07 AM</td>
@@ -960,15 +1039,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="2728.000000">2728</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="224.580000">$224.58</td>
+              <td class="num" data-value="223.710000">$223.71</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="612654.240000">$612,654.24</td>
+              <td class="num" data-value="610280.880000">$610,280.88</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-1.040000">$-1.04</td>
-              <td class="num neg" data-value="-0.460952">-0.46%</td>
-              <td class="num neg" data-value="-2837.120000">$-2,837.12</td>
+              <td class="num neg" data-value="-1.910000">$-1.91</td>
+              <td class="num neg" data-value="-0.846556">-0.85%</td>
+              <td class="num neg" data-value="-5210.480000">$-5,210.48</td>
             </tr></tbody>
       </table>
       </div>
@@ -1124,55 +1203,6 @@
               <td></td>
               <td></td>
               <td></td>
-              <td class="num">$5,003,844.00</td>
-              <td class="num">$5,019,467.16</td>
-              <td class="num pos">$15,623.15</td>
-              <td class="num pos">+0.31%</td>
-            </tr></tbody>
-      </table>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Income by Day</h2>
-      <div class="table-scroll">
-      <table id="dailyTable">
-        <thead><tr>
-          <th class="sortable" onclick="sortTable('dailyTable',0,'text')">Transaction Date</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',1,'num')">Total # of Trades</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',2,'num')">Total Cost Basis</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',3,'num')">Total Sold Cost</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',4,'num')">Profit / (Loss)</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',5,'num')">Gain %</th>
-        </tr></thead>
-        <tbody>
-            <tr>
-              <td data-value="2026-09-24">2026-09-24</td>
-              <td class="num" data-value="4.000000">4</td>
-              <td class="num" data-value="851193.870000">$851,193.87</td>
-              <td class="num" data-value="852962.790000">$852,962.79</td>
-              <td class="num pos" data-value="1768.920000">$1,768.92</td>
-              <td class="num pos" data-value="0.207816">+0.21%</td>
-            </tr>
-            <tr>
-              <td data-value="2026-09-23">2026-09-23</td>
-              <td class="num" data-value="3.000000">3</td>
-              <td class="num" data-value="749993.839910">$749,993.84</td>
-              <td class="num" data-value="750512.388284">$750,512.39</td>
-              <td class="num pos" data-value="518.548374">$518.55</td>
-              <td class="num pos" data-value="0.069140">+0.07%</td>
-            </tr>
-            <tr>
-              <td data-value="2026-09-22">2026-09-22</td>
-              <td class="num" data-value="6.000000">6</td>
-              <td class="num" data-value="3402656.292458">$3,402,656.29</td>
-              <td class="num" data-value="3415991.977461">$3,415,991.98</td>
-              <td class="num pos" data-value="13335.685003">$13,335.69</td>
-              <td class="num pos" data-value="0.391920">+0.39%</td>
-            </tr>
-            <tr class="totals-row">
-              <td>Total</td>
-              <td class="num">13</td>
               <td class="num">$5,003,844.00</td>
               <td class="num">$5,019,467.16</td>
               <td class="num pos">$15,623.15</td>
@@ -1402,6 +1432,33 @@
         btn.disabled = false;
       }
     }
+
+    // Apply the default status filter (Filled only, checked above) on first
+    // load, same as if the user had just toggled the checkboxes themselves.
+    filterOrders();
+
+    // --- Dark / light theme toggle ------------------------------------------------
+    // Defaults to dark (matches the original look) and remembers the choice
+    // per-browser via localStorage. Wrapped in try/catch since localStorage
+    // can throw in some browser contexts (private mode, blocked storage).
+    function getStoredTheme() {
+      try { return localStorage.getItem('orb-dashboard-theme'); } catch (e) { return null; }
+    }
+    function storeTheme(theme) {
+      try { localStorage.setItem('orb-dashboard-theme', theme); } catch (e) { /* ignore */ }
+    }
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.textContent = theme === 'light' ? '☽ Dark' : '☀ Light';
+    }
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      const next = current === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      storeTheme(next);
+    }
+    applyTheme(getStoredTheme() === 'light' ? 'light' : 'dark');
   </script>
 </body>
 </html>
