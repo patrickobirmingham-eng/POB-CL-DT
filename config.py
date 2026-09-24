@@ -52,7 +52,8 @@ ONE_TRADE_PER_SYMBOL_PER_DAY = True # don't re-enter a symbol after it's been st
 # LOSE per trade based on stop distance; this limits how much capital gets
 # deployed/exposed in the first place. A trade that would exceed the remaining
 # daily budget is sized down to fit it (or skipped if the budget is exhausted).
-MAX_DAILY_NOTIONAL_TRADED = 750_000  # e.g. 750_000 = never deploy more than $750k/day total
+MAX_NOTIONAL_PER_TRADE = 100_000        # never deploy more than $100k notional in a single trade
+MAX_DAILY_NOTIONAL_TRADED = 500_000     # e.g. 500_000 = never deploy more than $500k/day total
 
 # --- Time stop -------------------------------------------------------------
 FLATTEN_TIME = "15:45"              # ET — close everything by this time, no exceptions
