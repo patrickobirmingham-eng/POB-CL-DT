@@ -8,28 +8,40 @@ name: ORB Bot Watchdog
 # "Run workflow".
 #
 # This workflow is the backstop. It runs every 15 minutes during market
-# hours and asks one question: "has trading-bot.yml been triggered at all
-# today (scheduled OR manual)?" If not, it fires trading-bot.yml itself via
-# the API. Because it checks every 15 minutes rather than relying on two
-# specific cron firings a day, the odds of GitHub dropping enough
-# consecutive checks to matter are far lower than the odds of it dropping
-# one specific firing — so a missed morning self-heals within ~15 minutes
-# instead of requiring a person to notice and intervene.
+# hours and asks one question: "has trading-bot.yml been triggered *during
+# today's session window* (scheduled OR manual)?" If not, it fires
+# trading-bot.yml itself via the API. Because it checks every 15 minutes
+# rather than relying on two specific cron firings a day, the odds of GitHub
+# dropping enough consecutive checks to matter are far lower than the odds
+# of it dropping one specific firing — so a missed morning self-heals within
+# ~15 minutes instead of requiring a person to notice and intervene.
+#
+# NOTE: this workflow is also dispatched by an external cron-job.org job
+# (via workflow_dispatch) as a backstop to GitHub's own `schedule` trigger.
+# workflow_dispatch has no hour restriction, so that external job can fire
+# outside market hours (e.g. overnight). When it does, live_bot.py correctly
+# no-ops with "Before session start ... exiting run." The check below only
+# counts a run as "today's session" if it started at/after SESSION_START_ET,
+# so an early no-op run from an out-of-hours watchdog check can never poison
+# the rest of the day the way it used to (a run at 4:31 AM used to get
+# counted as "already ran today" and block the real 9:30 AM session).
 #
 # IMPORTANT — Daylight Saving Time: same caveat as trading-bot.yml. The cron
 # below is set for Eastern *Daylight* Time (UTC-4). When the US switches to
-# Eastern *Standard* Time (UTC-5, early November–mid March), shift the hours
-# one hour LATER in UTC (13-19 becomes 14-20).
+# Eastern *Standard* Time (UTC-5, early November-mid March), shift the hours
+# one hour LATER in UTC (13-19 becomes 14-20), and shift SESSION_START_ET's
+# UTC equivalent used inside the script accordingly (it's computed in ET
+# directly below, so no change needed there — only the cron schedule line).
 #
 # Market hours checked: 9:30 AM - 3:50 PM ET = 13:30-19:50 UTC (EDT).
 
 on:
   schedule:
-    - cron: "*/15 13-19 * * 1-5"   # every 15 min, ~9:30 AM - ~3:45 PM ET (EDT), weekdays
-  workflow_dispatch:                 # lets you trigger a check manually from the Actions tab
+    - cron: "*/15 13-19 * * 1-5" # every 15 min, ~9:30 AM - ~3:45 PM ET (EDT), weekdays
+  workflow_dispatch: # lets you trigger a check manually from the Actions tab
 
 permissions:
-  actions: write   # needed to trigger trading-bot.yml via the API
+  actions: write # needed to trigger trading-bot.yml via the API
   contents: read
 
 jobs:
@@ -37,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Check whether the bot has run today, and trigger it if not
+      - name: Check whether the bot has run today's session, and trigger it if not
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -46,42 +58,67 @@ jobs:
           echo "Today (ET): $TODAY_ET"
 
           # Pull the most recent runs of the main bot workflow and check
-          # whether any of them were CREATED today, in Eastern time — this
-          # counts a run whether it came from the schedule trigger, a manual
-          # click, or (now) this watchdog, so it never double-triggers.
+          # whether any of them were CREATED today, in Eastern time, AT OR
+          # AFTER the session start cutoff below. A run created before that
+          # cutoff (e.g. an out-of-hours no-op check triggered by the
+          # external cron backstop) does NOT count — only a run that could
+          # plausibly be today's real session does. This still never
+          # double-triggers: once today's real session run exists, every
+          # later check in the day will see it and skip.
           RUNS_JSON=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/$REPO/actions/workflows/trading-bot.yml/runs?per_page=20")
 
           RAN_TODAY=$(echo "$RUNS_JSON" | python3 -c "
           import json, sys
-          from datetime import datetime
+          from datetime import datetime, time
           from zoneinfo import ZoneInfo
-
           data = json.load(sys.stdin)
           et = ZoneInfo('America/New_York')
-          today = datetime.now(et).date()
-
+          now = datetime.now(et)
+          today = now.date()
+          # Cutoff: 9:25 AM ET — a few minutes before the session actually
+          # starts, so GitHub's own on-time scheduled run (9:33 AM ET) still
+          # counts, but any earlier out-of-hours check-in never does.
+          session_cutoff = datetime.combine(today, time(9, 25), tzinfo=et)
           found = False
           for run in data.get('workflow_runs', []):
               created = datetime.fromisoformat(run['created_at'].replace('Z', '+00:00')).astimezone(et)
-              if created.date() == today:
+              if created.date() == today and created >= session_cutoff:
                   found = True
-                  print(f\"::notice::Found existing run today: #{run['run_number']} ({run['event']}, {run['status']}) at {created}\", file=sys.stderr)
+                  print(f\"::notice::Found existing session run today: #{run['run_number']} ({run['event']}, {run['status']}) at {created}\", file=sys.stderr)
                   break
           print('true' if found else 'false')
           ")
 
           if [ "$RAN_TODAY" = "true" ]; then
-            echo "Bot already ran (or was triggered) today — nothing to do."
+            echo "Today's session already ran (or was triggered) — nothing to do."
             exit 0
           fi
 
-          echo "No run found for today yet — triggering trading-bot.yml now."
+          # Also skip quietly if it's not session time yet at all (before
+          # 9:25 AM ET) — no point triggering (or even logging a miss for)
+          # a session that hasn't started, since live_bot.py would just
+          # no-op anyway and that no-op would no longer count toward the
+          # "already ran" check above, so we'd trigger it again 15 minutes
+          # later, and again, all morning.
+          IS_SESSION_TIME=$(TZ="America/New_York" python3 -c "
+          from datetime import datetime, time
+          from zoneinfo import ZoneInfo
+          et = ZoneInfo('America/New_York')
+          now = datetime.now(et)
+          print('true' if now.time() >= time(9, 25) else 'false')
+          ")
+
+          if [ "$IS_SESSION_TIME" != "true" ]; then
+            echo "Before today's session window (9:25 AM ET) — nothing to do yet."
+            exit 0
+          fi
+
+          echo "No session run found for today yet — triggering trading-bot.yml now."
           curl -sS -X POST \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/$REPO/actions/workflows/trading-bot.yml/dispatches" \
             -d '{"ref":"main"}'
-
           echo "Triggered. It will show up on the Actions tab as a workflow_dispatch run."
