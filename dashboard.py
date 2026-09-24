@@ -495,13 +495,16 @@ def generate(client=None):
 
     # Status filter checkboxes — built from whatever statuses actually showed up
     # in the last 50 orders, so the filter row never shows a status with zero
-    # matching rows. All start checked (nothing filtered out by default).
+    # matching rows. "Filled" starts checked by default; every other status
+    # (canceled, etc.) starts unchecked so the table opens focused on filled
+    # orders, and the user can opt back in to the rest.
     status_filters_html = ""
     for status in sorted(order_statuses_seen):
         label = status.replace("_", " ").title()
+        checked_attr = "checked " if status == "filled" else ""
         status_filters_html += (
             f'<label class="filter-chip">'
-            f'<input type="checkbox" class="status-filter" value="{status}" checked '
+            f'<input type="checkbox" class="status-filter" value="{status}" {checked_attr}'
             f'onchange="filterOrders()"> {label}</label>'
         )
     if not status_filters_html:
@@ -522,19 +525,30 @@ def generate(client=None):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ORB Paper Trading Dashboard</title>
+<title>Claude.AI Paper Day Trading</title>
 <style>
   :root {{
     --bg: #0b0e14; --panel: #131722; --border: #232838;
     --text: #e6e9ef; --muted: #8b93a7; --pos: #16a34a; --neg: #dc2626; --accent: #3b82f6;
   }}
+  :root[data-theme="light"] {{
+    --bg: #f5f7fa; --panel: #ffffff; --border: #dde2ec;
+    --text: #1a1f2b; --muted: #5b6577; --pos: #158a41; --neg: #c92a2a; --accent: #2563eb;
+  }}
   * {{ box-sizing: border-box; }}
   body {{
-    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
+    margin: 0; padding: 24px 24px 24px 76px; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: background 0.15s ease, color 0.15s ease;
   }}
   .wrap {{ max-width: 1800px; width: 100%; margin: 0 auto; }}
   h1 {{ font-size: 22px; margin-bottom: 4px; }}
+  #themeToggleBtn {{
+    position: fixed; top: 16px; left: 16px; z-index: 100;
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  }}
+  #themeToggleBtn:hover {{ border-color: var(--accent); }}
   .updated {{ color: var(--muted); font-size: 13px; margin-bottom: 24px; }}
   .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }}
   .card {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }}
@@ -576,11 +590,30 @@ def generate(client=None):
   }}
   #refreshBtn:hover {{ border-color: var(--accent); }}
   #refreshBtn:disabled {{ opacity: 0.5; cursor: default; }}
+
+  @media (max-width: 720px) {{
+    body {{ padding: 16px 12px 16px 12px; }}
+    #themeToggleBtn {{
+      position: static; display: inline-block; margin-bottom: 12px;
+    }}
+    h1 {{ font-size: 18px; }}
+    .cards {{ grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }}
+    .card {{ padding: 12px; }}
+    .card .value {{ font-size: 17px; }}
+    .panel {{ padding: 12px; margin-bottom: 14px; }}
+    .panel h2 {{ font-size: 13px; }}
+    table {{ font-size: 12px; }}
+    th, td {{ padding: 6px 7px; }}
+    .filters {{ gap: 8px; }}
+    .updated {{ display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }}
+    .pl-chart {{ height: 180px; }}
+  }}
 </style>
 </head>
 <body>
+  <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
   <div class="wrap">
-    <h1>ORB Paper Trading Dashboard</h1>
+    <h1>Claude.AI Paper Day Trading</h1>
     <div class="updated">
       Last updated: <span id="lastUpdated">{generated_at}</span>
       {refresh_button_html}
@@ -599,6 +632,23 @@ def generate(client=None):
       <div class="chart-wrap">
         {daily_pl_chart_html}
         <div id="plTooltip" class="pl-tooltip"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Income by Day</h2>
+      <div class="table-scroll">
+      <table id="dailyTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('dailyTable',0,'text')">Transaction Date</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',1,'num')">Total # of Trades</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',2,'num')">Total Cost Basis</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',3,'num')">Total Sold Cost</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',4,'num')">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('dailyTable',5,'num')">Gain %</th>
+        </tr></thead>
+        <tbody>{daily_rows}</tbody>
+      </table>
       </div>
     </div>
 
@@ -666,23 +716,6 @@ def generate(client=None):
           <th class="sortable num" onclick="sortTable('closedTable',7,'num')">% Gain / Loss</th>
         </tr></thead>
         <tbody>{closed_rows}</tbody>
-      </table>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Income by Day</h2>
-      <div class="table-scroll">
-      <table id="dailyTable">
-        <thead><tr>
-          <th class="sortable" onclick="sortTable('dailyTable',0,'text')">Transaction Date</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',1,'num')">Total # of Trades</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',2,'num')">Total Cost Basis</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',3,'num')">Total Sold Cost</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',4,'num')">Profit / (Loss)</th>
-          <th class="sortable num" onclick="sortTable('dailyTable',5,'num')">Gain %</th>
-        </tr></thead>
-        <tbody>{daily_rows}</tbody>
       </table>
       </div>
     </div>
@@ -907,6 +940,33 @@ def generate(client=None):
         btn.disabled = false;
       }}
     }}
+
+    // Apply the default status filter (Filled only, checked above) on first
+    // load, same as if the user had just toggled the checkboxes themselves.
+    filterOrders();
+
+    // --- Dark / light theme toggle ------------------------------------------------
+    // Defaults to dark (matches the original look) and remembers the choice
+    // per-browser via localStorage. Wrapped in try/catch since localStorage
+    // can throw in some browser contexts (private mode, blocked storage).
+    function getStoredTheme() {{
+      try {{ return localStorage.getItem('orb-dashboard-theme'); }} catch (e) {{ return null; }}
+    }}
+    function storeTheme(theme) {{
+      try {{ localStorage.setItem('orb-dashboard-theme', theme); }} catch (e) {{ /* ignore */ }}
+    }}
+    function applyTheme(theme) {{
+      document.documentElement.setAttribute('data-theme', theme);
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.textContent = theme === 'light' ? '☽ Dark' : '☀ Light';
+    }}
+    function toggleTheme() {{
+      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      const next = current === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      storeTheme(next);
+    }}
+    applyTheme(getStoredTheme() === 'light' ? 'light' : 'dark');
   </script>
 </body>
 </html>"""
