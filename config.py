@@ -55,6 +55,16 @@ ONE_TRADE_PER_SYMBOL_PER_DAY = True # don't re-enter a symbol after it's been st
 MAX_NOTIONAL_PER_TRADE = 100_000        # never deploy more than $100k notional in a single trade
 MAX_DAILY_NOTIONAL_TRADED = 1_000_000   # e.g. 1_000_000 = never deploy more than $1M/day total
 
+# --- Breakeven stop ---------------------------------------------------------
+# Once an open position has moved this many multiples of its initial risk
+# (the entry-to-stop distance) in our favor, move that position's stop-loss
+# order up to breakeven (the entry price). This does NOT touch the
+# take-profit target or cap the upside in any way — the trade is still free
+# to run all the way to target. All it does is guarantee that a winner which
+# gives back its gains exits flat instead of round-tripping into a full
+# stop-loss loss. Set to None to disable this behavior entirely.
+BREAKEVEN_TRIGGER_R = 1.0
+
 # --- Time stop -------------------------------------------------------------
 FLATTEN_TIME = "15:45"              # ET — close everything by this time, no exceptions
 MARKET_CLOSE_TIME = "16:00"
