@@ -576,7 +576,8 @@ def generate(client=None):
   .pl-bar:hover {{ opacity: 0.75; }}
   .pl-tooltip {{
     position: absolute; display: none; pointer-events: none;
-    background: #1b2130; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     padding: 6px 10px; font-size: 12px; color: var(--text); white-space: nowrap;
     transform: translate(-50%, -100%); margin-top: -8px; z-index: 10;
   }}
