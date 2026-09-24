@@ -36,8 +36,11 @@ load_dotenv()
 
 try:
     from alpaca.trading.client import TradingClient
-    from alpaca.trading.requests import MarketOrderRequest, TakeProfitRequest, StopLossRequest
-    from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass
+    from alpaca.trading.requests import (
+        MarketOrderRequest, TakeProfitRequest, StopLossRequest,
+        GetOrdersRequest, ReplaceOrderRequest,
+    )
+    from alpaca.trading.enums import OrderSide, TimeInForce, OrderClass, QueryOrderStatus, OrderType
     from alpaca.data.historical import StockHistoricalDataClient
     from alpaca.data.requests import StockBarsRequest
     from alpaca.data.timeframe import TimeFrame
@@ -128,6 +131,70 @@ def submit_bracket_order(trading_client, symbol, direction, shares, stop_price, 
         stop_loss=StopLossRequest(stop_price=round(stop_price, 2)),
     )
     return trading_client.submit_order(order)
+
+
+def apply_breakeven_stops(trading_client, day_state, positions):
+    """Once an open position has moved config.BREAKEVEN_TRIGGER_R multiples of
+    its initial risk (entry-to-stop distance) in our favor, move that
+    position's stop-loss order up to breakeven (the entry price).
+
+    This never touches the take-profit leg and never caps the upside — the
+    trade is still free to run all the way to its original target. All this
+    does is guarantee a winner that gives back its gains exits flat instead
+    of round-tripping into a full stop-loss loss. Best-effort: any failure
+    here is logged and never interrupts trading, and each symbol is only
+    moved to breakeven once per day (tracked via day_state["breakeven_moved"]).
+    """
+    if not config.BREAKEVEN_TRIGGER_R:
+        return
+
+    meta = day_state.setdefault("trade_meta", {})
+    moved = day_state.setdefault("breakeven_moved", set())
+
+    for p in positions:
+        symbol = p.symbol
+        if symbol in moved or symbol not in meta:
+            continue
+
+        info = meta[symbol]
+        entry = info["entry_price"]
+        stop = info["stop_price"]
+        direction = info["direction"]
+        risk_per_share = abs(entry - stop)
+        if risk_per_share <= 0 or p.current_price is None:
+            continue
+
+        current_price = float(p.current_price)
+        gain_per_share = (current_price - entry) if direction == "long" else (entry - current_price)
+        if gain_per_share < config.BREAKEVEN_TRIGGER_R * risk_per_share:
+            continue
+
+        try:
+            open_orders = trading_client.get_orders(
+                filter=GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[symbol])
+            )
+            stop_leg = next((o for o in open_orders if o.order_type == OrderType.STOP), None)
+            if stop_leg is None:
+                log(f"{symbol}: reached {config.BREAKEVEN_TRIGGER_R:.1f}R in profit but no open "
+                    f"stop-loss order was found — skipping breakeven move this pass.")
+                continue
+
+            new_stop = round(entry, 2)
+            trading_client.replace_order_by_id(
+                order_id=stop_leg.id,
+                order_data=ReplaceOrderRequest(stop_price=new_stop),
+            )
+            moved.add(symbol)
+            log(f"{symbol}: reached {config.BREAKEVEN_TRIGGER_R:.1f}R in profit — moved stop-loss "
+                f"to breakeven (${new_stop:.2f}). Target unchanged, trade still free to run.")
+            notify.send(
+                f"ORB Bot: {symbol} stop moved to breakeven",
+                f"Price reached {config.BREAKEVEN_TRIGGER_R:.1f}x initial risk in profit; "
+                f"stop-loss moved to entry (${new_stop:.2f}). Take-profit target is unchanged.",
+                tags="lock",
+            )
+        except Exception as e:
+            log(f"{symbol}: failed to move stop to breakeven: {e}")
 
 
 def push_dashboard_update(trading_client, reason: str):
@@ -273,6 +340,8 @@ def load_state(path: str):
         "starting_equity": raw.get("starting_equity"),
         "flattened": raw.get("flattened", False),
         "notional_deployed_today": raw.get("notional_deployed_today", 0.0),
+        "trade_meta": raw.get("trade_meta", {}),
+        "breakeven_moved": set(raw.get("breakeven_moved", [])),
     }
 
 
@@ -291,6 +360,8 @@ def save_state(path: str, day_state: dict):
         "starting_equity": day_state["starting_equity"],
         "flattened": day_state["flattened"],
         "notional_deployed_today": day_state["notional_deployed_today"],
+        "trade_meta": day_state.get("trade_meta", {}),
+        "breakeven_moved": sorted(day_state.get("breakeven_moved", set())),
     }
     with open(path, "w") as f:
         json.dump(serializable, f, indent=2)
@@ -330,6 +401,8 @@ def main():
             "starting_equity": None,
             "flattened": False,
             "notional_deployed_today": 0.0,
+            "trade_meta": {},       # symbol -> {direction, entry_price, stop_price}
+            "breakeven_moved": set(),
         }
 
     flatten_t = strategy.flatten_time()
@@ -355,6 +428,7 @@ def main():
                 "date": today_str, "opening_ranges": {}, "traded_today": set(),
                 "trade_count": 0, "starting_equity": float(trading_client.get_account().equity),
                 "flattened": False, "notional_deployed_today": 0.0,
+                "trade_meta": {}, "breakeven_moved": set(),
             })
 
         now_t = now.time()
@@ -397,7 +471,8 @@ def main():
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue
 
-        open_positions = {p.symbol for p in trading_client.get_all_positions()}
+        positions_list = trading_client.get_all_positions()
+        open_positions = {p.symbol for p in positions_list}
 
         # A position can close on its own between polls — Alpaca fills the bracket's
         # stop-loss or take-profit leg server-side, with no action from this script.
@@ -409,6 +484,11 @@ def main():
             if closed:
                 push_dashboard_update(trading_client, reason=f"position closed: {', '.join(sorted(closed))}")
         day_state["_last_seen_open_positions"] = open_positions
+
+        # Check every open position against the breakeven-stop trigger on every
+        # poll, regardless of whether we're free to open new trades right now —
+        # this is about protecting existing winners, not about entries.
+        apply_breakeven_stops(trading_client, day_state, positions_list)
 
         if len(open_positions) >= config.MAX_CONCURRENT_POSITIONS:
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
@@ -485,6 +565,11 @@ def main():
                 day_state["traded_today"].add(symbol)
                 day_state["trade_count"] += 1
                 day_state["notional_deployed_today"] += shares * sig.entry_price
+                day_state.setdefault("trade_meta", {})[symbol] = {
+                    "direction": sig.direction,
+                    "entry_price": sig.entry_price,
+                    "stop_price": sig.stop_price,
+                }
                 log_trade_row({
                     "timestamp": ts, "symbol": symbol, "direction": sig.direction,
                     "entry_price": sig.entry_price, "stop": sig.stop_price,
