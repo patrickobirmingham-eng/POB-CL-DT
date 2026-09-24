@@ -161,7 +161,7 @@ def push_dashboard_update(trading_client, reason: str):
                 log(f"Dashboard pushed live ({reason}).")
                 return
             log(f"Dashboard push rejected (attempt {attempt}) — pulling latest and retrying...")
-            subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=False)
+            subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"], check=False)
         log("Dashboard push still failing after 5 attempts — will retry after the next trade/flatten.")
     except Exception as e:
         log(f"Live dashboard update failed (non-fatal): {e}")
