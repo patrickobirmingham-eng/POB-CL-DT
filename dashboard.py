@@ -346,6 +346,12 @@ def generate(client=None):
     # only need the newest slice of this, which `all_orders` is already
     # sorted for.
     all_orders = fetch_all_orders(client)
+    if all_orders:
+        print(f"DEBUG fetch_all_orders: {len(all_orders)} orders, "
+              f"oldest={min(o.submitted_at for o in all_orders)}, "
+              f"newest={max(o.submitted_at for o in all_orders)}")
+    else:
+        print("DEBUG fetch_all_orders: 0 orders")
     orders = all_orders[:50]
 
 
