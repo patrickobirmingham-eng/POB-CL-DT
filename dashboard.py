@@ -346,12 +346,14 @@ def generate(client=None):
     # only need the newest slice of this, which `all_orders` is already
     # sorted for.
     all_orders = fetch_all_orders(client)
-    if all_orders:
-        print(f"DEBUG fetch_all_orders: {len(all_orders)} orders, "
-              f"oldest={min(o.submitted_at for o in all_orders)}, "
-              f"newest={max(o.submitted_at for o in all_orders)}")
-    else:
-        print("DEBUG fetch_all_orders: 0 orders")
+    for o in sorted(all_orders, key=lambda o: o.submitted_at):
+        if o.submitted_at.astimezone(ET).strftime("%Y-%m-%d") in ("2026-09-21", "2026-09-22"):
+            print(f"DEBUG order: {o.submitted_at.astimezone(ET)} {o.symbol} "
+                  f"side={o.side.value if o.side else None} "
+                  f"status={o.status.value if o.status else None} "
+                  f"qty={o.qty} filled_qty={o.filled_qty} "
+                  f"filled_avg_price={o.filled_avg_price} "
+                  f"filled_at={o.filled_at.astimezone(ET) if o.filled_at else None}")
     orders = all_orders[:50]
 
 
