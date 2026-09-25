@@ -376,7 +376,7 @@ def generate(client=None):
             pos = positions_by_symbol.get(o.symbol)
             purchase_price = float(pos.avg_entry_price) if pos is not None else None
             delta_price = (
-                purchase_price - current_price
+                current_price - purchase_price
                 if (purchase_price is not None and current_price is not None) else None
             )
 
@@ -788,7 +788,7 @@ def generate(client=None):
           <th class="sortable" onclick="sortTable('openOrdersTable',5,'text')">Status</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',6,'num')">Current Stock Price</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',7,'num')">Purchase Price</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Purchase - Current Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Current - Purchase Price</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',9,'num')">Limit Order Price</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',10,'num')">Limit - Purchase Price</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',11,'num')">Projected Profit / (Loss)</th>
@@ -1040,7 +1040,7 @@ def generate(client=None):
         const [currentPrice] = snapshotPrices(snapshots, o.symbol);
         const pos = positionsBySymbol[o.symbol];
         const purchasePrice = pos ? Number(pos.avg_entry_price) : null;
-        const deltaPrice = (purchasePrice != null && currentPrice != null) ? (purchasePrice - currentPrice) : null;
+        const deltaPrice = (purchasePrice != null && currentPrice != null) ? (currentPrice - purchasePrice) : null;
         const limitMinusPurchase = (limitPrice != null && purchasePrice != null) ? (limitPrice - purchasePrice) : null;
 
         let projectedPl = null, projectedPct = null;
