@@ -504,7 +504,7 @@ def generate(client=None):
               <td class="num {todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change) if todays_change is not None else "—"}</td>
             </tr>"""
     else:
-        orders_rows = "<tr><td colspan='14' class='muted'>No orders yet</td></tr>"
+        orders_rows = "<tr><td colspan='15' class='muted'>No orders yet</td></tr>"
 
     closed_trades = build_closed_trades(orders)
     closed_rows = ""
@@ -666,14 +666,13 @@ def generate(client=None):
   .panel h2 {{ font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }}
   .table-scroll {{ overflow-x: hidden; }}
   table {{ width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; }}
-  th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.25; vertical-align: bottom; }}
+  th {{ text-align: center; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.25; vertical-align: bottom; }}
   th.sortable {{ cursor: pointer; user-select: none; }}
   th.sortable:hover {{ color: var(--text); }}
   th.sortable::after {{ content: "⇅"; color: var(--border); margin-left: 4px; font-size: 10px; }}
   th.sortable[data-dir="asc"]::after {{ content: "▲"; color: var(--accent); }}
   th.sortable[data-dir="desc"]::after {{ content: "▼"; color: var(--accent); }}
-  td {{ padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; }}
-  td.num, th.num {{ text-align: right; }}
+  td {{ padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; text-align: center; }}
   .totals-row td {{ font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }}
   .pos {{ color: var(--pos); }}
   .neg {{ color: var(--neg); }}
@@ -829,6 +828,7 @@ def generate(client=None):
           <th class="sortable num" onclick="sortTable('ordersTable',11,'num')">Gain %</th>
           <th class="sortable num" onclick="sortTable('ordersTable',12,'num')">Daily Price Change</th>
           <th class="sortable num" onclick="sortTable('ordersTable',13,'num')">Daily % Change</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',14,'num')">Today's Change</th>
         </tr></thead>
         <tbody>{orders_rows}</tbody>
       </table>
@@ -1076,7 +1076,7 @@ def generate(client=None):
 
     function buildOrdersRows(orders, names, snapshots) {{
       if (!orders || orders.length === 0) {{
-        return "<tr><td colspan='14' class='muted'>No orders yet</td></tr>";
+        return "<tr><td colspan='15' class='muted'>No orders yet</td></tr>";
       }}
       let rows = '';
       orders.forEach(o => {{
@@ -1096,6 +1096,7 @@ def generate(client=None):
         const gainPct = (pl != null && costBasis) ? (pl / costBasis * 100) : null;
         const dailyChange = (current != null && lastday != null) ? (current - lastday) : null;
         const dailyPct = (dailyChange != null && lastday) ? (dailyChange / lastday * 100) : null;
+        const todaysChange = dailyChange != null ? qty * dailyChange : null;
         const name = (names && names[o.symbol]) || o.symbol;
         rows += `<tr data-status="${{status}}">
           <td data-value="${{submittedDt.toISOString()}}">${{submitted}}</td>
@@ -1112,6 +1113,7 @@ def generate(client=None):
           <td class="num ${{cls(gainPct)}}" data-value="${{gainPct ?? ''}}">${{gainPct != null ? pctJS(gainPct) : '—'}}</td>
           <td class="num ${{cls(dailyChange)}}" data-value="${{dailyChange ?? ''}}">${{dailyChange != null ? fmtMoneyJS(dailyChange) : '—'}}</td>
           <td class="num ${{cls(dailyPct)}}" data-value="${{dailyPct ?? ''}}">${{dailyPct != null ? pctJS(dailyPct) : '—'}}</td>
+          <td class="num ${{cls(todaysChange)}}" data-value="${{todaysChange ?? ''}}">${{todaysChange != null ? fmtMoneyJS(todaysChange) : '—'}}</td>
         </tr>`;
       }});
       return rows;
