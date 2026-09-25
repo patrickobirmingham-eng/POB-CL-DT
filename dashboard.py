@@ -337,6 +337,63 @@ def generate(client=None):
     else:
         positions_rows = "<tr><td colspan='12' class='muted'>No open positions</td></tr>"
 
+    # Current Open Orders — pending (not yet filled/canceled/etc.) orders, most
+    # often limit sell orders placed to exit an existing position. "Purchase
+    # Price" is that position's avg entry price (looked up by symbol from the
+    # positions we already fetched above); projected P&L compares the order's
+    # limit price against that entry price. For an order with no matching open
+    # position (e.g. a fresh entry order that hasn't filled yet) or no limit
+    # price (e.g. a market order), those columns show "—" since there's no
+    # basis to project from.
+    TERMINAL_ORDER_STATUSES = {
+        "filled", "canceled", "expired", "rejected", "done_for_day", "replaced",
+    }
+    positions_by_symbol = {p.symbol: p for p in positions} if positions else {}
+    open_orders = [
+        o for o in orders
+        if (o.status.value if o.status else "") not in TERMINAL_ORDER_STATUSES
+    ]
+    open_orders_rows = ""
+    if open_orders:
+        for o in open_orders:
+            submitted_dt = o.submitted_at.astimezone(ET)
+            submitted = submitted_dt.strftime("%Y-%m-%d %I:%M %p")
+            side = o.side.value if o.side else "—"
+            status = o.status.value if o.status else "—"
+            side_class = "pos" if side == "buy" else "neg"
+            qty = float(o.qty) if o.qty else 0.0
+            limit_price = float(o.limit_price) if o.limit_price else None
+
+            pos = positions_by_symbol.get(o.symbol)
+            purchase_price = float(pos.avg_entry_price) if pos is not None else None
+
+            if limit_price is not None and purchase_price is not None:
+                per_share = (limit_price - purchase_price) if side == "sell" else (purchase_price - limit_price)
+                projected_pl = qty * per_share
+                projected_pct = (per_share / purchase_price * 100) if purchase_price else None
+            else:
+                projected_pl = None
+                projected_pct = None
+
+            pl_class = "pos" if (projected_pl is not None and projected_pl >= 0) else ("neg" if projected_pl is not None else "")
+            pct_class = "pos" if (projected_pct is not None and projected_pct >= 0) else ("neg" if projected_pct is not None else "")
+
+            open_orders_rows += f"""
+            <tr>
+              <td data-value="{submitted_dt.isoformat()}">{submitted}</td>
+              <td data-value="{o.symbol}">{o.symbol}</td>
+              <td data-value="{company_name(o.symbol)}">{company_name(o.symbol)}</td>
+              <td class="{side_class}" data-value="{side}">{side.upper()}</td>
+              <td class="num" data-value="{raw_num(qty)}">{o.qty}</td>
+              <td data-value="{status}">{status}</td>
+              <td class="num" data-value="{raw_num(purchase_price)}">{fmt_money(purchase_price) if purchase_price is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(limit_price)}">{fmt_money(limit_price) if limit_price is not None else "—"}</td>
+              <td class="num {pl_class}" data-value="{raw_num(projected_pl)}">{fmt_money(projected_pl) if projected_pl is not None else "—"}</td>
+              <td class="num {pct_class}" data-value="{raw_num(projected_pct)}">{f"{projected_pct:+.2f}%" if projected_pct is not None else "—"}</td>
+            </tr>"""
+    else:
+        open_orders_rows = "<tr><td colspan='10' class='muted'>No open orders</td></tr>"
+
     orders_rows = ""
     order_statuses_seen = set()
     if orders:
@@ -654,6 +711,27 @@ def generate(client=None):
     </div>
 
     <div class="panel">
+      <h2>Current Open Orders</h2>
+      <div class="table-scroll">
+      <table id="openOrdersTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('openOrdersTable',0,'text')">Submitted</th>
+          <th class="sortable" onclick="sortTable('openOrdersTable',1,'text')">Symbol</th>
+          <th class="sortable" onclick="sortTable('openOrdersTable',2,'text')">Company Name</th>
+          <th class="sortable" onclick="sortTable('openOrdersTable',3,'text')">Side</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',4,'num')"># of Shares</th>
+          <th class="sortable" onclick="sortTable('openOrdersTable',5,'text')">Status</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',6,'num')">Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',7,'num')">Limit Order Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Projected Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',9,'num')">Projected % Profit / (Loss)</th>
+        </tr></thead>
+        <tbody>{open_orders_rows}</tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="panel">
       <h2>Open Positions</h2>
       <div class="table-scroll">
       <table id="positionsTable">
@@ -865,6 +943,52 @@ def generate(client=None):
       return rows;
     }}
 
+    const TERMINAL_ORDER_STATUSES = new Set(['filled', 'canceled', 'expired', 'rejected', 'done_for_day', 'replaced']);
+
+    function buildOpenOrdersRows(orders, names, positions) {{
+      const openOrders = (orders || []).filter(o => !TERMINAL_ORDER_STATUSES.has(o.status));
+      if (openOrders.length === 0) {{
+        return "<tr><td colspan='10' class='muted'>No open orders</td></tr>";
+      }}
+      const positionsBySymbol = {{}};
+      (positions || []).forEach(p => {{ positionsBySymbol[p.symbol] = p; }});
+      let rows = '';
+      openOrders.forEach(o => {{
+        const submittedDt = new Date(o.submitted_at);
+        const submitted = submittedDt.toLocaleString('en-US', {{
+          timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit',
+        }});
+        const side = o.side || '—';
+        const status = o.status || '—';
+        const qty = o.qty != null ? Number(o.qty) : 0;
+        const limitPrice = o.limit_price != null ? Number(o.limit_price) : null;
+        const pos = positionsBySymbol[o.symbol];
+        const purchasePrice = pos ? Number(pos.avg_entry_price) : null;
+
+        let projectedPl = null, projectedPct = null;
+        if (limitPrice != null && purchasePrice != null) {{
+          const perShare = side === 'sell' ? (limitPrice - purchasePrice) : (purchasePrice - limitPrice);
+          projectedPl = qty * perShare;
+          projectedPct = purchasePrice ? (perShare / purchasePrice * 100) : null;
+        }}
+        const name = (names && names[o.symbol]) || o.symbol;
+        rows += `<tr>
+          <td data-value="${{submittedDt.toISOString()}}">${{submitted}}</td>
+          <td data-value="${{o.symbol}}">${{o.symbol}}</td>
+          <td data-value="${{name}}">${{name}}</td>
+          <td class="${{side === 'buy' ? 'pos' : 'neg'}}" data-value="${{side}}">${{side.toUpperCase()}}</td>
+          <td class="num" data-value="${{qty}}">${{o.qty}}</td>
+          <td data-value="${{status}}">${{status}}</td>
+          <td class="num" data-value="${{purchasePrice ?? ''}}">${{purchasePrice != null ? fmtMoneyJS(purchasePrice) : '—'}}</td>
+          <td class="num" data-value="${{limitPrice ?? ''}}">${{limitPrice != null ? fmtMoneyJS(limitPrice) : '—'}}</td>
+          <td class="num ${{cls(projectedPl)}}" data-value="${{projectedPl ?? ''}}">${{projectedPl != null ? fmtMoneyJS(projectedPl) : '—'}}</td>
+          <td class="num ${{cls(projectedPct)}}" data-value="${{projectedPct ?? ''}}">${{projectedPct != null ? pctJS(projectedPct) : '—'}}</td>
+        </tr>`;
+      }});
+      return rows;
+    }}
+
     function buildOrdersRows(orders, names, snapshots) {{
       if (!orders || orders.length === 0) {{
         return "<tr><td colspan='14' class='muted'>No orders yet</td></tr>";
@@ -925,6 +1049,7 @@ def generate(client=None):
         document.querySelector('.card:nth-child(3) .value').textContent = fmtMoneyJS(data.account.buying_power);
         document.querySelector('.card:nth-child(4) .value').textContent = (data.positions || []).length;
 
+        document.querySelector('#openOrdersTable tbody').innerHTML = buildOpenOrdersRows(data.orders, data.names, data.positions);
         document.querySelector('#positionsTable tbody').innerHTML = buildPositionsRows(data.positions, data.names);
         document.querySelector('#ordersTable tbody').innerHTML = buildOrdersRows(data.orders, data.names, data.snapshots);
         filterOrders();
