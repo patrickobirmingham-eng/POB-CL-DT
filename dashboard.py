@@ -346,16 +346,6 @@ def generate(client=None):
     # only need the newest slice of this, which `all_orders` is already
     # sorted for.
     all_orders = fetch_all_orders(client)
-    for o in sorted(all_orders, key=lambda o: o.submitted_at):
-        if o.symbol in ("NVDA", "SPY", "AMZN", "MPWR", "ASML", "CTAS"):
-            print(f"DEBUG order: {o.submitted_at.astimezone(ET)} {o.symbol} "
-                  f"side={o.side.value if o.side else None} "
-                  f"status={o.status.value if o.status else None} "
-                  f"type={getattr(o, 'order_type', None) and o.order_type.value} "
-                  f"class={getattr(o, 'order_class', None) and o.order_class.value} "
-                  f"qty={o.qty} filled_qty={o.filled_qty} "
-                  f"filled_avg_price={o.filled_avg_price} "
-                  f"filled_at={o.filled_at.astimezone(ET) if o.filled_at else None}")
     orders = all_orders[:50]
 
 
