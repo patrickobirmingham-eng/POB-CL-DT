@@ -661,15 +661,15 @@ def generate(client=None):
   .card .value {{ font-size: 22px; font-weight: 600; }}
   .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }}
   .panel h2 {{ font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }}
-  .table-scroll {{ overflow-x: auto; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-  th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  .table-scroll {{ overflow-x: hidden; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }}
+  th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.25; vertical-align: bottom; }}
   th.sortable {{ cursor: pointer; user-select: none; }}
   th.sortable:hover {{ color: var(--text); }}
-  th.sortable::after {{ content: "⇅"; color: var(--border); margin-left: 6px; font-size: 11px; }}
+  th.sortable::after {{ content: "⇅"; color: var(--border); margin-left: 4px; font-size: 10px; }}
   th.sortable[data-dir="asc"]::after {{ content: "▲"; color: var(--accent); }}
   th.sortable[data-dir="desc"]::after {{ content: "▼"; color: var(--accent); }}
-  td {{ padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
+  td {{ padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; }}
   td.num, th.num {{ text-align: right; }}
   .totals-row td {{ font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }}
   .pos {{ color: var(--pos); }}
