@@ -665,7 +665,7 @@ def generate(client=None):
   .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }}
   .panel h2 {{ font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }}
   .table-scroll {{ overflow-x: hidden; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; }}
   th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.25; vertical-align: bottom; }}
   th.sortable {{ cursor: pointer; user-select: none; }}
   th.sortable:hover {{ color: var(--text); }}
