@@ -371,6 +371,7 @@ def generate(client=None):
             qty = float(o.qty) if o.qty else 0.0
             limit_price = float(o.limit_price) if o.limit_price else None
             stop_price = float(o.stop_price) if getattr(o, "stop_price", None) else None
+            current_price, _ = snapshot_prices(o.symbol)
 
             pos = positions_by_symbol.get(o.symbol)
             purchase_price = float(pos.avg_entry_price) if pos is not None else None
@@ -408,6 +409,7 @@ def generate(client=None):
               <td class="{side_class}" data-value="{side}">{side.upper()}</td>
               <td class="num" data-value="{raw_num(qty)}">{o.qty}</td>
               <td data-value="{status}">{status}</td>
+              <td class="num" data-value="{raw_num(current_price)}">{fmt_money(current_price) if current_price is not None else "—"}</td>
               <td class="num" data-value="{raw_num(purchase_price)}">{fmt_money(purchase_price) if purchase_price is not None else "—"}</td>
               <td class="num" data-value="{raw_num(limit_price)}">{fmt_money(limit_price) if limit_price is not None else "—"}</td>
               <td class="num {pl_class}" data-value="{raw_num(projected_pl)}">{fmt_money(projected_pl) if projected_pl is not None else "—"}</td>
@@ -433,6 +435,7 @@ def generate(client=None):
               <td></td>
               <td></td>
               <td></td>
+              <td></td>
               <td class="num {total_pl_class}">{fmt_money(total_projected_pl)}</td>
               <td class="num {total_pct_class}">{f"{total_projected_pct:+.2f}%" if total_projected_pct is not None else "—"}</td>
               <td></td>
@@ -440,7 +443,7 @@ def generate(client=None):
               <td class="num {total_stop_pct_class}">{f"{total_stop_pct:+.2f}%" if total_stop_pct is not None else "—"}</td>
             </tr>"""
     else:
-        open_orders_rows = "<tr><td colspan='13' class='muted'>No open orders</td></tr>"
+        open_orders_rows = "<tr><td colspan='14' class='muted'>No open orders</td></tr>"
 
     orders_rows = ""
     order_statuses_seen = set()
@@ -661,15 +664,15 @@ def generate(client=None):
   .card .value {{ font-size: 22px; font-weight: 600; }}
   .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }}
   .panel h2 {{ font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }}
-  .table-scroll {{ overflow-x: hidden; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }}
-  th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.25; vertical-align: bottom; }}
+  .table-scroll {{ overflow-x: auto; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+  th {{ text-align: left; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   th.sortable {{ cursor: pointer; user-select: none; }}
   th.sortable:hover {{ color: var(--text); }}
-  th.sortable::after {{ content: "⇅"; color: var(--border); margin-left: 4px; font-size: 10px; }}
+  th.sortable::after {{ content: "⇅"; color: var(--border); margin-left: 6px; font-size: 11px; }}
   th.sortable[data-dir="asc"]::after {{ content: "▲"; color: var(--accent); }}
   th.sortable[data-dir="desc"]::after {{ content: "▼"; color: var(--accent); }}
-  td {{ padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; }}
+  td {{ padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }}
   td.num, th.num {{ text-align: right; }}
   .totals-row td {{ font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }}
   .pos {{ color: var(--pos); }}
@@ -769,13 +772,14 @@ def generate(client=None):
           <th class="sortable" onclick="sortTable('openOrdersTable',3,'text')">Side</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',4,'num')"># of Shares</th>
           <th class="sortable" onclick="sortTable('openOrdersTable',5,'text')">Status</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',6,'num')">Purchase Price</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',7,'num')">Limit Order Price</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Projected Profit / (Loss)</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',9,'num')">Projected % Profit / (Loss)</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',10,'num')">Stop Sell Price</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',11,'num')">Projected Stop Loss</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',12,'num')">Projected % Stop Loss</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',6,'num')">Current Stock Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',7,'num')">Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Limit Order Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',9,'num')">Projected Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',10,'num')">Projected % Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',11,'num')">Stop Sell Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',12,'num')">Projected Stop Loss</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',13,'num')">Projected % Stop Loss</th>
         </tr></thead>
         <tbody>{open_orders_rows}</tbody>
       </table>
@@ -996,10 +1000,10 @@ def generate(client=None):
 
     const TERMINAL_ORDER_STATUSES = new Set(['filled', 'canceled', 'expired', 'rejected', 'done_for_day', 'replaced']);
 
-    function buildOpenOrdersRows(orders, names, positions) {{
+    function buildOpenOrdersRows(orders, names, positions, snapshots) {{
       const openOrders = (orders || []).filter(o => !TERMINAL_ORDER_STATUSES.has(o.status));
       if (openOrders.length === 0) {{
-        return "<tr><td colspan='13' class='muted'>No open orders</td></tr>";
+        return "<tr><td colspan='14' class='muted'>No open orders</td></tr>";
       }}
       const positionsBySymbol = {{}};
       (positions || []).forEach(p => {{ positionsBySymbol[p.symbol] = p; }});
@@ -1016,6 +1020,7 @@ def generate(client=None):
         const qty = o.qty != null ? Number(o.qty) : 0;
         const limitPrice = o.limit_price != null ? Number(o.limit_price) : null;
         const stopPrice = o.stop_price != null ? Number(o.stop_price) : null;
+        const [currentPrice] = snapshotPrices(snapshots, o.symbol);
         const pos = positionsBySymbol[o.symbol];
         const purchasePrice = pos ? Number(pos.avg_entry_price) : null;
 
@@ -1045,6 +1050,7 @@ def generate(client=None):
           <td class="${{side === 'buy' ? 'pos' : 'neg'}}" data-value="${{side}}">${{side.toUpperCase()}}</td>
           <td class="num" data-value="${{qty}}">${{o.qty}}</td>
           <td data-value="${{status}}">${{status}}</td>
+          <td class="num" data-value="${{currentPrice ?? ''}}">${{currentPrice != null ? fmtMoneyJS(currentPrice) : '—'}}</td>
           <td class="num" data-value="${{purchasePrice ?? ''}}">${{purchasePrice != null ? fmtMoneyJS(purchasePrice) : '—'}}</td>
           <td class="num" data-value="${{limitPrice ?? ''}}">${{limitPrice != null ? fmtMoneyJS(limitPrice) : '—'}}</td>
           <td class="num ${{cls(projectedPl)}}" data-value="${{projectedPl ?? ''}}">${{projectedPl != null ? fmtMoneyJS(projectedPl) : '—'}}</td>
@@ -1058,7 +1064,7 @@ def generate(client=None):
       const totalPct = totalCostBasis ? (totalPl / totalCostBasis * 100) : null;
       const totalStopPct = totalStopCostBasis ? (totalStopPl / totalStopCostBasis * 100) : null;
       rows += `<tr class="totals-row">
-        <td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         <td class="num ${{cls(totalPl)}}">${{fmtMoneyJS(totalPl)}}</td>
         <td class="num ${{cls(totalPct)}}">${{totalPct != null ? pctJS(totalPct) : '—'}}</td>
         <td></td>
@@ -1128,7 +1134,7 @@ def generate(client=None):
         document.querySelector('.card:nth-child(3) .value').textContent = fmtMoneyJS(data.account.buying_power);
         document.querySelector('.card:nth-child(4) .value').textContent = (data.positions || []).length;
 
-        document.querySelector('#openOrdersTable tbody').innerHTML = buildOpenOrdersRows(data.orders, data.names, data.positions);
+        document.querySelector('#openOrdersTable tbody').innerHTML = buildOpenOrdersRows(data.orders, data.names, data.positions, data.snapshots);
         document.querySelector('#positionsTable tbody').innerHTML = buildPositionsRows(data.positions, data.names);
         document.querySelector('#ordersTable tbody').innerHTML = buildOrdersRows(data.orders, data.names, data.snapshots);
         filterOrders();
