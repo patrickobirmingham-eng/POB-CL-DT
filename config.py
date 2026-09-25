@@ -42,7 +42,7 @@ RISK_PCT_PER_TRADE = 0.01           # risk 1% of account equity per trade (sized
 REWARD_RISK_MULTIPLE = 2.0          # take-profit distance = this many multiples of the stop distance
 MAX_TRADES_PER_DAY = 6              # circuit breaker: stop opening new trades after N trades in a day
 MAX_DAILY_LOSS_PCT = 0.03           # circuit breaker: stop trading for the day after losing this % of equity
-MAX_CONCURRENT_POSITIONS = 3        # don't hold more than N open positions at once
+MAX_CONCURRENT_POSITIONS = 6        # don't hold more than N open positions at once
 ONE_TRADE_PER_SYMBOL_PER_DAY = True # don't re-enter a symbol after it's been stopped out/closed today
 
 # Hard cap on total NOTIONAL capital deployed across all trades in a single day
