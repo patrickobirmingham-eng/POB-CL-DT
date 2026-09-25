@@ -92,3 +92,60 @@ PAPER_TRADING = True                # this codebase is paper-only; live_bot.py r
 # Change it any time in this file (then re-subscribe in the app to the new name).
 NTFY_ENABLED = True
 NTFY_TOPIC = "pob-orb-vkfmwlc1yr"
+
+# --- Runtime overrides (settings.json) ---------------------------------------
+# Optional runtime overrides for the parameters above, written by the
+# dashboard's Settings panel (the gear icon in dashboard.py) and committed to
+# the repo as settings.json by a small PHP proxy. This lets these parameters
+# be tuned from the dashboard, from any browser, without editing this file or
+# asking Claude to make a code change — the next thing that imports this
+# module (live_bot.py, strategy.py, a manual backtest run) picks up whatever
+# is currently committed to settings.json.
+#
+# ORDER_TYPE and USE_BRACKET_ORDERS are intentionally left out of the
+# override list below: neither is actually read anywhere in live_bot.py —
+# entries are always market orders wrapped in a bracket order — so exposing
+# them as "changeable" would silently do nothing. PAPER_TRADING is also never
+# overridable this way; it's a hardcoded safety rail, not a tunable.
+import json as _json
+import os as _os
+
+SETTINGS_FILE = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "settings.json")
+
+_OVERRIDABLE_KEYS = {
+    "WATCHLIST", "OPENING_RANGE_MINUTES", "MIN_OR_RANGE_PCT", "MAX_OR_RANGE_PCT",
+    "VOLUME_CONFIRMATION_MULT", "ALLOW_SHORTS", "ENTRY_CUTOFF_TIME", "BREAKOUT_BUFFER_PCT",
+    "RISK_PCT_PER_TRADE", "REWARD_RISK_MULTIPLE", "MAX_TRADES_PER_DAY", "MAX_DAILY_LOSS_PCT",
+    "MAX_CONCURRENT_POSITIONS", "ONE_TRADE_PER_SYMBOL_PER_DAY", "MAX_NOTIONAL_PER_TRADE",
+    "MAX_DAILY_NOTIONAL_TRADED", "BREAKEVEN_TRIGGER_R", "FLATTEN_TIME", "MARKET_CLOSE_TIME",
+    "POLL_INTERVAL_SECONDS", "DATA_FEED", "BACKTEST_DEFAULT_DAYS", "BACKTEST_SLIPPAGE_PCT",
+    "BACKTEST_COMMISSION_PER_TRADE", "NTFY_ENABLED", "NTFY_TOPIC",
+}
+
+
+def apply_settings_overrides(path=None):
+    """Load settings.json (if present) and override the module-level values
+    above for any recognized key. Safe to call more than once. A missing
+    file, unreadable/malformed JSON, or an unrecognized key are all ignored
+    (and logged) rather than raised, so a bad settings.json can never take
+    live trading down — it just falls back to the defaults in this file."""
+    path = path or SETTINGS_FILE
+    if not _os.path.exists(path):
+        return {}
+    try:
+        with open(path) as f:
+            overrides = _json.load(f)
+    except Exception as exc:
+        print(f"config: could not read {path} ({exc}); using in-file defaults.")
+        return {}
+    applied = {}
+    for key, value in overrides.items():
+        if key not in _OVERRIDABLE_KEYS:
+            print(f"config: ignoring unrecognized settings.json key {key!r}.")
+            continue
+        globals()[key] = value
+        applied[key] = value
+    return applied
+
+
+apply_settings_overrides()

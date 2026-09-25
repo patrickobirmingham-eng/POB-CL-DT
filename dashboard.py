@@ -6,6 +6,7 @@ each bot session, with the output committed and served via GitHub Pages.
 
 This is read-only — it never places or modifies orders.
 """
+import json
 import os
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
@@ -21,6 +22,8 @@ from alpaca.trading.enums import QueryOrderStatus
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockSnapshotRequest
 
+import config as bot_config
+
 ET = ZoneInfo("America/New_York")
 OUTPUT_DIR = "docs"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "index.html")
@@ -35,6 +38,66 @@ OUTPUT_FILE = os.path.join(OUTPUT_DIR, "index.html")
 # DASHBOARD_REFRESH_URL unset to hide the button entirely (default today).
 REFRESH_ENDPOINT = os.getenv("DASHBOARD_REFRESH_URL", "")
 REFRESH_TOKEN = os.getenv("DASHBOARD_REFRESH_TOKEN", "")
+
+# Settings panel (gear icon): lets you change the tunable parameters in
+# config.py from the dashboard, in any browser, and have them saved to
+# settings.json in the repo — not to this browser's local storage — so
+# every browser sees the same values and live_bot.py/strategy.py pick them
+# up on their next run (config.py applies settings.json overrides at import
+# time). Reading the current values is done straight from the public repo
+# (no proxy needed); saving requires a passcode you type each time, checked
+# server-side by a small PHP proxy that commits settings.json via the GitHub
+# API — the passcode is never embedded in this page, unlike REFRESH_TOKEN
+# above, because this one can change live trading parameters, not just read
+# data. Leave DASHBOARD_SETTINGS_SAVE_URL unset to hide the gear icon.
+SETTINGS_SAVE_ENDPOINT = os.getenv("DASHBOARD_SETTINGS_SAVE_URL", "")
+SETTINGS_SOURCE_URL = (
+    "https://raw.githubusercontent.com/patrickobirmingham-eng/POB-CL-DT/main/settings.json"
+)
+
+# Ordered, grouped list of the config.py parameters exposed in the Settings
+# panel. Deliberately excludes PAPER_TRADING (a hardcoded safety rail, never
+# meant to be a runtime toggle) and ORDER_TYPE / USE_BRACKET_ORDERS (neither
+# is actually read anywhere in live_bot.py, so exposing them as "changeable"
+# would silently do nothing).
+SETTINGS_FIELDS = [
+    {"key": "OPENING_RANGE_MINUTES", "label": "Opening range length", "group": "Entry & Opening Range", "type": "number", "step": 1, "min": 1, "suffix": "min"},
+    {"key": "MIN_OR_RANGE_PCT", "label": "Min opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01},
+    {"key": "MAX_OR_RANGE_PCT", "label": "Max opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01},
+    {"key": "VOLUME_CONFIRMATION_MULT", "label": "Volume confirmation multiple", "group": "Entry & Opening Range", "type": "number", "step": 0.1, "min": 0, "suffix": "x avg OR volume"},
+    {"key": "BREAKOUT_BUFFER_PCT", "label": "Breakout buffer", "group": "Entry & Opening Range", "type": "percent", "step": 0.01},
+    {"key": "ENTRY_CUTOFF_TIME", "label": "Entry cutoff time (ET)", "group": "Entry & Opening Range", "type": "time"},
+    {"key": "ALLOW_SHORTS", "label": "Allow short breakdowns", "group": "Entry & Opening Range", "type": "bool"},
+
+    {"key": "RISK_PCT_PER_TRADE", "label": "Risk per trade", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "% of account equity, sized off stop distance"},
+    {"key": "REWARD_RISK_MULTIPLE", "label": "Reward:risk multiple", "group": "Risk Management", "type": "number", "step": 0.1, "min": 0.1, "suffix": "x stop distance"},
+    {"key": "MAX_TRADES_PER_DAY", "label": "Max trades per day", "group": "Risk Management", "type": "number", "step": 1, "min": 1},
+    {"key": "MAX_DAILY_LOSS_PCT", "label": "Daily loss circuit breaker", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "stop trading for the day after losing this % of equity"},
+    {"key": "MAX_CONCURRENT_POSITIONS", "label": "Max concurrent positions", "group": "Risk Management", "type": "number", "step": 1, "min": 1},
+    {"key": "ONE_TRADE_PER_SYMBOL_PER_DAY", "label": "One trade per symbol per day", "group": "Risk Management", "type": "bool"},
+    {"key": "MAX_NOTIONAL_PER_TRADE", "label": "Max notional per trade", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$"},
+    {"key": "MAX_DAILY_NOTIONAL_TRADED", "label": "Max notional per day", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$"},
+
+    {"key": "BREAKEVEN_TRIGGER_R", "label": "Breakeven trigger", "group": "Breakeven Stop", "type": "nullable_number", "step": 0.1, "min": 0, "suffix": "x initial risk (R)", "hint": "leave blank to disable moving the stop to breakeven"},
+
+    {"key": "FLATTEN_TIME", "label": "Flatten-all time (ET)", "group": "Time / Session", "type": "time"},
+    {"key": "MARKET_CLOSE_TIME", "label": "Market close time (ET)", "group": "Time / Session", "type": "time"},
+    {"key": "POLL_INTERVAL_SECONDS", "label": "Poll interval", "group": "Time / Session", "type": "number", "step": 1, "min": 1, "suffix": "sec"},
+    {"key": "DATA_FEED", "label": "Market data feed", "group": "Time / Session", "type": "select", "options": ["iex", "sip"]},
+
+    {"key": "BACKTEST_DEFAULT_DAYS", "label": "Default backtest window", "group": "Backtest Defaults", "type": "number", "step": 1, "min": 1, "suffix": "days"},
+    {"key": "BACKTEST_SLIPPAGE_PCT", "label": "Assumed slippage", "group": "Backtest Defaults", "type": "percent", "step": 0.01},
+    {"key": "BACKTEST_COMMISSION_PER_TRADE", "label": "Commission per trade", "group": "Backtest Defaults", "type": "number", "step": 0.01, "min": 0, "prefix": "$"},
+
+    {"key": "NTFY_ENABLED", "label": "Push notifications enabled", "group": "Notifications", "type": "bool"},
+    {"key": "NTFY_TOPIC", "label": "ntfy.sh topic", "group": "Notifications", "type": "text", "hint": "treat like a password — anyone who knows it can subscribe"},
+
+    {"key": "WATCHLIST", "label": "Watchlist (comma-separated symbols)", "group": "Watchlist (Advanced)", "type": "watchlist"},
+]
+
+CURRENT_SETTINGS = {
+    field["key"]: getattr(bot_config, field["key"], None) for field in SETTINGS_FIELDS
+}
 
 
 def get_client():
@@ -643,6 +706,15 @@ def generate(client=None):
         if REFRESH_ENDPOINT else ""
     )
 
+    settings_button_html = (
+        '<button id="settingsBtn" onclick="openSettingsModal()" '
+        'aria-label="Trading bot settings">&#9881; Settings</button>'
+        if SETTINGS_SAVE_ENDPOINT else ""
+    )
+
+    settings_fields_json = json.dumps(SETTINGS_FIELDS)
+    current_settings_json = json.dumps(CURRENT_SETTINGS)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -666,12 +738,15 @@ def generate(client=None):
   }}
   .wrap {{ max-width: 1800px; width: 100%; margin: 0 auto; }}
   h1 {{ font-size: 22px; margin-bottom: 4px; }}
-  #themeToggleBtn {{
+  #topActions {{
     position: fixed; top: 16px; right: 16px; z-index: 100;
+    display: flex; gap: 8px;
+  }}
+  #topActions button {{
     background: var(--panel); color: var(--text); border: 1px solid var(--border);
     border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
   }}
-  #themeToggleBtn:hover {{ border-color: var(--accent); }}
+  #topActions button:hover {{ border-color: var(--accent); }}
   .updated {{ color: var(--muted); font-size: 13px; margin-bottom: 24px; }}
   .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }}
   .card {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }}
@@ -707,6 +782,66 @@ def generate(client=None):
   .filters {{ display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }}
   .filter-chip {{ display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }}
   .filter-chip input {{ accent-color: var(--accent); cursor: pointer; }}
+
+  .modal-overlay {{
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 200;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 60px 16px 40px 16px; overflow-y: auto;
+  }}
+  .modal {{
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    max-width: 640px; width: 100%; padding: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  }}
+  .modal-header {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }}
+  .modal-header h2 {{ font-size: 17px; margin: 0; }}
+  .modal-close {{
+    background: none; border: none; color: var(--muted); font-size: 22px; line-height: 1;
+    cursor: pointer; padding: 4px 8px;
+  }}
+  .modal-close:hover {{ color: var(--text); }}
+  .settings-subtitle {{ color: var(--muted); font-size: 12px; margin: 0 0 16px 0; line-height: 1.5; }}
+  .settings-status {{ font-size: 13px; margin-bottom: 12px; min-height: 18px; }}
+  .settings-status.ok {{ color: var(--pos); }}
+  .settings-status.err {{ color: var(--neg); }}
+  .settings-group {{ margin-bottom: 18px; }}
+  .settings-group h3 {{
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+    margin: 0 0 8px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+  }}
+  .settings-row {{
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 7px 0;
+  }}
+  .settings-row label {{ font-size: 13px; }}
+  .settings-row .settings-hint {{ display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }}
+  .settings-row .settings-control {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
+  .settings-row input[type="text"], .settings-row input[type="number"], .settings-row input[type="time"], .settings-row select {{
+    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 8px; font-size: 13px; width: 120px;
+  }}
+  .settings-row input[type="checkbox"] {{ accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }}
+  .settings-row .suffix {{ color: var(--muted); font-size: 12px; }}
+  #settingsWatchlist {{
+    width: 100%; min-height: 90px; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; padding: 8px; font-size: 12px;
+    font-family: inherit; resize: vertical;
+  }}
+  .modal-footer {{
+    display: flex; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }}
+  #settingsToken {{
+    flex: 1; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 10px; font-size: 13px;
+  }}
+  #settingsSaveBtn {{
+    background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 8px 16px; font-size: 13px; cursor: pointer; white-space: nowrap;
+  }}
+  #settingsSaveBtn:hover {{ opacity: 0.9; }}
+  #settingsSaveBtn:disabled {{ opacity: 0.5; cursor: default; }}
+  .settings-loading {{ color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }}
+
   #refreshBtn {{
     margin-left: 10px; background: var(--panel); color: var(--text); border: 1px solid var(--border);
     border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
@@ -716,9 +851,11 @@ def generate(client=None):
 
   @media (max-width: 720px) {{
     body {{ padding: 16px 12px 16px 12px; }}
-    #themeToggleBtn {{
-      position: static; display: inline-block; margin-bottom: 12px;
+    #topActions {{
+      position: static; display: flex; margin-bottom: 12px;
     }}
+    .modal-overlay {{ padding: 20px 10px; }}
+    .settings-row {{ flex-wrap: wrap; }}
     h1 {{ font-size: 18px; }}
     .cards {{ grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }}
     .card {{ padding: 12px; }}
@@ -734,7 +871,33 @@ def generate(client=None):
 </style>
 </head>
 <body>
-  <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
+  <div id="topActions">
+    {settings_button_html}
+    <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
+  </div>
+
+  <div id="settingsModal" class="modal-overlay" style="display:none;" onclick="if (event.target === this) closeSettingsModal();">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Trading Bot Settings</h2>
+        <button class="modal-close" onclick="closeSettingsModal()" aria-label="Close">&times;</button>
+      </div>
+      <p class="settings-subtitle">
+        Changes save to settings.json in the repo (not this browser), so every browser sees the
+        same values. live_bot.py and strategy.py pick them up on their next run/poll — usually within
+        a few minutes, not immediately mid-session.
+      </p>
+      <div id="settingsStatus" class="settings-status"></div>
+      <div class="modal-body" id="settingsBody">
+        <div class="settings-loading">Loading current settings…</div>
+      </div>
+      <div class="modal-footer">
+        <input type="password" id="settingsToken" placeholder="Passcode to save" autocomplete="off">
+        <button id="settingsSaveBtn" onclick="saveSettings()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <div class="wrap">
     <h1>Claude.AI Paper Day Trading</h1>
     <div class="updated">
@@ -944,6 +1107,156 @@ def generate(client=None):
     // real bot session, so they still only refresh via the normal pipeline.
     const REFRESH_ENDPOINT = {REFRESH_ENDPOINT!r};
     const REFRESH_TOKEN = {REFRESH_TOKEN!r};
+
+    // --- Settings panel: view/edit config.py's tunable parameters and save
+    // them to settings.json in the repo (via a PHP proxy that commits
+    // through the GitHub API), not to this browser — so every browser sees
+    // the same values. Reading is done straight from the public repo (no
+    // proxy needed); INITIAL_SETTINGS is the snapshot as of when this page
+    // was last generated, used as an instant fallback if the live re-fetch
+    // on open fails.
+    const SETTINGS_SAVE_ENDPOINT = {SETTINGS_SAVE_ENDPOINT!r};
+    const SETTINGS_SOURCE_URL = {SETTINGS_SOURCE_URL!r};
+    const SETTINGS_FIELDS = {settings_fields_json};
+    const INITIAL_SETTINGS = {current_settings_json};
+
+    function formatFieldValue(field, raw) {{
+      if (field.type === 'percent') return raw == null ? '' : (Number(raw) * 100);
+      if (field.type === 'watchlist') return Array.isArray(raw) ? raw.join(', ') : (raw || '');
+      if (field.type === 'nullable_number') return raw == null ? '' : raw;
+      return raw;
+    }}
+
+    function parseFieldValue(field, el) {{
+      if (field.type === 'bool') return el.checked;
+      if (field.type === 'watchlist') {{
+        return el.value.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      }}
+      if (field.type === 'text' || field.type === 'time' || field.type === 'select') return el.value;
+      if (field.type === 'nullable_number') {{
+        const t = el.value.trim();
+        return t === '' ? null : Number(t);
+      }}
+      if (field.type === 'percent') {{
+        const t = el.value.trim();
+        return t === '' ? null : Number(t) / 100;
+      }}
+      return Number(el.value);
+    }}
+
+    function renderSettingsForm(values) {{
+      const order = [];
+      const byGroup = {{}};
+      SETTINGS_FIELDS.forEach(f => {{
+        if (!byGroup[f.group]) {{ byGroup[f.group] = []; order.push(f.group); }}
+        byGroup[f.group].push(f);
+      }});
+      let html = '';
+      order.forEach(g => {{
+        html += '<div class="settings-group"><h3>' + g + '</h3>';
+        byGroup[g].forEach(f => {{
+          const val = formatFieldValue(f, values[f.key]);
+          const hint = f.hint ? ('<span class="settings-hint">' + f.hint + '</span>') : '';
+          const id = 'set_' + f.key;
+          let control;
+          if (f.type === 'bool') {{
+            control = '<input type="checkbox" id="' + id + '" ' + (val ? 'checked' : '') + '>';
+          }} else if (f.type === 'select') {{
+            const opts = (f.options || []).map(o =>
+              '<option value="' + o + '" ' + (o === val ? 'selected' : '') + '>' + o + '</option>'
+            ).join('');
+            control = '<select id="' + id + '">' + opts + '</select>';
+          }} else if (f.type === 'time') {{
+            control = '<input type="time" id="' + id + '" value="' + (val || '') + '">';
+          }} else if (f.type === 'watchlist') {{
+            control = '<textarea id="' + id + '">' + (val || '') + '</textarea>';
+          }} else if (f.type === 'text') {{
+            const safe = (val ?? '').toString().replace(/"/g, '&quot;');
+            control = '<input type="text" id="' + id + '" value="' + safe + '">';
+          }} else {{
+            const step = f.step != null ? f.step : 'any';
+            const min = f.min != null ? (' min="' + f.min + '"') : '';
+            control = '<input type="number" step="' + step + '"' + min + ' id="' + id + '" value="' + (val ?? '') + '">';
+          }}
+          const prefix = f.prefix ? ('<span class="suffix">' + f.prefix + '</span>') : '';
+          const suffix = f.suffix ? ('<span class="suffix">' + f.suffix + '</span>') : '';
+          if (f.type === 'watchlist') {{
+            html += '<div class="settings-row" style="flex-direction:column; align-items:stretch;">'
+              + '<label for="' + id + '">' + f.label + hint + '</label>' + control + '</div>';
+          }} else {{
+            html += '<div class="settings-row">'
+              + '<label for="' + id + '">' + f.label + hint + '</label>'
+              + '<div class="settings-control">' + prefix + control + suffix + '</div></div>';
+          }}
+        }});
+        html += '</div>';
+      }});
+      document.getElementById('settingsBody').innerHTML = html;
+    }}
+
+    function collectSettingsValues() {{
+      const out = {{}};
+      SETTINGS_FIELDS.forEach(f => {{
+        const el = document.getElementById('set_' + f.key);
+        if (!el) return;
+        out[f.key] = parseFieldValue(f, el);
+      }});
+      return out;
+    }}
+
+    async function openSettingsModal() {{
+      document.getElementById('settingsModal').style.display = 'flex';
+      const statusEl = document.getElementById('settingsStatus');
+      statusEl.textContent = '';
+      statusEl.className = 'settings-status';
+      document.getElementById('settingsBody').innerHTML = '<div class="settings-loading">Loading current settings…</div>';
+      let values = INITIAL_SETTINGS;
+      try {{
+        const resp = await fetch(SETTINGS_SOURCE_URL + '?_=' + Date.now());
+        if (resp.ok) {{
+          const fresh = await resp.json();
+          values = Object.assign({{}}, INITIAL_SETTINGS, fresh);
+        }}
+      }} catch (e) {{ /* fall back to INITIAL_SETTINGS embedded at generation time */ }}
+      renderSettingsForm(values);
+    }}
+
+    function closeSettingsModal() {{
+      document.getElementById('settingsModal').style.display = 'none';
+    }}
+
+    async function saveSettings() {{
+      const statusEl = document.getElementById('settingsStatus');
+      const btn = document.getElementById('settingsSaveBtn');
+      const tokenEl = document.getElementById('settingsToken');
+      const token = tokenEl.value;
+      if (!token) {{
+        statusEl.textContent = 'Enter the passcode to save.';
+        statusEl.className = 'settings-status err';
+        return;
+      }}
+      const values = collectSettingsValues();
+      btn.disabled = true;
+      statusEl.textContent = 'Saving…';
+      statusEl.className = 'settings-status';
+      try {{
+        const resp = await fetch(SETTINGS_SAVE_ENDPOINT, {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{ token: token, settings: values }}),
+        }});
+        const data = await resp.json().catch(() => ({{}}));
+        if (!resp.ok || !data.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+        statusEl.textContent = 'Saved. The bot will pick this up on its next run/poll.';
+        statusEl.className = 'settings-status ok';
+        tokenEl.value = '';
+      }} catch (e) {{
+        statusEl.textContent = 'Save failed: ' + e.message;
+        statusEl.className = 'settings-status err';
+      }} finally {{
+        btn.disabled = false;
+      }}
+    }}
 
     function fmtMoneyJS(v) {{
       if (v === null || v === undefined || isNaN(v)) return '—';
