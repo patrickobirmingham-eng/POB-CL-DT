@@ -230,6 +230,37 @@ def raw_num(v):
         return ""
 
 
+def fetch_all_orders(client, page_size=500, max_orders=5000):
+    """Pages back through the account's ENTIRE order history (all statuses),
+    newest first, instead of the single most-recent-50 call this used to make.
+
+    Alpaca's get_orders caps each response at `page_size` (max 500) and only
+    ever returns the newest slice unless you walk it backwards yourself: each
+    subsequent call passes `until` set to the oldest `submitted_at` seen so
+    far, so the next page picks up right before it. Without this, once the
+    account has placed more than `page_size` orders total, the oldest ones
+    (e.g. the very first trading day) silently fall out of every table that's
+    built from the order list — Closed Orders, Income by Day, the P&L chart —
+    even though they're still sitting in Alpaca's own history.
+
+    `max_orders` is just a safety cap so a runaway loop can't page forever;
+    5000 orders is far more than this bot will place in any realistic
+    lookback window.
+    """
+    all_orders = []
+    until = None
+    while len(all_orders) < max_orders:
+        req = GetOrdersRequest(status=QueryOrderStatus.ALL, limit=page_size, until=until)
+        batch = client.get_orders(req)
+        if not batch:
+            break
+        all_orders.extend(batch)
+        if len(batch) < page_size:
+            break
+        until = min(o.submitted_at for o in batch)
+    return sorted(all_orders, key=lambda o: o.submitted_at, reverse=True)
+
+
 def build_closed_trades(orders):
     """FIFO-matches filled buy orders against filled sell orders (per symbol, in
     chronological order) to produce a list of closed round-trip trades, each
@@ -237,9 +268,9 @@ def build_closed_trades(orders):
     vice versa) — each matched chunk becomes its own closed-trade row, sized to
     whichever side had fewer remaining shares.
 
-    Only orders present in the `orders` list are considered, so this reflects
-    closed trades within the same "last 50 orders" window shown elsewhere on
-    the dashboard — a buy that fell off that window won't be matched.
+    Only orders present in the `orders` list are considered. Called with the
+    full paginated order history (see `fetch_all_orders`), not just the most
+    recent 50, so a buy from the very first trading day still gets matched.
     """
     filled = [o for o in orders if o.status and o.status.value == "filled" and o.side and o.filled_avg_price]
     filled.sort(key=lambda o: o.filled_at or o.submitted_at)
@@ -308,9 +339,14 @@ def generate(client=None):
     account = client.get_account()
     positions = client.get_all_positions()
 
-    orders_req = GetOrdersRequest(status=QueryOrderStatus.ALL, limit=50)
-    orders = client.get_orders(orders_req)
-    orders = sorted(orders, key=lambda o: o.submitted_at, reverse=True)
+    # Full order history (paginated, all statuses) — used for Closed Orders /
+    # Income by Day / the P&L chart, so early trading days never fall out of
+    # those totals as the account accumulates more than 50 orders. The
+    # "Recent Orders (Last 50)" table and the open-orders list below still
+    # only need the newest slice of this, which `all_orders` is already
+    # sorted for.
+    all_orders = fetch_all_orders(client)
+    orders = all_orders[:50]
 
 
     generated_at = datetime.now(ET).strftime("%Y-%m-%d %I:%M %p ET")
@@ -610,7 +646,7 @@ def generate(client=None):
     else:
         orders_rows = "<tr><td colspan='15' class='muted'>No orders yet</td></tr>"
 
-    closed_trades = build_closed_trades(orders)
+    closed_trades = build_closed_trades(all_orders)
     closed_rows = ""
     total_closed_pl = 0.0
     total_purchase_cost = 0.0  # sum of shares * buy_price, across all closed trades
@@ -658,9 +694,9 @@ def generate(client=None):
     else:
         closed_rows = "<tr><td colspan='8' class='muted'>No closed trades yet</td></tr>"
 
-    # Income by Day — closed_trades rolled up per calendar date (ET), so this
-    # reflects the same "last 50 orders" window as the Closed Orders table
-    # above it, just aggregated by day instead of shown trade-by-trade.
+    # Income by Day — closed_trades rolled up per calendar date (ET), drawn
+    # from the full paginated order history, so every trading day since the
+    # account started shows up here, not just the most recent ones.
     daily = defaultdict(lambda: {"trades": 0, "cost_basis": 0.0, "sold_cost": 0.0, "pl": 0.0})
     for t in closed_trades:
         day = t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d")
