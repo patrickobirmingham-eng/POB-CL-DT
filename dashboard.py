@@ -380,6 +380,11 @@ def generate(client=None):
                 if (purchase_price is not None and current_price is not None) else None
             )
 
+            limit_minus_purchase = (
+                limit_price - purchase_price
+                if (limit_price is not None and purchase_price is not None) else None
+            )
+
             if limit_price is not None and purchase_price is not None:
                 per_share = (limit_price - purchase_price) if side == "sell" else (purchase_price - limit_price)
                 projected_pl = qty * per_share
@@ -401,6 +406,7 @@ def generate(client=None):
                 projected_stop_pct = None
 
             delta_class = "pos" if (delta_price is not None and delta_price >= 0) else ("neg" if delta_price is not None else "")
+            limit_minus_purchase_class = "pos" if (limit_minus_purchase is not None and limit_minus_purchase >= 0) else ("neg" if limit_minus_purchase is not None else "")
             pl_class = "pos" if (projected_pl is not None and projected_pl >= 0) else ("neg" if projected_pl is not None else "")
             pct_class = "pos" if (projected_pct is not None and projected_pct >= 0) else ("neg" if projected_pct is not None else "")
             stop_pl_class = "pos" if (projected_stop_pl is not None and projected_stop_pl >= 0) else ("neg" if projected_stop_pl is not None else "")
@@ -418,6 +424,7 @@ def generate(client=None):
               <td class="num" data-value="{raw_num(purchase_price)}">{fmt_money(purchase_price) if purchase_price is not None else "—"}</td>
               <td class="num {delta_class}" data-value="{raw_num(delta_price)}">{fmt_money(delta_price) if delta_price is not None else "—"}</td>
               <td class="num" data-value="{raw_num(limit_price)}">{fmt_money(limit_price) if limit_price is not None else "—"}</td>
+              <td class="num {limit_minus_purchase_class}" data-value="{raw_num(limit_minus_purchase)}">{fmt_money(limit_minus_purchase) if limit_minus_purchase is not None else "—"}</td>
               <td class="num {pl_class}" data-value="{raw_num(projected_pl)}">{fmt_money(projected_pl) if projected_pl is not None else "—"}</td>
               <td class="num {pct_class}" data-value="{raw_num(projected_pct)}">{f"{projected_pct:+.2f}%" if projected_pct is not None else "—"}</td>
               <td class="num" data-value="{raw_num(stop_price)}">{fmt_money(stop_price) if stop_price is not None else "—"}</td>
@@ -443,6 +450,7 @@ def generate(client=None):
               <td></td>
               <td></td>
               <td></td>
+              <td></td>
               <td class="num {total_pl_class}">{fmt_money(total_projected_pl)}</td>
               <td class="num {total_pct_class}">{f"{total_projected_pct:+.2f}%" if total_projected_pct is not None else "—"}</td>
               <td></td>
@@ -450,7 +458,7 @@ def generate(client=None):
               <td class="num {total_stop_pct_class}">{f"{total_stop_pct:+.2f}%" if total_stop_pct is not None else "—"}</td>
             </tr>"""
     else:
-        open_orders_rows = "<tr><td colspan='15' class='muted'>No open orders</td></tr>"
+        open_orders_rows = "<tr><td colspan='16' class='muted'>No open orders</td></tr>"
 
     orders_rows = ""
     order_statuses_seen = set()
@@ -780,13 +788,14 @@ def generate(client=None):
           <th class="sortable" onclick="sortTable('openOrdersTable',5,'text')">Status</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',6,'num')">Current Stock Price</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',7,'num')">Purchase Price</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Delta Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Purchase - Current Price</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',9,'num')">Limit Order Price</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',10,'num')">Projected Profit / (Loss)</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',11,'num')">Projected % Profit / (Loss)</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',12,'num')">Stop Sell Price</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',13,'num')">Projected Stop Loss</th>
-          <th class="sortable num" onclick="sortTable('openOrdersTable',14,'num')">Projected % Stop Loss</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',10,'num')">Limit - Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',11,'num')">Projected Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',12,'num')">Projected % Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',13,'num')">Stop Sell Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',14,'num')">Projected Stop Loss</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',15,'num')">Projected % Stop Loss</th>
         </tr></thead>
         <tbody>{open_orders_rows}</tbody>
       </table>
@@ -1011,7 +1020,7 @@ def generate(client=None):
     function buildOpenOrdersRows(orders, names, positions, snapshots) {{
       const openOrders = (orders || []).filter(o => !TERMINAL_ORDER_STATUSES.has(o.status));
       if (openOrders.length === 0) {{
-        return "<tr><td colspan='15' class='muted'>No open orders</td></tr>";
+        return "<tr><td colspan='16' class='muted'>No open orders</td></tr>";
       }}
       const positionsBySymbol = {{}};
       (positions || []).forEach(p => {{ positionsBySymbol[p.symbol] = p; }});
@@ -1032,6 +1041,7 @@ def generate(client=None):
         const pos = positionsBySymbol[o.symbol];
         const purchasePrice = pos ? Number(pos.avg_entry_price) : null;
         const deltaPrice = (purchasePrice != null && currentPrice != null) ? (purchasePrice - currentPrice) : null;
+        const limitMinusPurchase = (limitPrice != null && purchasePrice != null) ? (limitPrice - purchasePrice) : null;
 
         let projectedPl = null, projectedPct = null;
         if (limitPrice != null && purchasePrice != null) {{
@@ -1063,6 +1073,7 @@ def generate(client=None):
           <td class="num" data-value="${{purchasePrice ?? ''}}">${{purchasePrice != null ? fmtMoneyJS(purchasePrice) : '—'}}</td>
           <td class="num ${{cls(deltaPrice)}}" data-value="${{deltaPrice ?? ''}}">${{deltaPrice != null ? fmtMoneyJS(deltaPrice) : '—'}}</td>
           <td class="num" data-value="${{limitPrice ?? ''}}">${{limitPrice != null ? fmtMoneyJS(limitPrice) : '—'}}</td>
+          <td class="num ${{cls(limitMinusPurchase)}}" data-value="${{limitMinusPurchase ?? ''}}">${{limitMinusPurchase != null ? fmtMoneyJS(limitMinusPurchase) : '—'}}</td>
           <td class="num ${{cls(projectedPl)}}" data-value="${{projectedPl ?? ''}}">${{projectedPl != null ? fmtMoneyJS(projectedPl) : '—'}}</td>
           <td class="num ${{cls(projectedPct)}}" data-value="${{projectedPct ?? ''}}">${{projectedPct != null ? pctJS(projectedPct) : '—'}}</td>
           <td class="num" data-value="${{stopPrice ?? ''}}">${{stopPrice != null ? fmtMoneyJS(stopPrice) : '—'}}</td>
@@ -1074,7 +1085,7 @@ def generate(client=None):
       const totalPct = totalCostBasis ? (totalPl / totalCostBasis * 100) : null;
       const totalStopPct = totalStopCostBasis ? (totalStopPl / totalStopCostBasis * 100) : null;
       rows += `<tr class="totals-row">
-        <td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
         <td class="num ${{cls(totalPl)}}">${{fmtMoneyJS(totalPl)}}</td>
         <td class="num ${{cls(totalPct)}}">${{totalPct != null ? pctJS(totalPct) : '—'}}</td>
         <td></td>
