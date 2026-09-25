@@ -34,6 +34,7 @@ jobs:
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
           DASHBOARD_REFRESH_URL: ${{ vars.DASHBOARD_REFRESH_URL }}
           DASHBOARD_REFRESH_TOKEN: ${{ vars.DASHBOARD_REFRESH_TOKEN }}
+          DASHBOARD_SETTINGS_SAVE_URL: ${{ vars.DASHBOARD_SETTINGS_SAVE_URL }}
         run: python dashboard.py
 
       - name: Commit updated dashboard
