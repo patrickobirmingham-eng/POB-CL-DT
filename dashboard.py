@@ -61,38 +61,64 @@ SETTINGS_SOURCE_URL = (
 # is actually read anywhere in live_bot.py, so exposing them as "changeable"
 # would silently do nothing).
 SETTINGS_FIELDS = [
-    {"key": "OPENING_RANGE_MINUTES", "label": "Opening range length", "group": "Entry & Opening Range", "type": "number", "step": 1, "min": 1, "suffix": "min"},
-    {"key": "MIN_OR_RANGE_PCT", "label": "Min opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01},
-    {"key": "MAX_OR_RANGE_PCT", "label": "Max opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01},
-    {"key": "VOLUME_CONFIRMATION_MULT", "label": "Volume confirmation multiple", "group": "Entry & Opening Range", "type": "number", "step": 0.1, "min": 0, "suffix": "x avg OR volume"},
-    {"key": "BREAKOUT_BUFFER_PCT", "label": "Breakout buffer", "group": "Entry & Opening Range", "type": "percent", "step": 0.01},
-    {"key": "ENTRY_CUTOFF_TIME", "label": "Entry cutoff time (ET)", "group": "Entry & Opening Range", "type": "time"},
-    {"key": "ALLOW_SHORTS", "label": "Allow short breakdowns", "group": "Entry & Opening Range", "type": "bool"},
+    {"key": "OPENING_RANGE_MINUTES", "label": "Opening range length", "group": "Entry & Opening Range", "type": "number", "step": 1, "min": 1, "suffix": "min",
+     "tooltip": "Length of the opening-range window used to compute breakout levels (e.g. 15 = the first 15 minutes after the open, 9:30–9:45 ET)."},
+    {"key": "MIN_OR_RANGE_PCT", "label": "Min opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01,
+     "tooltip": "Skip a symbol for the day if its opening range is smaller than this % of price — a range this tight is usually noise, not a real range."},
+    {"key": "MAX_OR_RANGE_PCT", "label": "Max opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01,
+     "tooltip": "Skip a symbol for the day if its opening range is larger than this % of price — a range this wide usually means the move already happened."},
+    {"key": "VOLUME_CONFIRMATION_MULT", "label": "Volume confirmation multiple", "group": "Entry & Opening Range", "type": "number", "step": 0.1, "min": 0, "suffix": "x avg OR volume",
+     "tooltip": "The breakout bar's volume must be at least this many times the average opening-range bar volume to count as a valid breakout."},
+    {"key": "BREAKOUT_BUFFER_PCT", "label": "Breakout buffer", "group": "Entry & Opening Range", "type": "percent", "step": 0.01,
+     "tooltip": "Price must clear the opening-range high/low by this % before a breakout triggers, to filter out marginal false breaks."},
+    {"key": "ENTRY_CUTOFF_TIME", "label": "Entry cutoff time (ET)", "group": "Entry & Opening Range", "type": "time",
+     "tooltip": "No new trades are opened after this time (ET), even if a valid breakout occurs."},
+    {"key": "ALLOW_SHORTS", "label": "Allow short breakdowns", "group": "Entry & Opening Range", "type": "bool",
+     "tooltip": "If enabled, the bot will also short breakdowns below the opening-range low, not just long breakouts above the high. Requires your account to support shorting."},
 
-    {"key": "RISK_PCT_PER_TRADE", "label": "Risk per trade", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "% of account equity, sized off stop distance"},
-    {"key": "REWARD_RISK_MULTIPLE", "label": "Reward:risk multiple", "group": "Risk Management", "type": "number", "step": 0.1, "min": 0.1, "suffix": "x stop distance"},
-    {"key": "MAX_TRADES_PER_DAY", "label": "Max trades per day", "group": "Risk Management", "type": "number", "step": 1, "min": 1},
-    {"key": "MAX_DAILY_LOSS_PCT", "label": "Daily loss circuit breaker", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "stop trading for the day after losing this % of equity"},
-    {"key": "MAX_CONCURRENT_POSITIONS", "label": "Max concurrent positions", "group": "Risk Management", "type": "number", "step": 1, "min": 1},
-    {"key": "ONE_TRADE_PER_SYMBOL_PER_DAY", "label": "One trade per symbol per day", "group": "Risk Management", "type": "bool"},
-    {"key": "MAX_NOTIONAL_PER_TRADE", "label": "Max notional per trade", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$"},
-    {"key": "MAX_DAILY_NOTIONAL_TRADED", "label": "Max notional per day", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$"},
+    {"key": "RISK_PCT_PER_TRADE", "label": "Risk per trade", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "% of account equity, sized off stop distance",
+     "tooltip": "The dollar amount risked per trade — sized as this % of account equity — based on the distance from entry to stop-loss."},
+    {"key": "REWARD_RISK_MULTIPLE", "label": "Reward:risk multiple", "group": "Risk Management", "type": "number", "step": 0.1, "min": 0.1, "suffix": "x stop distance",
+     "tooltip": "Take-profit target distance, expressed as a multiple of the stop-loss distance (e.g. 2 = the target is twice as far away as the stop)."},
+    {"key": "MAX_TRADES_PER_DAY", "label": "Max trades per day", "group": "Risk Management", "type": "number", "step": 1, "min": 1,
+     "tooltip": "Circuit breaker: the bot stops opening new trades once it has opened this many in a single day."},
+    {"key": "MAX_DAILY_LOSS_PCT", "label": "Daily loss circuit breaker", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "stop trading for the day after losing this % of equity",
+     "tooltip": "Circuit breaker: if the account's daily P&L drops below −this % of starting equity, the bot flattens all positions and stops trading for the rest of the day."},
+    {"key": "MAX_CONCURRENT_POSITIONS", "label": "Max concurrent positions", "group": "Risk Management", "type": "number", "step": 1, "min": 1,
+     "tooltip": "The bot won't open a new position if this many positions are already open at once."},
+    {"key": "ONE_TRADE_PER_SYMBOL_PER_DAY", "label": "One trade per symbol per day", "group": "Risk Management", "type": "bool",
+     "tooltip": "If enabled, a symbol that's already been traded (entered, stopped out, or closed) today won't be re-entered later the same day."},
+    {"key": "MAX_NOTIONAL_PER_TRADE", "label": "Max notional per trade", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$",
+     "tooltip": "Hard cap on the dollar amount (entry price × shares) any single trade can deploy, regardless of what risk-per-trade sizing alone would produce."},
+    {"key": "MAX_DAILY_NOTIONAL_TRADED", "label": "Max notional per day", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$",
+     "tooltip": "Hard cap on the total dollar amount deployed across all trades combined in a single day — trades are sized down (or skipped) once this is reached."},
 
-    {"key": "BREAKEVEN_TRIGGER_R", "label": "Breakeven trigger", "group": "Breakeven Stop", "type": "nullable_number", "step": 0.1, "min": 0, "suffix": "x initial risk (R)", "hint": "leave blank to disable moving the stop to breakeven"},
+    {"key": "BREAKEVEN_TRIGGER_R", "label": "Breakeven trigger", "group": "Breakeven Stop", "type": "nullable_number", "step": 0.1, "min": 0, "suffix": "x initial risk (R)", "hint": "leave blank to disable moving the stop to breakeven",
+     "tooltip": "Once a position has moved this many multiples of its initial risk (R) in your favor, its stop-loss moves up to breakeven (entry price) so a winner can't turn into a full loss. Blank disables this."},
 
-    {"key": "FLATTEN_TIME", "label": "Flatten-all time (ET)", "group": "Time / Session", "type": "time"},
-    {"key": "MARKET_CLOSE_TIME", "label": "Market close time (ET)", "group": "Time / Session", "type": "time"},
-    {"key": "POLL_INTERVAL_SECONDS", "label": "Poll interval", "group": "Time / Session", "type": "number", "step": 1, "min": 1, "suffix": "sec"},
-    {"key": "DATA_FEED", "label": "Market data feed", "group": "Time / Session", "type": "select", "options": ["iex", "sip"]},
+    {"key": "FLATTEN_TIME", "label": "Flatten-all time (ET)", "group": "Time / Session", "type": "time",
+     "tooltip": "All open positions are closed by this time (ET), no exceptions — the bot's hard end-of-day exit."},
+    {"key": "MARKET_CLOSE_TIME", "label": "Market close time (ET)", "group": "Time / Session", "type": "time",
+     "tooltip": "The market's official closing time (ET) — a reference point used elsewhere in the bot, separate from the earlier flatten time above."},
+    {"key": "POLL_INTERVAL_SECONDS", "label": "Poll interval", "group": "Time / Session", "type": "number", "step": 1, "min": 1, "suffix": "sec",
+     "tooltip": "How often (in seconds) the live bot checks prices for breakouts and manages open positions during the trading session."},
+    {"key": "DATA_FEED", "label": "Market data feed", "group": "Time / Session", "type": "select", "options": ["iex", "sip"],
+     "tooltip": "Which Alpaca market data feed to use. “iex” works on free/paper accounts; “sip” requires a paid data plan but gives fuller market coverage."},
 
-    {"key": "BACKTEST_DEFAULT_DAYS", "label": "Default backtest window", "group": "Backtest Defaults", "type": "number", "step": 1, "min": 1, "suffix": "days"},
-    {"key": "BACKTEST_SLIPPAGE_PCT", "label": "Assumed slippage", "group": "Backtest Defaults", "type": "percent", "step": 0.01},
-    {"key": "BACKTEST_COMMISSION_PER_TRADE", "label": "Commission per trade", "group": "Backtest Defaults", "type": "number", "step": 0.01, "min": 0, "prefix": "$"},
+    {"key": "BACKTEST_DEFAULT_DAYS", "label": "Default backtest window", "group": "Backtest Defaults", "type": "number", "step": 1, "min": 1, "suffix": "days",
+     "tooltip": "Default number of trading days to look back over when running a backtest, if you don't specify a window."},
+    {"key": "BACKTEST_SLIPPAGE_PCT", "label": "Assumed slippage", "group": "Backtest Defaults", "type": "percent", "step": 0.01,
+     "tooltip": "Assumed slippage per fill in a backtest, as a % of price — deliberately pessimistic so backtest results don't overstate real-world performance."},
+    {"key": "BACKTEST_COMMISSION_PER_TRADE", "label": "Commission per trade", "group": "Backtest Defaults", "type": "number", "step": 0.01, "min": 0, "prefix": "$",
+     "tooltip": "Assumed commission per trade in a backtest. Alpaca is commission-free, so this mainly exists for realism if you ever port the strategy elsewhere."},
 
-    {"key": "NTFY_ENABLED", "label": "Push notifications enabled", "group": "Notifications", "type": "bool"},
-    {"key": "NTFY_TOPIC", "label": "ntfy.sh topic", "group": "Notifications", "type": "text", "hint": "treat like a password — anyone who knows it can subscribe"},
+    {"key": "NTFY_ENABLED", "label": "Push notifications enabled", "group": "Notifications", "type": "bool",
+     "tooltip": "Turns push notifications to your phone (via the ntfy.sh app) on or off."},
+    {"key": "NTFY_TOPIC", "label": "ntfy.sh topic", "group": "Notifications", "type": "text", "hint": "treat like a password — anyone who knows it can subscribe",
+     "tooltip": "The ntfy.sh topic name notifications are sent to — acts like an unlisted channel. Treat it like a password: anyone who knows it can subscribe to your notifications."},
 
-    {"key": "WATCHLIST", "label": "Watchlist (comma-separated symbols)", "group": "Watchlist (Advanced)", "type": "watchlist"},
+    {"key": "WATCHLIST", "label": "Watchlist (comma-separated symbols)", "group": "Watchlist (Advanced)", "type": "watchlist",
+     "tooltip": "The list of symbols the bot scans for opening-range breakouts each trading day."},
 ]
 
 CURRENT_SETTINGS = {
@@ -814,6 +840,7 @@ def generate(client=None):
   }}
   .settings-row label {{ font-size: 13px; }}
   .settings-row .settings-hint {{ display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }}
+  .settings-info {{ display: inline-block; margin-left: 5px; cursor: help; color: var(--muted); font-size: 13px; }}
   .settings-row .settings-control {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
   .settings-row input[type="text"], .settings-row input[type="number"], .settings-row input[type="time"], .settings-row select {{
     background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
@@ -1157,6 +1184,8 @@ def generate(client=None):
         byGroup[g].forEach(f => {{
           const val = formatFieldValue(f, values[f.key]);
           const hint = f.hint ? ('<span class="settings-hint">' + f.hint + '</span>') : '';
+          const tipText = f.tooltip ? String(f.tooltip).replace(/"/g, '&quot;') : '';
+          const info = tipText ? ('<span class="settings-info" title="' + tipText + '">ⓘ</span>') : '';
           const id = 'set_' + f.key;
           let control;
           if (f.type === 'bool') {{
@@ -1182,10 +1211,10 @@ def generate(client=None):
           const suffix = f.suffix ? ('<span class="suffix">' + f.suffix + '</span>') : '';
           if (f.type === 'watchlist') {{
             html += '<div class="settings-row" style="flex-direction:column; align-items:stretch;">'
-              + '<label for="' + id + '">' + f.label + hint + '</label>' + control + '</div>';
+              + '<label for="' + id + '">' + f.label + info + hint + '</label>' + control + '</div>';
           }} else {{
             html += '<div class="settings-row">'
-              + '<label for="' + id + '">' + f.label + hint + '</label>'
+              + '<label for="' + id + '">' + f.label + info + hint + '</label>'
               + '<div class="settings-control">' + prefix + control + suffix + '</div></div>';
           }}
         }});
