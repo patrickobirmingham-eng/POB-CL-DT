@@ -337,14 +337,19 @@ def generate(client=None):
     else:
         positions_rows = "<tr><td colspan='12' class='muted'>No open positions</td></tr>"
 
-    # Current Open Orders — pending (not yet filled/canceled/etc.) orders, most
-    # often limit sell orders placed to exit an existing position. "Purchase
-    # Price" is that position's avg entry price (looked up by symbol from the
-    # positions we already fetched above); projected P&L compares the order's
-    # limit price against that entry price. For an order with no matching open
-    # position (e.g. a fresh entry order that hasn't filled yet) or no limit
-    # price (e.g. a market order), those columns show "—" since there's no
-    # basis to project from.
+    # Current Open Orders — pending (not yet filled/canceled/etc.) orders. The
+    # bot places bracket orders (OrderClass.BRACKET) for every position: a
+    # take-profit limit-sell leg (status "new", carries limit_price) and a
+    # stop-loss stop-sell leg (status "held" while the take-profit leg is
+    # live, carries stop_price instead) — so each open position shows up as
+    # two rows here, one per exit leg, not two separate attempts to sell the
+    # same shares. "Purchase Price" is that position's avg entry price
+    # (looked up by symbol from the positions we already fetched above);
+    # projected P&L / projected stop-loss compare each leg's own trigger
+    # price against that entry price. An order with no matching open
+    # position (e.g. a fresh entry order that hasn't filled yet), no limit
+    # price, or no stop price shows "—" in the columns that don't apply,
+    # since there's no basis to project from.
     TERMINAL_ORDER_STATUSES = {
         "filled", "canceled", "expired", "rejected", "done_for_day", "replaced",
     }
@@ -354,6 +359,8 @@ def generate(client=None):
         if (o.status.value if o.status else "") not in TERMINAL_ORDER_STATUSES
     ]
     open_orders_rows = ""
+    total_projected_pl = total_projected_cost_basis = 0.0
+    total_stop_pl = total_stop_cost_basis = 0.0
     if open_orders:
         for o in open_orders:
             submitted_dt = o.submitted_at.astimezone(ET)
@@ -363,6 +370,7 @@ def generate(client=None):
             side_class = "pos" if side == "buy" else "neg"
             qty = float(o.qty) if o.qty else 0.0
             limit_price = float(o.limit_price) if o.limit_price else None
+            stop_price = float(o.stop_price) if getattr(o, "stop_price", None) else None
 
             pos = positions_by_symbol.get(o.symbol)
             purchase_price = float(pos.avg_entry_price) if pos is not None else None
@@ -371,12 +379,26 @@ def generate(client=None):
                 per_share = (limit_price - purchase_price) if side == "sell" else (purchase_price - limit_price)
                 projected_pl = qty * per_share
                 projected_pct = (per_share / purchase_price * 100) if purchase_price else None
+                total_projected_pl += projected_pl
+                total_projected_cost_basis += qty * purchase_price
             else:
                 projected_pl = None
                 projected_pct = None
 
+            if stop_price is not None and purchase_price is not None:
+                stop_per_share = (stop_price - purchase_price) if side == "sell" else (purchase_price - stop_price)
+                projected_stop_pl = qty * stop_per_share
+                projected_stop_pct = (stop_per_share / purchase_price * 100) if purchase_price else None
+                total_stop_pl += projected_stop_pl
+                total_stop_cost_basis += qty * purchase_price
+            else:
+                projected_stop_pl = None
+                projected_stop_pct = None
+
             pl_class = "pos" if (projected_pl is not None and projected_pl >= 0) else ("neg" if projected_pl is not None else "")
             pct_class = "pos" if (projected_pct is not None and projected_pct >= 0) else ("neg" if projected_pct is not None else "")
+            stop_pl_class = "pos" if (projected_stop_pl is not None and projected_stop_pl >= 0) else ("neg" if projected_stop_pl is not None else "")
+            stop_pct_class = "pos" if (projected_stop_pct is not None and projected_stop_pct >= 0) else ("neg" if projected_stop_pct is not None else "")
 
             open_orders_rows += f"""
             <tr>
@@ -390,9 +412,35 @@ def generate(client=None):
               <td class="num" data-value="{raw_num(limit_price)}">{fmt_money(limit_price) if limit_price is not None else "—"}</td>
               <td class="num {pl_class}" data-value="{raw_num(projected_pl)}">{fmt_money(projected_pl) if projected_pl is not None else "—"}</td>
               <td class="num {pct_class}" data-value="{raw_num(projected_pct)}">{f"{projected_pct:+.2f}%" if projected_pct is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(stop_price)}">{fmt_money(stop_price) if stop_price is not None else "—"}</td>
+              <td class="num {stop_pl_class}" data-value="{raw_num(projected_stop_pl)}">{fmt_money(projected_stop_pl) if projected_stop_pl is not None else "—"}</td>
+              <td class="num {stop_pct_class}" data-value="{raw_num(projected_stop_pct)}">{f"{projected_stop_pct:+.2f}%" if projected_stop_pct is not None else "—"}</td>
+            </tr>"""
+
+        total_projected_pct = (total_projected_pl / total_projected_cost_basis * 100) if total_projected_cost_basis else None
+        total_stop_pct = (total_stop_pl / total_stop_cost_basis * 100) if total_stop_cost_basis else None
+        total_pl_class = "pos" if total_projected_pl >= 0 else "neg"
+        total_pct_class = "pos" if (total_projected_pct is not None and total_projected_pct >= 0) else ""
+        total_stop_pl_class = "pos" if total_stop_pl >= 0 else "neg"
+        total_stop_pct_class = "pos" if (total_stop_pct is not None and total_stop_pct >= 0) else ""
+        open_orders_rows += f"""
+            <tr class="totals-row">
+              <td>Total</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td class="num {total_pl_class}">{fmt_money(total_projected_pl)}</td>
+              <td class="num {total_pct_class}">{f"{total_projected_pct:+.2f}%" if total_projected_pct is not None else "—"}</td>
+              <td></td>
+              <td class="num {total_stop_pl_class}">{fmt_money(total_stop_pl)}</td>
+              <td class="num {total_stop_pct_class}">{f"{total_stop_pct:+.2f}%" if total_stop_pct is not None else "—"}</td>
             </tr>"""
     else:
-        open_orders_rows = "<tr><td colspan='10' class='muted'>No open orders</td></tr>"
+        open_orders_rows = "<tr><td colspan='13' class='muted'>No open orders</td></tr>"
 
     orders_rows = ""
     order_statuses_seen = set()
@@ -725,6 +773,9 @@ def generate(client=None):
           <th class="sortable num" onclick="sortTable('openOrdersTable',7,'num')">Limit Order Price</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',8,'num')">Projected Profit / (Loss)</th>
           <th class="sortable num" onclick="sortTable('openOrdersTable',9,'num')">Projected % Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',10,'num')">Stop Sell Price</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',11,'num')">Projected Stop Loss</th>
+          <th class="sortable num" onclick="sortTable('openOrdersTable',12,'num')">Projected % Stop Loss</th>
         </tr></thead>
         <tbody>{open_orders_rows}</tbody>
       </table>
@@ -948,11 +999,12 @@ def generate(client=None):
     function buildOpenOrdersRows(orders, names, positions) {{
       const openOrders = (orders || []).filter(o => !TERMINAL_ORDER_STATUSES.has(o.status));
       if (openOrders.length === 0) {{
-        return "<tr><td colspan='10' class='muted'>No open orders</td></tr>";
+        return "<tr><td colspan='13' class='muted'>No open orders</td></tr>";
       }}
       const positionsBySymbol = {{}};
       (positions || []).forEach(p => {{ positionsBySymbol[p.symbol] = p; }});
       let rows = '';
+      let totalPl = 0, totalCostBasis = 0, totalStopPl = 0, totalStopCostBasis = 0;
       openOrders.forEach(o => {{
         const submittedDt = new Date(o.submitted_at);
         const submitted = submittedDt.toLocaleString('en-US', {{
@@ -963,6 +1015,7 @@ def generate(client=None):
         const status = o.status || '—';
         const qty = o.qty != null ? Number(o.qty) : 0;
         const limitPrice = o.limit_price != null ? Number(o.limit_price) : null;
+        const stopPrice = o.stop_price != null ? Number(o.stop_price) : null;
         const pos = positionsBySymbol[o.symbol];
         const purchasePrice = pos ? Number(pos.avg_entry_price) : null;
 
@@ -971,7 +1024,19 @@ def generate(client=None):
           const perShare = side === 'sell' ? (limitPrice - purchasePrice) : (purchasePrice - limitPrice);
           projectedPl = qty * perShare;
           projectedPct = purchasePrice ? (perShare / purchasePrice * 100) : null;
+          totalPl += projectedPl;
+          totalCostBasis += qty * purchasePrice;
         }}
+
+        let projectedStopPl = null, projectedStopPct = null;
+        if (stopPrice != null && purchasePrice != null) {{
+          const stopPerShare = side === 'sell' ? (stopPrice - purchasePrice) : (purchasePrice - stopPrice);
+          projectedStopPl = qty * stopPerShare;
+          projectedStopPct = purchasePrice ? (stopPerShare / purchasePrice * 100) : null;
+          totalStopPl += projectedStopPl;
+          totalStopCostBasis += qty * purchasePrice;
+        }}
+
         const name = (names && names[o.symbol]) || o.symbol;
         rows += `<tr>
           <td data-value="${{submittedDt.toISOString()}}">${{submitted}}</td>
@@ -984,8 +1049,22 @@ def generate(client=None):
           <td class="num" data-value="${{limitPrice ?? ''}}">${{limitPrice != null ? fmtMoneyJS(limitPrice) : '—'}}</td>
           <td class="num ${{cls(projectedPl)}}" data-value="${{projectedPl ?? ''}}">${{projectedPl != null ? fmtMoneyJS(projectedPl) : '—'}}</td>
           <td class="num ${{cls(projectedPct)}}" data-value="${{projectedPct ?? ''}}">${{projectedPct != null ? pctJS(projectedPct) : '—'}}</td>
+          <td class="num" data-value="${{stopPrice ?? ''}}">${{stopPrice != null ? fmtMoneyJS(stopPrice) : '—'}}</td>
+          <td class="num ${{cls(projectedStopPl)}}" data-value="${{projectedStopPl ?? ''}}">${{projectedStopPl != null ? fmtMoneyJS(projectedStopPl) : '—'}}</td>
+          <td class="num ${{cls(projectedStopPct)}}" data-value="${{projectedStopPct ?? ''}}">${{projectedStopPct != null ? pctJS(projectedStopPct) : '—'}}</td>
         </tr>`;
       }});
+
+      const totalPct = totalCostBasis ? (totalPl / totalCostBasis * 100) : null;
+      const totalStopPct = totalStopCostBasis ? (totalStopPl / totalStopCostBasis * 100) : null;
+      rows += `<tr class="totals-row">
+        <td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td class="num ${{cls(totalPl)}}">${{fmtMoneyJS(totalPl)}}</td>
+        <td class="num ${{cls(totalPct)}}">${{totalPct != null ? pctJS(totalPct) : '—'}}</td>
+        <td></td>
+        <td class="num ${{cls(totalStopPl)}}">${{fmtMoneyJS(totalStopPl)}}</td>
+        <td class="num ${{cls(totalStopPct)}}">${{totalStopPct != null ? pctJS(totalStopPct) : '—'}}</td>
+      </tr>`;
       return rows;
     }}
 
