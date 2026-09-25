@@ -81,6 +81,8 @@ jobs:
         env:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
+          DASHBOARD_REFRESH_URL: ${{ vars.DASHBOARD_REFRESH_URL }}
+          DASHBOARD_REFRESH_TOKEN: ${{ vars.DASHBOARD_REFRESH_TOKEN }}
         run: |
           python live_bot.py \
             --session-start "${{ steps.window.outputs.start }}" \
