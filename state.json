@@ -1,9 +1,9 @@
 {
-  "date": "2026-09-25",
+  "date": null,
   "opening_ranges": {},
   "traded_today": [],
   "trade_count": 0,
-  "starting_equity": 1014133.28,
+  "starting_equity": null,
   "flattened": false,
   "notional_deployed_today": 0.0,
   "trade_meta": {},
