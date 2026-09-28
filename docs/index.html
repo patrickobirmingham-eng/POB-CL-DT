@@ -156,7 +156,7 @@
 </head>
 <body>
   <div id="topActions">
-    <button id="settingsBtn" onclick="openSettingsModal()" aria-label="Trading bot settings">&#9881; Settings</button>
+    
     <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
   </div>
 
@@ -185,16 +185,16 @@
   <div class="wrap">
     <h1>Claude.AI Paper Day Trading</h1>
     <div class="updated">
-      Last updated: <span id="lastUpdated">2026-09-28 10:44 AM ET</span>
+      Last updated: <span id="lastUpdated">2026-09-28 01:00 PM ET</span>
       <button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>
       <span id="refreshStatus" class="muted"></span>
     </div>
 
     <div class="cards">
-      <div class="card"><div class="label">Equity</div><div class="value">$1,014,121.02</div></div>
-      <div class="card"><div class="label">Cash</div><div class="value">$413,696.86</div></div>
-      <div class="card"><div class="label">Buying Power</div><div class="value">$3,335,975.10</div></div>
-      <div class="card"><div class="label">Open Positions</div><div class="value">6</div></div>
+      <div class="card"><div class="label">Equity</div><div class="value">$1,014,827.92</div></div>
+      <div class="card"><div class="label">Cash</div><div class="value">$514,383.27</div></div>
+      <div class="card"><div class="label">Buying Power</div><div class="value">$3,359,301.07</div></div>
+      <div class="card"><div class="label">Open Positions</div><div class="value">5</div></div>
     </div>
 
     <div class="panel">
@@ -203,8 +203,8 @@
         
     <svg viewBox="0 0 900 240" class="pl-chart" style="color: var(--muted);">
       <line x1="72" y1="185.1" x2="884" y2="185.1" stroke="currentColor" stroke-opacity="0.3" stroke-width="1" />
-      <rect class="pl-bar" x="102.5" y="16.0" width="142.1" height="169.1" fill="#16a34a" data-date="2026-09-22" data-pl="$13,335.69"><title>2026-09-22: $13,335.69</title></rect><rect class="pl-bar" x="305.4" y="178.5" width="142.1" height="6.6" fill="#16a34a" data-date="2026-09-23" data-pl="$518.55"><title>2026-09-23: $518.55</title></rect><rect class="pl-bar" x="508.4" y="162.7" width="142.1" height="22.4" fill="#16a34a" data-date="2026-09-24" data-pl="$1,768.92"><title>2026-09-24: $1,768.92</title></rect><rect class="pl-bar" x="711.5" y="185.1" width="142.1" height="18.9" fill="#dc2626" data-date="2026-09-25" data-pl="$-1,489.87"><title>2026-09-25: $-1,489.87</title></rect>
-      <text x="173.5" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-22</text><text x="376.5" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-23</text><text x="579.5" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-24</text><text x="782.5" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-25</text>
+      <rect class="pl-bar" x="96.4" y="16.0" width="113.7" height="169.1" fill="#16a34a" data-date="2026-09-22" data-pl="$13,335.69"><title>2026-09-22: $13,335.69</title></rect><rect class="pl-bar" x="258.8" y="178.5" width="113.7" height="6.6" fill="#16a34a" data-date="2026-09-23" data-pl="$518.55"><title>2026-09-23: $518.55</title></rect><rect class="pl-bar" x="421.2" y="162.7" width="113.7" height="22.4" fill="#16a34a" data-date="2026-09-24" data-pl="$1,768.92"><title>2026-09-24: $1,768.92</title></rect><rect class="pl-bar" x="583.6" y="185.1" width="113.7" height="18.9" fill="#dc2626" data-date="2026-09-25" data-pl="$-1,489.87"><title>2026-09-25: $-1,489.87</title></rect><rect class="pl-bar" x="746.0" y="175.8" width="113.7" height="9.3" fill="#16a34a" data-date="2026-09-28" data-pl="$735.70"><title>2026-09-28: $735.70</title></rect>
+      <text x="153.2" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-22</text><text x="315.6" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-23</text><text x="478.0" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-24</text><text x="640.4" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-25</text><text x="802.8" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-28</text>
       <text x="64" y="24" font-size="10" fill="currentColor" text-anchor="end" opacity="0.65">$13,335.69</text>
       <text x="64" y="188.1" font-size="10" fill="currentColor" text-anchor="end" opacity="0.65">$0</text>
       <text x="64" y="204" font-size="10" fill="currentColor" text-anchor="end" opacity="0.65">$-1,489.87</text>
@@ -227,6 +227,14 @@
           <th class="sortable num" onclick="sortTable('dailyTable',5,'num')">Gain %</th>
         </tr></thead>
         <tbody>
+            <tr>
+              <td data-value="2026-09-28">2026-09-28</td>
+              <td class="num" data-value="1.000000">1</td>
+              <td class="num" data-value="99950.708684">$99,950.71</td>
+              <td class="num" data-value="100686.409422">$100,686.41</td>
+              <td class="num pos" data-value="735.700738">$735.70</td>
+              <td class="num pos" data-value="0.736064">+0.74%</td>
+            </tr>
             <tr>
               <td data-value="2026-09-25">2026-09-25</td>
               <td class="num" data-value="8.000000">8</td>
@@ -261,11 +269,11 @@
             </tr>
             <tr class="totals-row">
               <td>Total</td>
-              <td class="num">21</td>
-              <td class="num">$5,801,338.89</td>
-              <td class="num">$5,815,472.17</td>
-              <td class="num pos">$14,133.28</td>
-              <td class="num pos">+0.24%</td>
+              <td class="num">22</td>
+              <td class="num">$5,901,289.60</td>
+              <td class="num">$5,916,158.58</td>
+              <td class="num pos">$14,868.98</td>
+              <td class="num pos">+0.25%</td>
             </tr></tbody>
       </table>
       </div>
@@ -296,16 +304,73 @@
         </tr></thead>
         <tbody>
             <tr>
+              <td data-value="2026-09-28T13:00:55.358475-04:00">2026-09-28 01:00 PM</td>
+              <td data-value="AXON">AXON</td>
+              <td data-value="Axon Enterprise, Inc. Common Stock">Axon Enterprise, Inc. Common Stock</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td class="num" data-value="233.000000">233</td>
+              <td data-value="new">new</td>
+              <td class="num" data-value="426.555000">$426.56</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr>
+              <td data-value="2026-09-28T13:00:55.338598-04:00">2026-09-28 01:00 PM</td>
+              <td data-value="AXON">AXON</td>
+              <td data-value="Axon Enterprise, Inc. Common Stock">Axon Enterprise, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="233.000000">233</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="426.555000">$426.56</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="416.660000">$416.66</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr>
+              <td data-value="2026-09-28T13:00:55.338598-04:00">2026-09-28 01:00 PM</td>
+              <td data-value="AXON">AXON</td>
+              <td data-value="Axon Enterprise, Inc. Common Stock">Axon Enterprise, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="233.000000">233</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="426.555000">$426.56</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="450.470000">$450.47</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr>
               <td data-value="2026-09-28T09:50:18.670483-04:00">2026-09-28 09:50 AM</td>
               <td data-value="FAST">FAST</td>
               <td data-value="Fastenal Company Common Stock">Fastenal Company Common Stock</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1980.000000">1980</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="50.540000">$50.54</td>
-              <td class="num" data-value="19.800000">$19.80</td>
+              <td class="num" data-value="50.375000">$50.38</td>
+              <td class="num" data-value="-306.900000">$-306.90</td>
               <td class="num" data-value="50.530000">$50.53</td>
-              <td class="num pos" data-value="0.010000">$0.01</td>
+              <td class="num neg" data-value="-0.155000">$-0.16</td>
               <td class="num" data-value="51.400000">$51.40</td>
               <td class="num pos" data-value="0.870000">$0.87</td>
               <td class="num pos" data-value="1722.600000">$1,722.60</td>
@@ -321,10 +386,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1980.000000">1980</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="50.540000">$50.54</td>
-              <td class="num" data-value="19.800000">$19.80</td>
+              <td class="num" data-value="50.375000">$50.38</td>
+              <td class="num" data-value="-306.900000">$-306.90</td>
               <td class="num" data-value="50.530000">$50.53</td>
-              <td class="num pos" data-value="0.010000">$0.01</td>
+              <td class="num neg" data-value="-0.155000">$-0.16</td>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
@@ -340,10 +405,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1156.000000">1156</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="86.460000">$86.46</td>
-              <td class="num" data-value="-23.120000">$-23.12</td>
+              <td class="num" data-value="86.555000">$86.56</td>
+              <td class="num" data-value="86.700000">$86.70</td>
               <td class="num" data-value="86.480000">$86.48</td>
-              <td class="num neg" data-value="-0.020000">$-0.02</td>
+              <td class="num pos" data-value="0.075000">$0.08</td>
               <td class="num" data-value="87.780000">$87.78</td>
               <td class="num pos" data-value="1.300000">$1.30</td>
               <td class="num pos" data-value="1502.800000">$1,502.80</td>
@@ -359,10 +424,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1050.000000">1050</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="95.360000">$95.36</td>
-              <td class="num" data-value="105.000000">$105.00</td>
+              <td class="num" data-value="95.540000">$95.54</td>
+              <td class="num" data-value="294.000000">$294.00</td>
               <td class="num" data-value="95.260000">$95.26</td>
-              <td class="num pos" data-value="0.100000">$0.10</td>
+              <td class="num pos" data-value="0.280000">$0.28</td>
               <td class="num" data-value="98.040000">$98.04</td>
               <td class="num pos" data-value="2.780000">$2.78</td>
               <td class="num pos" data-value="2919.000000">$2,919.00</td>
@@ -378,10 +443,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1050.000000">1050</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="95.360000">$95.36</td>
-              <td class="num" data-value="105.000000">$105.00</td>
+              <td class="num" data-value="95.540000">$95.54</td>
+              <td class="num" data-value="294.000000">$294.00</td>
               <td class="num" data-value="95.260000">$95.26</td>
-              <td class="num pos" data-value="0.100000">$0.10</td>
+              <td class="num pos" data-value="0.280000">$0.28</td>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
@@ -397,10 +462,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="282.000000">282</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="355.370000">$355.37</td>
-              <td class="num" data-value="-95.480124">$-95.48</td>
+              <td class="num" data-value="355.730000">$355.73</td>
+              <td class="num" data-value="6.039876">$6.04</td>
               <td class="num" data-value="355.708582">$355.71</td>
-              <td class="num neg" data-value="-0.338582">$-0.34</td>
+              <td class="num pos" data-value="0.021418">$0.02</td>
               <td class="num" data-value="362.460000">$362.46</td>
               <td class="num pos" data-value="6.751418">$6.75</td>
               <td class="num pos" data-value="1903.899876">$1,903.90</td>
@@ -416,10 +481,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1156.000000">1156</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="86.460000">$86.46</td>
-              <td class="num" data-value="-23.120000">$-23.12</td>
+              <td class="num" data-value="86.555000">$86.56</td>
+              <td class="num" data-value="86.700000">$86.70</td>
               <td class="num" data-value="86.480000">$86.48</td>
-              <td class="num neg" data-value="-0.020000">$-0.02</td>
+              <td class="num pos" data-value="0.075000">$0.08</td>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
@@ -435,10 +500,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="282.000000">282</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="355.370000">$355.37</td>
-              <td class="num" data-value="-95.480124">$-95.48</td>
+              <td class="num" data-value="355.730000">$355.73</td>
+              <td class="num" data-value="6.039876">$6.04</td>
               <td class="num" data-value="355.708582">$355.71</td>
-              <td class="num neg" data-value="-0.338582">$-0.34</td>
+              <td class="num pos" data-value="0.021418">$0.02</td>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
@@ -454,10 +519,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="601.000000">601</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="166.025000">$166.03</td>
-              <td class="num" data-value="-351.585000">$-351.59</td>
+              <td class="num" data-value="166.245000">$166.25</td>
+              <td class="num" data-value="-219.365000">$-219.37</td>
               <td class="num" data-value="166.610000">$166.61</td>
-              <td class="num neg" data-value="-0.585000">$-0.59</td>
+              <td class="num neg" data-value="-0.365000">$-0.37</td>
               <td class="num" data-value="169.590000">$169.59</td>
               <td class="num pos" data-value="2.980000">$2.98</td>
               <td class="num pos" data-value="1790.980000">$1,790.98</td>
@@ -473,10 +538,10 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="601.000000">601</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="166.025000">$166.03</td>
-              <td class="num" data-value="-351.585000">$-351.59</td>
+              <td class="num" data-value="166.245000">$166.25</td>
+              <td class="num" data-value="-219.365000">$-219.37</td>
               <td class="num" data-value="166.610000">$166.61</td>
-              <td class="num neg" data-value="-0.585000">$-0.59</td>
+              <td class="num neg" data-value="-0.365000">$-0.37</td>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
@@ -484,44 +549,6 @@
               <td class="num" data-value="164.760000">$164.76</td>
               <td class="num neg" data-value="-1111.850000">$-1,111.85</td>
               <td class="num neg" data-value="-1.110378">-1.11%</td>
-            </tr>
-            <tr>
-              <td data-value="2026-09-28T09:47:12.517336-04:00">2026-09-28 09:47 AM</td>
-              <td data-value="FER">FER</td>
-              <td data-value="Ferrovial N.V. Ordinary Shares">Ferrovial N.V. Ordinary Shares</td>
-              <td class="neg" data-value="sell">SELL</td>
-              <td class="num" data-value="1802.000000">1802</td>
-              <td data-value="new">new</td>
-              <td class="num" data-value="55.660000">$55.66</td>
-              <td class="num" data-value="348.611316">$348.61</td>
-              <td class="num" data-value="55.466542">$55.47</td>
-              <td class="num pos" data-value="0.193458">$0.19</td>
-              <td class="num" data-value="55.870000">$55.87</td>
-              <td class="num pos" data-value="0.403458">$0.40</td>
-              <td class="num pos" data-value="727.031316">$727.03</td>
-              <td class="num pos" data-value="0.727390">+0.73%</td>
-              <td class="num" data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num " data-value="">—</td>
-            </tr>
-            <tr>
-              <td data-value="2026-09-28T09:47:09.257792-04:00">2026-09-28 09:47 AM</td>
-              <td data-value="FER">FER</td>
-              <td data-value="Ferrovial N.V. Ordinary Shares">Ferrovial N.V. Ordinary Shares</td>
-              <td class="neg" data-value="sell">SELL</td>
-              <td class="num" data-value="1802.000000">1802</td>
-              <td data-value="held">held</td>
-              <td class="num" data-value="55.660000">$55.66</td>
-              <td class="num" data-value="348.611316">$348.61</td>
-              <td class="num" data-value="55.466542">$55.47</td>
-              <td class="num pos" data-value="0.193458">$0.19</td>
-              <td class="num" data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num" data-value="55.300000">$55.30</td>
-              <td class="num neg" data-value="-300.108684">$-300.11</td>
-              <td class="num neg" data-value="-0.300257">-0.30%</td>
             </tr>
             <tr class="totals-row">
               <td>Total</td>
@@ -531,16 +558,16 @@
               <td></td>
               <td></td>
               <td></td>
-              <td class="num pos">$6.45</td>
+              <td class="num neg">$-279.05</td>
               <td></td>
               <td></td>
               <td></td>
               <td></td>
-              <td class="num pos">$10,566.31</td>
-              <td class="num pos">+1.76%</td>
+              <td class="num pos">$9,839.28</td>
+              <td class="num pos">+1.97%</td>
               <td></td>
-              <td class="num neg">$-6,216.94</td>
-              <td class="num ">-1.04%</td>
+              <td class="num neg">$-5,916.83</td>
+              <td class="num ">-1.18%</td>
             </tr></tbody>
       </table>
       </div>
@@ -569,85 +596,71 @@
               <td data-value="FAST">FAST</td>
               <td data-value="Fastenal Company Common Stock">Fastenal Company Common Stock</td>
               <td class="num" data-value="1980.000000">1980</td>
-              <td class="num" data-value="50.545000">$50.55</td>
+              <td class="num" data-value="50.400000">$50.40</td>
               <td class="num" data-value="50.530000">$50.53</td>
               <td class="num" data-value="100049.400000">$100,049.40</td>
-              <td class="num" data-value="100079.100000">$100,079.10</td>
-              <td class="num pos" data-value="29.700000">$29.70</td>
-              <td class="num pos" data-value="0.030000">+0.03%</td>
-              <td class="num pos" data-value="0.115000">$0.12</td>
-              <td class="num pos" data-value="0.228000">+0.23%</td>
-              <td class="num pos" data-value="227.700000">$227.70</td>
-            </tr>
-            <tr>
-              <td data-value="FER">FER</td>
-              <td data-value="Ferrovial N.V. Ordinary Shares">Ferrovial N.V. Ordinary Shares</td>
-              <td class="num" data-value="1802.000000">1802</td>
-              <td class="num" data-value="55.675000">$55.67</td>
-              <td class="num" data-value="55.466542">$55.47</td>
-              <td class="num" data-value="99950.708684">$99,950.71</td>
-              <td class="num" data-value="100326.350000">$100,326.35</td>
-              <td class="num pos" data-value="375.641316">$375.64</td>
-              <td class="num pos" data-value="0.376000">+0.38%</td>
-              <td class="num neg" data-value="-0.155000">$-0.16</td>
-              <td class="num neg" data-value="-0.278000">-0.28%</td>
-              <td class="num neg" data-value="-279.310000">$-279.31</td>
+              <td class="num" data-value="99792.000000">$99,792.00</td>
+              <td class="num neg" data-value="-257.400000">$-257.40</td>
+              <td class="num neg" data-value="-0.257000">-0.26%</td>
+              <td class="num neg" data-value="-0.030000">$-0.03</td>
+              <td class="num neg" data-value="-0.059000">-0.06%</td>
+              <td class="num neg" data-value="-59.400000">$-59.40</td>
             </tr>
             <tr>
               <td data-value="MAR">MAR</td>
               <td data-value="Marriott International Class A Common Stock">Marriott International Class A Common Stock</td>
               <td class="num" data-value="282.000000">282</td>
-              <td class="num" data-value="355.470000">$355.47</td>
+              <td class="num" data-value="355.620000">$355.62</td>
               <td class="num" data-value="355.708582">$355.71</td>
               <td class="num" data-value="100309.820124">$100,309.82</td>
-              <td class="num" data-value="100242.540000">$100,242.54</td>
-              <td class="num neg" data-value="-67.280124">$-67.28</td>
-              <td class="num neg" data-value="-0.067000">-0.07%</td>
-              <td class="num pos" data-value="3.440000">$3.44</td>
-              <td class="num pos" data-value="0.977000">+0.98%</td>
-              <td class="num pos" data-value="970.080000">$970.08</td>
+              <td class="num" data-value="100284.840000">$100,284.84</td>
+              <td class="num neg" data-value="-24.980124">$-24.98</td>
+              <td class="num neg" data-value="-0.025000">-0.03%</td>
+              <td class="num pos" data-value="3.590000">$3.59</td>
+              <td class="num pos" data-value="1.020000">+1.02%</td>
+              <td class="num pos" data-value="1012.380000">$1,012.38</td>
             </tr>
             <tr>
               <td data-value="ORLY">ORLY</td>
               <td data-value="O'Reilly Automotive, Inc. Common Stock">O'Reilly Automotive, Inc. Common Stock</td>
               <td class="num" data-value="1156.000000">1156</td>
-              <td class="num" data-value="86.436400">$86.44</td>
+              <td class="num" data-value="86.580000">$86.58</td>
               <td class="num" data-value="86.480000">$86.48</td>
               <td class="num" data-value="99970.880000">$99,970.88</td>
-              <td class="num" data-value="99920.478400">$99,920.48</td>
-              <td class="num neg" data-value="-50.401600">$-50.40</td>
-              <td class="num neg" data-value="-0.050000">-0.05%</td>
-              <td class="num pos" data-value="0.321400">$0.32</td>
-              <td class="num pos" data-value="0.373000">+0.37%</td>
-              <td class="num pos" data-value="371.538400">$371.54</td>
+              <td class="num" data-value="100086.480000">$100,086.48</td>
+              <td class="num pos" data-value="115.600000">$115.60</td>
+              <td class="num pos" data-value="0.116000">+0.12%</td>
+              <td class="num pos" data-value="0.465000">$0.47</td>
+              <td class="num pos" data-value="0.540000">+0.54%</td>
+              <td class="num pos" data-value="537.540000">$537.54</td>
             </tr>
             <tr>
               <td data-value="SBUX">SBUX</td>
               <td data-value="Starbucks Corporation Common Stock">Starbucks Corporation Common Stock</td>
               <td class="num" data-value="1050.000000">1050</td>
-              <td class="num" data-value="95.355000">$95.36</td>
+              <td class="num" data-value="95.540000">$95.54</td>
               <td class="num" data-value="95.260000">$95.26</td>
               <td class="num" data-value="100023.000000">$100,023.00</td>
-              <td class="num" data-value="100122.750000">$100,122.75</td>
-              <td class="num pos" data-value="99.750000">$99.75</td>
-              <td class="num pos" data-value="0.100000">+0.10%</td>
-              <td class="num pos" data-value="0.495000">$0.50</td>
-              <td class="num pos" data-value="0.522000">+0.52%</td>
-              <td class="num pos" data-value="519.750000">$519.75</td>
+              <td class="num" data-value="100317.000000">$100,317.00</td>
+              <td class="num pos" data-value="294.000000">$294.00</td>
+              <td class="num pos" data-value="0.294000">+0.29%</td>
+              <td class="num pos" data-value="0.680000">$0.68</td>
+              <td class="num pos" data-value="0.717000">+0.72%</td>
+              <td class="num pos" data-value="714.000000">$714.00</td>
             </tr>
             <tr>
               <td data-value="TMUS">TMUS</td>
               <td data-value="T-Mobile US, Inc. Common Stock">T-Mobile US, Inc. Common Stock</td>
               <td class="num" data-value="601.000000">601</td>
-              <td class="num" data-value="165.945000">$165.94</td>
+              <td class="num" data-value="166.330000">$166.33</td>
               <td class="num" data-value="166.610000">$166.61</td>
               <td class="num" data-value="100132.610000">$100,132.61</td>
-              <td class="num" data-value="99732.945000">$99,732.95</td>
-              <td class="num neg" data-value="-399.665000">$-399.67</td>
-              <td class="num neg" data-value="-0.399000">-0.40%</td>
-              <td class="num pos" data-value="0.515000">$0.51</td>
-              <td class="num pos" data-value="0.311000">+0.31%</td>
-              <td class="num pos" data-value="309.515000">$309.51</td>
+              <td class="num" data-value="99964.330000">$99,964.33</td>
+              <td class="num neg" data-value="-168.280000">$-168.28</td>
+              <td class="num neg" data-value="-0.168000">-0.17%</td>
+              <td class="num pos" data-value="0.900000">$0.90</td>
+              <td class="num pos" data-value="0.544000">+0.54%</td>
+              <td class="num pos" data-value="540.900000">$540.90</td>
             </tr>
             <tr class="totals-row">
               <td>Total</td>
@@ -655,13 +668,13 @@
               <td></td>
               <td></td>
               <td></td>
-              <td class="num">$600,436.42</td>
-              <td class="num">$600,424.16</td>
-              <td class="num neg">$-12.26</td>
+              <td class="num">$500,485.71</td>
+              <td class="num">$500,444.65</td>
+              <td class="num neg">$-41.06</td>
               <td></td>
               <td></td>
               <td></td>
-              <td class="num pos">$2,119.27</td>
+              <td class="num pos">$2,745.42</td>
             </tr></tbody>
       </table>
       </div>
@@ -691,21 +704,72 @@
         </tr></thead>
         <tbody>
             <tr data-status="new">
+              <td data-value="2026-09-28T13:00:55.358475-04:00">2026-09-28 01:00 PM</td>
+              <td data-value="AXON">AXON</td>
+              <td data-value="Axon Enterprise, Inc. Common Stock">Axon Enterprise, Inc. Common Stock</td>
+              <td class="pos" data-value="buy">BUY</td>
+              <td class="num" data-value="233.000000">233</td>
+              <td data-value="new">new</td>
+              <td class="num" data-value="426.555000">$426.56</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="99387.315000">$99,387.32</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num neg" data-value="-3.480000">$-3.48</td>
+              <td class="num neg" data-value="-0.809236">-0.81%</td>
+              <td class="num neg" data-value="-810.840000">$-810.84</td>
+            </tr>
+            <tr data-status="held">
+              <td data-value="2026-09-28T13:00:55.338598-04:00">2026-09-28 01:00 PM</td>
+              <td data-value="AXON">AXON</td>
+              <td data-value="Axon Enterprise, Inc. Common Stock">Axon Enterprise, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="233.000000">233</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="426.555000">$426.56</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="99387.315000">$99,387.32</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num neg" data-value="-3.480000">$-3.48</td>
+              <td class="num neg" data-value="-0.809236">-0.81%</td>
+              <td class="num neg" data-value="-810.840000">$-810.84</td>
+            </tr>
+            <tr data-status="held">
+              <td data-value="2026-09-28T13:00:55.338598-04:00">2026-09-28 01:00 PM</td>
+              <td data-value="AXON">AXON</td>
+              <td data-value="Axon Enterprise, Inc. Common Stock">Axon Enterprise, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="233.000000">233</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="426.555000">$426.56</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="99387.315000">$99,387.32</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num neg" data-value="-3.480000">$-3.48</td>
+              <td class="num neg" data-value="-0.809236">-0.81%</td>
+              <td class="num neg" data-value="-810.840000">$-810.84</td>
+            </tr>
+            <tr data-status="new">
               <td data-value="2026-09-28T09:50:18.670483-04:00">2026-09-28 09:50 AM</td>
               <td data-value="FAST">FAST</td>
               <td data-value="Fastenal Company Common Stock">Fastenal Company Common Stock</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1980.000000">1980</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="50.540000">$50.54</td>
+              <td class="num" data-value="50.375000">$50.38</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="100069.200000">$100,069.20</td>
+              <td class="num" data-value="99742.500000">$99,742.50</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.115000">$0.12</td>
-              <td class="num pos" data-value="0.228061">+0.23%</td>
-              <td class="num pos" data-value="227.700000">$227.70</td>
+              <td class="num neg" data-value="-0.050000">$-0.05</td>
+              <td class="num neg" data-value="-0.099157">-0.10%</td>
+              <td class="num neg" data-value="-99.000000">$-99.00</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T09:50:11.526309-04:00">2026-09-28 09:50 AM</td>
@@ -714,15 +778,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="1980.000000">1980</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="50.540000">$50.54</td>
+              <td class="num" data-value="50.375000">$50.38</td>
               <td class="num" data-value="50.530000">$50.53</td>
               <td class="num" data-value="100049.400000">$100,049.40</td>
-              <td class="num" data-value="100069.200000">$100,069.20</td>
-              <td class="num pos" data-value="19.800000">$19.80</td>
-              <td class="num pos" data-value="0.019790">+0.02%</td>
-              <td class="num pos" data-value="0.115000">$0.12</td>
-              <td class="num pos" data-value="0.228061">+0.23%</td>
-              <td class="num pos" data-value="227.700000">$227.70</td>
+              <td class="num" data-value="99742.500000">$99,742.50</td>
+              <td class="num neg" data-value="-306.900000">$-306.90</td>
+              <td class="num neg" data-value="-0.306748">-0.31%</td>
+              <td class="num neg" data-value="-0.050000">$-0.05</td>
+              <td class="num neg" data-value="-0.099157">-0.10%</td>
+              <td class="num neg" data-value="-99.000000">$-99.00</td>
             </tr>
             <tr data-status="held">
               <td data-value="2026-09-28T09:50:11.354206-04:00">2026-09-28 09:50 AM</td>
@@ -731,15 +795,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1980.000000">1980</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="50.540000">$50.54</td>
+              <td class="num" data-value="50.375000">$50.38</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="100069.200000">$100,069.20</td>
+              <td class="num" data-value="99742.500000">$99,742.50</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.115000">$0.12</td>
-              <td class="num pos" data-value="0.228061">+0.23%</td>
-              <td class="num pos" data-value="227.700000">$227.70</td>
+              <td class="num neg" data-value="-0.050000">$-0.05</td>
+              <td class="num neg" data-value="-0.099157">-0.10%</td>
+              <td class="num neg" data-value="-99.000000">$-99.00</td>
             </tr>
             <tr data-status="new">
               <td data-value="2026-09-28T09:49:07.875166-04:00">2026-09-28 09:49 AM</td>
@@ -748,15 +812,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1156.000000">1156</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="86.460000">$86.46</td>
+              <td class="num" data-value="86.555000">$86.56</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="99947.760000">$99,947.76</td>
+              <td class="num" data-value="100057.580000">$100,057.58</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.350000">$0.35</td>
-              <td class="num pos" data-value="0.406457">+0.41%</td>
-              <td class="num pos" data-value="404.600000">$404.60</td>
+              <td class="num pos" data-value="0.445000">$0.45</td>
+              <td class="num pos" data-value="0.516781">+0.52%</td>
+              <td class="num pos" data-value="514.420000">$514.42</td>
             </tr>
             <tr data-status="new">
               <td data-value="2026-09-28T09:49:07.181592-04:00">2026-09-28 09:49 AM</td>
@@ -765,15 +829,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1050.000000">1050</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="95.360000">$95.36</td>
+              <td class="num" data-value="95.540000">$95.54</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="100128.000000">$100,128.00</td>
+              <td class="num" data-value="100317.000000">$100,317.00</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.485000">$0.48</td>
-              <td class="num pos" data-value="0.511199">+0.51%</td>
-              <td class="num pos" data-value="509.250000">$509.25</td>
+              <td class="num pos" data-value="0.665000">$0.67</td>
+              <td class="num pos" data-value="0.700922">+0.70%</td>
+              <td class="num pos" data-value="698.250000">$698.25</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T09:49:06.437100-04:00">2026-09-28 09:49 AM</td>
@@ -782,15 +846,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="1050.000000">1050</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="95.360000">$95.36</td>
+              <td class="num" data-value="95.540000">$95.54</td>
               <td class="num" data-value="95.260000">$95.26</td>
               <td class="num" data-value="100023.000000">$100,023.00</td>
-              <td class="num" data-value="100128.000000">$100,128.00</td>
-              <td class="num pos" data-value="105.000000">$105.00</td>
-              <td class="num pos" data-value="0.104976">+0.10%</td>
-              <td class="num pos" data-value="0.485000">$0.48</td>
-              <td class="num pos" data-value="0.511199">+0.51%</td>
-              <td class="num pos" data-value="509.250000">$509.25</td>
+              <td class="num" data-value="100317.000000">$100,317.00</td>
+              <td class="num pos" data-value="294.000000">$294.00</td>
+              <td class="num pos" data-value="0.293932">+0.29%</td>
+              <td class="num pos" data-value="0.665000">$0.67</td>
+              <td class="num pos" data-value="0.700922">+0.70%</td>
+              <td class="num pos" data-value="698.250000">$698.25</td>
             </tr>
             <tr data-status="held">
               <td data-value="2026-09-28T09:49:06.429959-04:00">2026-09-28 09:49 AM</td>
@@ -799,15 +863,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1050.000000">1050</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="95.360000">$95.36</td>
+              <td class="num" data-value="95.540000">$95.54</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="100128.000000">$100,128.00</td>
+              <td class="num" data-value="100317.000000">$100,317.00</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.485000">$0.48</td>
-              <td class="num pos" data-value="0.511199">+0.51%</td>
-              <td class="num pos" data-value="509.250000">$509.25</td>
+              <td class="num pos" data-value="0.665000">$0.67</td>
+              <td class="num pos" data-value="0.700922">+0.70%</td>
+              <td class="num pos" data-value="698.250000">$698.25</td>
             </tr>
             <tr data-status="new">
               <td data-value="2026-09-28T09:49:05.922138-04:00">2026-09-28 09:49 AM</td>
@@ -816,15 +880,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="282.000000">282</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="355.370000">$355.37</td>
+              <td class="num" data-value="355.730000">$355.73</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="100214.340000">$100,214.34</td>
+              <td class="num" data-value="100315.860000">$100,315.86</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="3.340000">$3.34</td>
-              <td class="num pos" data-value="0.948783">+0.95%</td>
-              <td class="num pos" data-value="941.880000">$941.88</td>
+              <td class="num pos" data-value="3.700000">$3.70</td>
+              <td class="num pos" data-value="1.051047">+1.05%</td>
+              <td class="num pos" data-value="1043.400000">$1,043.40</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T09:49:04.823281-04:00">2026-09-28 09:49 AM</td>
@@ -833,15 +897,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="1156.000000">1156</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="86.460000">$86.46</td>
+              <td class="num" data-value="86.555000">$86.56</td>
               <td class="num" data-value="86.480000">$86.48</td>
               <td class="num" data-value="99970.880000">$99,970.88</td>
-              <td class="num" data-value="99947.760000">$99,947.76</td>
-              <td class="num neg" data-value="-23.120000">$-23.12</td>
-              <td class="num neg" data-value="-0.023127">-0.02%</td>
-              <td class="num pos" data-value="0.350000">$0.35</td>
-              <td class="num pos" data-value="0.406457">+0.41%</td>
-              <td class="num pos" data-value="404.600000">$404.60</td>
+              <td class="num" data-value="100057.580000">$100,057.58</td>
+              <td class="num pos" data-value="86.700000">$86.70</td>
+              <td class="num pos" data-value="0.086725">+0.09%</td>
+              <td class="num pos" data-value="0.445000">$0.45</td>
+              <td class="num pos" data-value="0.516781">+0.52%</td>
+              <td class="num pos" data-value="514.420000">$514.42</td>
             </tr>
             <tr data-status="held">
               <td data-value="2026-09-28T09:49:04.807683-04:00">2026-09-28 09:49 AM</td>
@@ -850,15 +914,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1156.000000">1156</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="86.460000">$86.46</td>
+              <td class="num" data-value="86.555000">$86.56</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="99947.760000">$99,947.76</td>
+              <td class="num" data-value="100057.580000">$100,057.58</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.350000">$0.35</td>
-              <td class="num pos" data-value="0.406457">+0.41%</td>
-              <td class="num pos" data-value="404.600000">$404.60</td>
+              <td class="num pos" data-value="0.445000">$0.45</td>
+              <td class="num pos" data-value="0.516781">+0.52%</td>
+              <td class="num pos" data-value="514.420000">$514.42</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T09:49:03.079738-04:00">2026-09-28 09:49 AM</td>
@@ -867,15 +931,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="282.000000">282</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="355.370000">$355.37</td>
+              <td class="num" data-value="355.730000">$355.73</td>
               <td class="num" data-value="355.708582">$355.71</td>
               <td class="num" data-value="100309.820124">$100,309.82</td>
-              <td class="num" data-value="100214.340000">$100,214.34</td>
-              <td class="num neg" data-value="-95.480124">$-95.48</td>
-              <td class="num neg" data-value="-0.095185">-0.10%</td>
-              <td class="num pos" data-value="3.340000">$3.34</td>
-              <td class="num pos" data-value="0.948783">+0.95%</td>
-              <td class="num pos" data-value="941.880000">$941.88</td>
+              <td class="num" data-value="100315.860000">$100,315.86</td>
+              <td class="num pos" data-value="6.039876">$6.04</td>
+              <td class="num pos" data-value="0.006021">+0.01%</td>
+              <td class="num pos" data-value="3.700000">$3.70</td>
+              <td class="num pos" data-value="1.051047">+1.05%</td>
+              <td class="num pos" data-value="1043.400000">$1,043.40</td>
             </tr>
             <tr data-status="held">
               <td data-value="2026-09-28T09:49:03.057438-04:00">2026-09-28 09:49 AM</td>
@@ -884,15 +948,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="282.000000">282</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="355.370000">$355.37</td>
+              <td class="num" data-value="355.730000">$355.73</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="100214.340000">$100,214.34</td>
+              <td class="num" data-value="100315.860000">$100,315.86</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="3.340000">$3.34</td>
-              <td class="num pos" data-value="0.948783">+0.95%</td>
-              <td class="num pos" data-value="941.880000">$941.88</td>
+              <td class="num pos" data-value="3.700000">$3.70</td>
+              <td class="num pos" data-value="1.051047">+1.05%</td>
+              <td class="num pos" data-value="1043.400000">$1,043.40</td>
             </tr>
             <tr data-status="new">
               <td data-value="2026-09-28T09:48:15.255612-04:00">2026-09-28 09:48 AM</td>
@@ -901,15 +965,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="601.000000">601</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="166.025000">$166.03</td>
+              <td class="num" data-value="166.245000">$166.25</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="99781.025000">$99,781.03</td>
+              <td class="num" data-value="99913.245000">$99,913.25</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.535000">$0.53</td>
-              <td class="num pos" data-value="0.323282">+0.32%</td>
-              <td class="num pos" data-value="321.535000">$321.53</td>
+              <td class="num pos" data-value="0.755000">$0.75</td>
+              <td class="num pos" data-value="0.456221">+0.46%</td>
+              <td class="num pos" data-value="453.755000">$453.75</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T09:48:14.207459-04:00">2026-09-28 09:48 AM</td>
@@ -918,15 +982,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="601.000000">601</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="166.025000">$166.03</td>
+              <td class="num" data-value="166.245000">$166.25</td>
               <td class="num" data-value="166.610000">$166.61</td>
               <td class="num" data-value="100132.610000">$100,132.61</td>
-              <td class="num" data-value="99781.025000">$99,781.03</td>
-              <td class="num neg" data-value="-351.585000">$-351.59</td>
-              <td class="num neg" data-value="-0.351119">-0.35%</td>
-              <td class="num pos" data-value="0.535000">$0.53</td>
-              <td class="num pos" data-value="0.323282">+0.32%</td>
-              <td class="num pos" data-value="321.535000">$321.53</td>
+              <td class="num" data-value="99913.245000">$99,913.25</td>
+              <td class="num neg" data-value="-219.365000">$-219.37</td>
+              <td class="num neg" data-value="-0.219074">-0.22%</td>
+              <td class="num pos" data-value="0.755000">$0.75</td>
+              <td class="num pos" data-value="0.456221">+0.46%</td>
+              <td class="num pos" data-value="453.755000">$453.75</td>
             </tr>
             <tr data-status="held">
               <td data-value="2026-09-28T09:48:14.201746-04:00">2026-09-28 09:48 AM</td>
@@ -935,32 +999,32 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="601.000000">601</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="166.025000">$166.03</td>
+              <td class="num" data-value="166.245000">$166.25</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="99781.025000">$99,781.03</td>
+              <td class="num" data-value="99913.245000">$99,913.25</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.535000">$0.53</td>
-              <td class="num pos" data-value="0.323282">+0.32%</td>
-              <td class="num pos" data-value="321.535000">$321.53</td>
+              <td class="num pos" data-value="0.755000">$0.75</td>
+              <td class="num pos" data-value="0.456221">+0.46%</td>
+              <td class="num pos" data-value="453.755000">$453.75</td>
             </tr>
-            <tr data-status="new">
+            <tr data-status="filled">
               <td data-value="2026-09-28T09:47:12.517336-04:00">2026-09-28 09:47 AM</td>
               <td data-value="FER">FER</td>
               <td data-value="Ferrovial N.V. Ordinary Shares">Ferrovial N.V. Ordinary Shares</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1802.000000">1802</td>
-              <td data-value="new">new</td>
-              <td class="num" data-value="55.660000">$55.66</td>
-              <td class="num" data-value="">—</td>
-              <td class="num" data-value="">—</td>
-              <td class="num" data-value="100299.320000">$100,299.32</td>
-              <td class="num " data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.175000">$-0.18</td>
-              <td class="num neg" data-value="-0.313423">-0.31%</td>
-              <td class="num neg" data-value="-315.350000">$-315.35</td>
+              <td data-value="filled">filled</td>
+              <td class="num" data-value="55.590000">$55.59</td>
+              <td class="num" data-value="55.874811">$55.87</td>
+              <td class="num" data-value="100686.409422">$100,686.41</td>
+              <td class="num" data-value="100173.180000">$100,173.18</td>
+              <td class="num neg" data-value="-513.229422">$-513.23</td>
+              <td class="num neg" data-value="-0.509731">-0.51%</td>
+              <td class="num neg" data-value="-0.245000">$-0.24</td>
+              <td class="num neg" data-value="-0.438793">-0.44%</td>
+              <td class="num neg" data-value="-441.490000">$-441.49</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T09:47:09.264362-04:00">2026-09-28 09:47 AM</td>
@@ -969,32 +1033,32 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="1802.000000">1802</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="55.660000">$55.66</td>
+              <td class="num" data-value="55.590000">$55.59</td>
               <td class="num" data-value="55.466542">$55.47</td>
               <td class="num" data-value="99950.708684">$99,950.71</td>
-              <td class="num" data-value="100299.320000">$100,299.32</td>
-              <td class="num pos" data-value="348.611316">$348.61</td>
-              <td class="num pos" data-value="0.348783">+0.35%</td>
-              <td class="num neg" data-value="-0.175000">$-0.18</td>
-              <td class="num neg" data-value="-0.313423">-0.31%</td>
-              <td class="num neg" data-value="-315.350000">$-315.35</td>
+              <td class="num" data-value="100173.180000">$100,173.18</td>
+              <td class="num pos" data-value="222.471316">$222.47</td>
+              <td class="num pos" data-value="0.222581">+0.22%</td>
+              <td class="num neg" data-value="-0.245000">$-0.24</td>
+              <td class="num neg" data-value="-0.438793">-0.44%</td>
+              <td class="num neg" data-value="-441.490000">$-441.49</td>
             </tr>
-            <tr data-status="held">
+            <tr data-status="canceled">
               <td data-value="2026-09-28T09:47:09.257792-04:00">2026-09-28 09:47 AM</td>
               <td data-value="FER">FER</td>
               <td data-value="Ferrovial N.V. Ordinary Shares">Ferrovial N.V. Ordinary Shares</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1802.000000">1802</td>
-              <td data-value="held">held</td>
-              <td class="num" data-value="55.660000">$55.66</td>
+              <td data-value="canceled">canceled</td>
+              <td class="num" data-value="55.590000">$55.59</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="100299.320000">$100,299.32</td>
+              <td class="num" data-value="100173.180000">$100,173.18</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.175000">$-0.18</td>
-              <td class="num neg" data-value="-0.313423">-0.31%</td>
-              <td class="num neg" data-value="-315.350000">$-315.35</td>
+              <td class="num neg" data-value="-0.245000">$-0.24</td>
+              <td class="num neg" data-value="-0.438793">-0.44%</td>
+              <td class="num neg" data-value="-441.490000">$-441.49</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T15:45:16.449436-04:00">2026-09-25 03:45 PM</td>
@@ -1003,15 +1067,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="73.000000">73</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="1331.440000">$1,331.44</td>
+              <td class="num" data-value="1337.810000">$1,337.81</td>
               <td class="num" data-value="1360.580959">$1,360.58</td>
               <td class="num" data-value="99322.410007">$99,322.41</td>
-              <td class="num" data-value="97195.120000">$97,195.12</td>
-              <td class="num neg" data-value="-2127.290007">$-2,127.29</td>
-              <td class="num neg" data-value="-2.141803">-2.14%</td>
-              <td class="num neg" data-value="-35.460000">$-35.46</td>
-              <td class="num neg" data-value="-2.594191">-2.59%</td>
-              <td class="num neg" data-value="-2588.580000">$-2,588.58</td>
+              <td class="num" data-value="97660.130000">$97,660.13</td>
+              <td class="num neg" data-value="-1662.280007">$-1,662.28</td>
+              <td class="num neg" data-value="-1.673620">-1.67%</td>
+              <td class="num neg" data-value="-29.090000">$-29.09</td>
+              <td class="num neg" data-value="-2.128173">-2.13%</td>
+              <td class="num neg" data-value="-2123.570000">$-2,123.57</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T15:45:16.427078-04:00">2026-09-25 03:45 PM</td>
@@ -1020,15 +1084,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="2130.000000">2130</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="46.865000">$46.87</td>
+              <td class="num" data-value="46.875000">$46.88</td>
               <td class="num" data-value="46.780042">$46.78</td>
               <td class="num" data-value="99641.489460">$99,641.49</td>
-              <td class="num" data-value="99822.450000">$99,822.45</td>
-              <td class="num pos" data-value="180.960540">$180.96</td>
-              <td class="num pos" data-value="0.181612">+0.18%</td>
-              <td class="num pos" data-value="0.085000">$0.09</td>
-              <td class="num pos" data-value="0.181702">+0.18%</td>
-              <td class="num pos" data-value="181.050000">$181.05</td>
+              <td class="num" data-value="99843.750000">$99,843.75</td>
+              <td class="num pos" data-value="202.260540">$202.26</td>
+              <td class="num pos" data-value="0.202988">+0.20%</td>
+              <td class="num pos" data-value="0.095000">$0.09</td>
+              <td class="num pos" data-value="0.203078">+0.20%</td>
+              <td class="num pos" data-value="202.350000">$202.35</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T15:45:16.407350-04:00">2026-09-25 03:45 PM</td>
@@ -1037,15 +1101,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="992.000000">992</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="102.420000">$102.42</td>
+              <td class="num" data-value="102.170000">$102.17</td>
               <td class="num" data-value="101.978548">$101.98</td>
               <td class="num" data-value="101162.719616">$101,162.72</td>
-              <td class="num" data-value="101600.640000">$101,600.64</td>
-              <td class="num pos" data-value="437.920384">$437.92</td>
-              <td class="num pos" data-value="0.432887">+0.43%</td>
-              <td class="num pos" data-value="0.630000">$0.63</td>
-              <td class="num pos" data-value="0.618921">+0.62%</td>
-              <td class="num pos" data-value="624.960000">$624.96</td>
+              <td class="num" data-value="101352.640000">$101,352.64</td>
+              <td class="num pos" data-value="189.920384">$189.92</td>
+              <td class="num pos" data-value="0.187738">+0.19%</td>
+              <td class="num pos" data-value="0.380000">$0.38</td>
+              <td class="num pos" data-value="0.373318">+0.37%</td>
+              <td class="num pos" data-value="376.960000">$376.96</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T14:53:19.042616-04:00">2026-09-25 02:53 PM</td>
@@ -1054,15 +1118,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="923.000000">923</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="106.240000">$106.24</td>
+              <td class="num" data-value="106.880000">$106.88</td>
               <td class="num" data-value="106.860000">$106.86</td>
               <td class="num" data-value="98631.780000">$98,631.78</td>
-              <td class="num" data-value="98059.520000">$98,059.52</td>
-              <td class="num neg" data-value="-572.260000">$-572.26</td>
-              <td class="num neg" data-value="-0.580198">-0.58%</td>
-              <td class="num neg" data-value="-0.445000">$-0.45</td>
-              <td class="num neg" data-value="-0.417116">-0.42%</td>
-              <td class="num neg" data-value="-410.735000">$-410.74</td>
+              <td class="num" data-value="98650.240000">$98,650.24</td>
+              <td class="num pos" data-value="18.460000">$18.46</td>
+              <td class="num pos" data-value="0.018716">+0.02%</td>
+              <td class="num pos" data-value="0.195000">$0.19</td>
+              <td class="num pos" data-value="0.182781">+0.18%</td>
+              <td class="num pos" data-value="179.985000">$179.98</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T11:34:57.245053-04:00">2026-09-25 11:34 AM</td>
@@ -1071,15 +1135,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="56.000000">56</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="1745.615000">$1,745.62</td>
+              <td class="num" data-value="1770.135000">$1,770.13</td>
               <td class="num" data-value="1734.120000">$1,734.12</td>
               <td class="num" data-value="97110.720000">$97,110.72</td>
-              <td class="num" data-value="97754.440000">$97,754.44</td>
-              <td class="num pos" data-value="643.720000">$643.72</td>
-              <td class="num pos" data-value="0.662872">+0.66%</td>
-              <td class="num pos" data-value="2.005000">$2.01</td>
-              <td class="num pos" data-value="0.114991">+0.11%</td>
-              <td class="num pos" data-value="112.280000">$112.28</td>
+              <td class="num" data-value="99127.560000">$99,127.56</td>
+              <td class="num pos" data-value="2016.840000">$2,016.84</td>
+              <td class="num pos" data-value="2.076846">+2.08%</td>
+              <td class="num pos" data-value="26.525000">$26.53</td>
+              <td class="num pos" data-value="1.521269">+1.52%</td>
+              <td class="num pos" data-value="1485.400000">$1,485.40</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:32:45.826750-04:00">2026-09-25 10:32 AM</td>
@@ -1088,15 +1152,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="375.000000">375</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="260.090000">$260.09</td>
+              <td class="num" data-value="258.780000">$258.78</td>
               <td class="num" data-value="262.090000">$262.09</td>
               <td class="num" data-value="98283.750000">$98,283.75</td>
-              <td class="num" data-value="97533.750000">$97,533.75</td>
-              <td class="num neg" data-value="-750.000000">$-750.00</td>
-              <td class="num neg" data-value="-0.763097">-0.76%</td>
-              <td class="num neg" data-value="-3.210000">$-3.21</td>
-              <td class="num neg" data-value="-1.219142">-1.22%</td>
-              <td class="num neg" data-value="-1203.750000">$-1,203.75</td>
+              <td class="num" data-value="97042.500000">$97,042.50</td>
+              <td class="num neg" data-value="-1241.250000">$-1,241.25</td>
+              <td class="num neg" data-value="-1.262925">-1.26%</td>
+              <td class="num neg" data-value="-4.520000">$-4.52</td>
+              <td class="num neg" data-value="-1.716673">-1.72%</td>
+              <td class="num neg" data-value="-1695.000000">$-1,695.00</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:11.995976-04:00">2026-09-25 10:01 AM</td>
@@ -1105,15 +1169,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="73.000000">73</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="1331.440000">$1,331.44</td>
+              <td class="num" data-value="1337.810000">$1,337.81</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="97195.120000">$97,195.12</td>
+              <td class="num" data-value="97660.130000">$97,660.13</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-35.460000">$-35.46</td>
-              <td class="num neg" data-value="-2.594191">-2.59%</td>
-              <td class="num neg" data-value="-2588.580000">$-2,588.58</td>
+              <td class="num neg" data-value="-29.090000">$-29.09</td>
+              <td class="num neg" data-value="-2.128173">-2.13%</td>
+              <td class="num neg" data-value="-2123.570000">$-2,123.57</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:01:09.982990-04:00">2026-09-25 10:01 AM</td>
@@ -1122,15 +1186,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="73.000000">73</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="1331.440000">$1,331.44</td>
+              <td class="num" data-value="1337.810000">$1,337.81</td>
               <td class="num" data-value="1363.500000">$1,363.50</td>
               <td class="num" data-value="99535.500000">$99,535.50</td>
-              <td class="num" data-value="97195.120000">$97,195.12</td>
-              <td class="num neg" data-value="-2340.380000">$-2,340.38</td>
-              <td class="num neg" data-value="-2.351302">-2.35%</td>
-              <td class="num neg" data-value="-35.460000">$-35.46</td>
-              <td class="num neg" data-value="-2.594191">-2.59%</td>
-              <td class="num neg" data-value="-2588.580000">$-2,588.58</td>
+              <td class="num" data-value="97660.130000">$97,660.13</td>
+              <td class="num neg" data-value="-1875.370000">$-1,875.37</td>
+              <td class="num neg" data-value="-1.884122">-1.88%</td>
+              <td class="num neg" data-value="-29.090000">$-29.09</td>
+              <td class="num neg" data-value="-2.128173">-2.13%</td>
+              <td class="num neg" data-value="-2123.570000">$-2,123.57</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:09.964640-04:00">2026-09-25 10:01 AM</td>
@@ -1139,15 +1203,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="73.000000">73</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="1331.440000">$1,331.44</td>
+              <td class="num" data-value="1337.810000">$1,337.81</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="97195.120000">$97,195.12</td>
+              <td class="num" data-value="97660.130000">$97,660.13</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-35.460000">$-35.46</td>
-              <td class="num neg" data-value="-2.594191">-2.59%</td>
-              <td class="num neg" data-value="-2588.580000">$-2,588.58</td>
+              <td class="num neg" data-value="-29.090000">$-29.09</td>
+              <td class="num neg" data-value="-2.128173">-2.13%</td>
+              <td class="num neg" data-value="-2123.570000">$-2,123.57</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:07.939456-04:00">2026-09-25 10:01 AM</td>
@@ -1156,15 +1220,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="2130.000000">2130</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="46.865000">$46.87</td>
+              <td class="num" data-value="46.875000">$46.88</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="99822.450000">$99,822.45</td>
+              <td class="num" data-value="99843.750000">$99,843.75</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.085000">$0.09</td>
-              <td class="num pos" data-value="0.181702">+0.18%</td>
-              <td class="num pos" data-value="181.050000">$181.05</td>
+              <td class="num pos" data-value="0.095000">$0.09</td>
+              <td class="num pos" data-value="0.203078">+0.20%</td>
+              <td class="num pos" data-value="202.350000">$202.35</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:07.510330-04:00">2026-09-25 10:01 AM</td>
@@ -1173,15 +1237,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="992.000000">992</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="102.420000">$102.42</td>
+              <td class="num" data-value="102.170000">$102.17</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="101600.640000">$101,600.64</td>
+              <td class="num" data-value="101352.640000">$101,352.64</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.630000">$0.63</td>
-              <td class="num pos" data-value="0.618921">+0.62%</td>
-              <td class="num pos" data-value="624.960000">$624.96</td>
+              <td class="num pos" data-value="0.380000">$0.38</td>
+              <td class="num pos" data-value="0.373318">+0.37%</td>
+              <td class="num pos" data-value="376.960000">$376.96</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:01:07.153381-04:00">2026-09-25 10:01 AM</td>
@@ -1190,15 +1254,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="2130.000000">2130</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="46.865000">$46.87</td>
+              <td class="num" data-value="46.875000">$46.88</td>
               <td class="num" data-value="46.930000">$46.93</td>
               <td class="num" data-value="99960.900000">$99,960.90</td>
-              <td class="num" data-value="99822.450000">$99,822.45</td>
-              <td class="num neg" data-value="-138.450000">$-138.45</td>
-              <td class="num neg" data-value="-0.138504">-0.14%</td>
-              <td class="num pos" data-value="0.085000">$0.09</td>
-              <td class="num pos" data-value="0.181702">+0.18%</td>
-              <td class="num pos" data-value="181.050000">$181.05</td>
+              <td class="num" data-value="99843.750000">$99,843.75</td>
+              <td class="num neg" data-value="-117.150000">$-117.15</td>
+              <td class="num neg" data-value="-0.117196">-0.12%</td>
+              <td class="num pos" data-value="0.095000">$0.09</td>
+              <td class="num pos" data-value="0.203078">+0.20%</td>
+              <td class="num pos" data-value="202.350000">$202.35</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:07.115678-04:00">2026-09-25 10:01 AM</td>
@@ -1207,15 +1271,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="2130.000000">2130</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="46.865000">$46.87</td>
+              <td class="num" data-value="46.875000">$46.88</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="99822.450000">$99,822.45</td>
+              <td class="num" data-value="99843.750000">$99,843.75</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.085000">$0.09</td>
-              <td class="num pos" data-value="0.181702">+0.18%</td>
-              <td class="num pos" data-value="181.050000">$181.05</td>
+              <td class="num pos" data-value="0.095000">$0.09</td>
+              <td class="num pos" data-value="0.203078">+0.20%</td>
+              <td class="num pos" data-value="202.350000">$202.35</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:05.589006-04:00">2026-09-25 10:01 AM</td>
@@ -1224,15 +1288,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="375.000000">375</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="260.090000">$260.09</td>
+              <td class="num" data-value="258.780000">$258.78</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="97533.750000">$97,533.75</td>
+              <td class="num" data-value="97042.500000">$97,042.50</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-3.210000">$-3.21</td>
-              <td class="num neg" data-value="-1.219142">-1.22%</td>
-              <td class="num neg" data-value="-1203.750000">$-1,203.75</td>
+              <td class="num neg" data-value="-4.520000">$-4.52</td>
+              <td class="num neg" data-value="-1.716673">-1.72%</td>
+              <td class="num neg" data-value="-1695.000000">$-1,695.00</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:01:04.300768-04:00">2026-09-25 10:01 AM</td>
@@ -1241,15 +1305,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="375.000000">375</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="260.090000">$260.09</td>
+              <td class="num" data-value="258.780000">$258.78</td>
               <td class="num" data-value="265.870000">$265.87</td>
               <td class="num" data-value="99701.250000">$99,701.25</td>
-              <td class="num" data-value="97533.750000">$97,533.75</td>
-              <td class="num neg" data-value="-2167.500000">$-2,167.50</td>
-              <td class="num neg" data-value="-2.173995">-2.17%</td>
-              <td class="num neg" data-value="-3.210000">$-3.21</td>
-              <td class="num neg" data-value="-1.219142">-1.22%</td>
-              <td class="num neg" data-value="-1203.750000">$-1,203.75</td>
+              <td class="num" data-value="97042.500000">$97,042.50</td>
+              <td class="num neg" data-value="-2658.750000">$-2,658.75</td>
+              <td class="num neg" data-value="-2.666717">-2.67%</td>
+              <td class="num neg" data-value="-4.520000">$-4.52</td>
+              <td class="num neg" data-value="-1.716673">-1.72%</td>
+              <td class="num neg" data-value="-1695.000000">$-1,695.00</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:01.956873-04:00">2026-09-25 10:01 AM</td>
@@ -1258,15 +1322,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="56.000000">56</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="1745.615000">$1,745.62</td>
+              <td class="num" data-value="1770.135000">$1,770.13</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="97754.440000">$97,754.44</td>
+              <td class="num" data-value="99127.560000">$99,127.56</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="2.005000">$2.01</td>
-              <td class="num pos" data-value="0.114991">+0.11%</td>
-              <td class="num pos" data-value="112.280000">$112.28</td>
+              <td class="num pos" data-value="26.525000">$26.53</td>
+              <td class="num pos" data-value="1.521269">+1.52%</td>
+              <td class="num pos" data-value="1485.400000">$1,485.40</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:01:01.722977-04:00">2026-09-25 10:01 AM</td>
@@ -1275,15 +1339,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="992.000000">992</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="102.420000">$102.42</td>
+              <td class="num" data-value="102.170000">$102.17</td>
               <td class="num" data-value="100.920000">$100.92</td>
               <td class="num" data-value="100112.640000">$100,112.64</td>
-              <td class="num" data-value="101600.640000">$101,600.64</td>
-              <td class="num pos" data-value="1488.000000">$1,488.00</td>
-              <td class="num pos" data-value="1.486326">+1.49%</td>
-              <td class="num pos" data-value="0.630000">$0.63</td>
-              <td class="num pos" data-value="0.618921">+0.62%</td>
-              <td class="num pos" data-value="624.960000">$624.96</td>
+              <td class="num" data-value="101352.640000">$101,352.64</td>
+              <td class="num pos" data-value="1240.000000">$1,240.00</td>
+              <td class="num pos" data-value="1.238605">+1.24%</td>
+              <td class="num pos" data-value="0.380000">$0.38</td>
+              <td class="num pos" data-value="0.373318">+0.37%</td>
+              <td class="num pos" data-value="376.960000">$376.96</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:01.312346-04:00">2026-09-25 10:01 AM</td>
@@ -1292,15 +1356,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="992.000000">992</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="102.420000">$102.42</td>
+              <td class="num" data-value="102.170000">$102.17</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="101600.640000">$101,600.64</td>
+              <td class="num" data-value="101352.640000">$101,352.64</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num pos" data-value="0.630000">$0.63</td>
-              <td class="num pos" data-value="0.618921">+0.62%</td>
-              <td class="num pos" data-value="624.960000">$624.96</td>
+              <td class="num pos" data-value="0.380000">$0.38</td>
+              <td class="num pos" data-value="0.373318">+0.37%</td>
+              <td class="num pos" data-value="376.960000">$376.96</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:00:58.511357-04:00">2026-09-25 10:00 AM</td>
@@ -1309,15 +1373,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="56.000000">56</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="1745.615000">$1,745.62</td>
+              <td class="num" data-value="1770.135000">$1,770.13</td>
               <td class="num" data-value="1758.479999">$1,758.48</td>
               <td class="num" data-value="98474.879944">$98,474.88</td>
-              <td class="num" data-value="97754.440000">$97,754.44</td>
-              <td class="num neg" data-value="-720.439944">$-720.44</td>
-              <td class="num neg" data-value="-0.731598">-0.73%</td>
-              <td class="num pos" data-value="2.005000">$2.01</td>
-              <td class="num pos" data-value="0.114991">+0.11%</td>
-              <td class="num pos" data-value="112.280000">$112.28</td>
+              <td class="num" data-value="99127.560000">$99,127.56</td>
+              <td class="num pos" data-value="652.680056">$652.68</td>
+              <td class="num pos" data-value="0.662788">+0.66%</td>
+              <td class="num pos" data-value="26.525000">$26.53</td>
+              <td class="num pos" data-value="1.521269">+1.52%</td>
+              <td class="num pos" data-value="1485.400000">$1,485.40</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:00:37.656395-04:00">2026-09-25 10:00 AM</td>
@@ -1326,15 +1390,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="999.000000">999</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="98.060000">$98.06</td>
+              <td class="num" data-value="97.850000">$97.85</td>
               <td class="num" data-value="99.200000">$99.20</td>
               <td class="num" data-value="99100.800000">$99,100.80</td>
-              <td class="num" data-value="97961.940000">$97,961.94</td>
+              <td class="num" data-value="97752.150000">$97,752.15</td>
+              <td class="num neg" data-value="-1348.650000">$-1,348.65</td>
+              <td class="num neg" data-value="-1.360887">-1.36%</td>
+              <td class="num neg" data-value="-1.140000">$-1.14</td>
+              <td class="num neg" data-value="-1.151631">-1.15%</td>
               <td class="num neg" data-value="-1138.860000">$-1,138.86</td>
-              <td class="num neg" data-value="-1.149194">-1.15%</td>
-              <td class="num neg" data-value="-0.930000">$-0.93</td>
-              <td class="num neg" data-value="-0.939489">-0.94%</td>
-              <td class="num neg" data-value="-929.070000">$-929.07</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T09:49:11.555421-04:00">2026-09-25 09:49 AM</td>
@@ -1343,15 +1407,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="999.000000">999</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="98.060000">$98.06</td>
+              <td class="num" data-value="97.850000">$97.85</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="97961.940000">$97,961.94</td>
+              <td class="num" data-value="97752.150000">$97,752.15</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.930000">$-0.93</td>
-              <td class="num neg" data-value="-0.939489">-0.94%</td>
-              <td class="num neg" data-value="-929.070000">$-929.07</td>
+              <td class="num neg" data-value="-1.140000">$-1.14</td>
+              <td class="num neg" data-value="-1.151631">-1.15%</td>
+              <td class="num neg" data-value="-1138.860000">$-1,138.86</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T09:49:09.956039-04:00">2026-09-25 09:49 AM</td>
@@ -1360,15 +1424,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="999.000000">999</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="98.060000">$98.06</td>
+              <td class="num" data-value="97.850000">$97.85</td>
               <td class="num" data-value="99.950000">$99.95</td>
               <td class="num" data-value="99850.050000">$99,850.05</td>
-              <td class="num" data-value="97961.940000">$97,961.94</td>
-              <td class="num neg" data-value="-1888.110000">$-1,888.11</td>
-              <td class="num neg" data-value="-1.890945">-1.89%</td>
-              <td class="num neg" data-value="-0.930000">$-0.93</td>
-              <td class="num neg" data-value="-0.939489">-0.94%</td>
-              <td class="num neg" data-value="-929.070000">$-929.07</td>
+              <td class="num" data-value="97752.150000">$97,752.15</td>
+              <td class="num neg" data-value="-2097.900000">$-2,097.90</td>
+              <td class="num neg" data-value="-2.101051">-2.10%</td>
+              <td class="num neg" data-value="-1.140000">$-1.14</td>
+              <td class="num neg" data-value="-1.151631">-1.15%</td>
+              <td class="num neg" data-value="-1138.860000">$-1,138.86</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T09:47:12.286670-04:00">2026-09-25 09:47 AM</td>
@@ -1377,15 +1441,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1885.000000">1885</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="54.105000">$54.10</td>
+              <td class="num" data-value="54.020000">$54.02</td>
               <td class="num" data-value="54.510000">$54.51</td>
               <td class="num" data-value="102751.350000">$102,751.35</td>
-              <td class="num" data-value="101987.925000">$101,987.92</td>
-              <td class="num neg" data-value="-763.425000">$-763.43</td>
-              <td class="num neg" data-value="-0.742983">-0.74%</td>
-              <td class="num neg" data-value="-0.945000">$-0.95</td>
-              <td class="num neg" data-value="-1.716621">-1.72%</td>
-              <td class="num neg" data-value="-1781.325000">$-1,781.33</td>
+              <td class="num" data-value="101827.700000">$101,827.70</td>
+              <td class="num neg" data-value="-923.650000">$-923.65</td>
+              <td class="num neg" data-value="-0.898918">-0.90%</td>
+              <td class="num neg" data-value="-1.030000">$-1.03</td>
+              <td class="num neg" data-value="-1.871026">-1.87%</td>
+              <td class="num neg" data-value="-1941.550000">$-1,941.55</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T09:47:11.643699-04:00">2026-09-25 09:47 AM</td>
@@ -1394,15 +1458,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="1885.000000">1885</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="54.105000">$54.10</td>
+              <td class="num" data-value="54.020000">$54.02</td>
               <td class="num" data-value="53.060000">$53.06</td>
               <td class="num" data-value="100018.100000">$100,018.10</td>
-              <td class="num" data-value="101987.925000">$101,987.92</td>
-              <td class="num pos" data-value="1969.825000">$1,969.82</td>
-              <td class="num pos" data-value="1.969469">+1.97%</td>
-              <td class="num neg" data-value="-0.945000">$-0.95</td>
-              <td class="num neg" data-value="-1.716621">-1.72%</td>
-              <td class="num neg" data-value="-1781.325000">$-1,781.33</td>
+              <td class="num" data-value="101827.700000">$101,827.70</td>
+              <td class="num pos" data-value="1809.600000">$1,809.60</td>
+              <td class="num pos" data-value="1.809273">+1.81%</td>
+              <td class="num neg" data-value="-1.030000">$-1.03</td>
+              <td class="num neg" data-value="-1.871026">-1.87%</td>
+              <td class="num neg" data-value="-1941.550000">$-1,941.55</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T09:47:11.639952-04:00">2026-09-25 09:47 AM</td>
@@ -1411,15 +1475,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1885.000000">1885</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="54.105000">$54.10</td>
+              <td class="num" data-value="54.020000">$54.02</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="101987.925000">$101,987.92</td>
+              <td class="num" data-value="101827.700000">$101,827.70</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.945000">$-0.95</td>
-              <td class="num neg" data-value="-1.716621">-1.72%</td>
-              <td class="num neg" data-value="-1781.325000">$-1,781.33</td>
+              <td class="num neg" data-value="-1.030000">$-1.03</td>
+              <td class="num neg" data-value="-1.871026">-1.87%</td>
+              <td class="num neg" data-value="-1941.550000">$-1,941.55</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T09:46:18.119878-04:00">2026-09-25 09:46 AM</td>
@@ -1428,15 +1492,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="923.000000">923</td>
               <td data-value="canceled">canceled</td>
-              <td class="num" data-value="106.240000">$106.24</td>
+              <td class="num" data-value="106.880000">$106.88</td>
               <td class="num" data-value="">—</td>
               <td class="num" data-value="">—</td>
-              <td class="num" data-value="98059.520000">$98,059.52</td>
+              <td class="num" data-value="98650.240000">$98,650.24</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.445000">$-0.45</td>
-              <td class="num neg" data-value="-0.417116">-0.42%</td>
-              <td class="num neg" data-value="-410.735000">$-410.74</td>
+              <td class="num pos" data-value="0.195000">$0.19</td>
+              <td class="num pos" data-value="0.182781">+0.18%</td>
+              <td class="num pos" data-value="179.985000">$179.98</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T09:46:16.481355-04:00">2026-09-25 09:46 AM</td>
@@ -1445,15 +1509,15 @@
               <td class="pos" data-value="buy">BUY</td>
               <td class="num" data-value="923.000000">923</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="106.240000">$106.24</td>
+              <td class="num" data-value="106.880000">$106.88</td>
               <td class="num" data-value="108.170715">$108.17</td>
               <td class="num" data-value="99841.569945">$99,841.57</td>
-              <td class="num" data-value="98059.520000">$98,059.52</td>
-              <td class="num neg" data-value="-1782.049945">$-1,782.05</td>
-              <td class="num neg" data-value="-1.784878">-1.78%</td>
-              <td class="num neg" data-value="-0.445000">$-0.45</td>
-              <td class="num neg" data-value="-0.417116">-0.42%</td>
-              <td class="num neg" data-value="-410.735000">$-410.74</td>
+              <td class="num" data-value="98650.240000">$98,650.24</td>
+              <td class="num neg" data-value="-1191.329945">$-1,191.33</td>
+              <td class="num neg" data-value="-1.193220">-1.19%</td>
+              <td class="num pos" data-value="0.195000">$0.19</td>
+              <td class="num pos" data-value="0.182781">+0.18%</td>
+              <td class="num pos" data-value="179.985000">$179.98</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-24T15:45:13.546242-04:00">2026-09-24 03:45 PM</td>
@@ -1462,15 +1526,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="1.000000">1</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="184.490000">$184.49</td>
+              <td class="num" data-value="187.140000">$187.14</td>
               <td class="num" data-value="186.410000">$186.41</td>
               <td class="num" data-value="186.410000">$186.41</td>
-              <td class="num" data-value="184.490000">$184.49</td>
-              <td class="num neg" data-value="-1.920000">$-1.92</td>
-              <td class="num neg" data-value="-1.029988">-1.03%</td>
-              <td class="num neg" data-value="-3.430000">$-3.43</td>
-              <td class="num neg" data-value="-1.825245">-1.83%</td>
-              <td class="num neg" data-value="-3.430000">$-3.43</td>
+              <td class="num" data-value="187.140000">$187.14</td>
+              <td class="num pos" data-value="0.730000">$0.73</td>
+              <td class="num pos" data-value="0.391610">+0.39%</td>
+              <td class="num neg" data-value="-0.780000">$-0.78</td>
+              <td class="num neg" data-value="-0.415070">-0.42%</td>
+              <td class="num neg" data-value="-0.780000">$-0.78</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-24T15:45:13.538471-04:00">2026-09-24 03:45 PM</td>
@@ -1479,66 +1543,15 @@
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="380.000000">380</td>
               <td data-value="filled">filled</td>
-              <td class="num" data-value="260.090000">$260.09</td>
+              <td class="num" data-value="258.780000">$258.78</td>
               <td class="num" data-value="262.260000">$262.26</td>
               <td class="num" data-value="99658.800000">$99,658.80</td>
-              <td class="num" data-value="98834.200000">$98,834.20</td>
-              <td class="num neg" data-value="-824.600000">$-824.60</td>
-              <td class="num neg" data-value="-0.827423">-0.83%</td>
-              <td class="num neg" data-value="-3.210000">$-3.21</td>
-              <td class="num neg" data-value="-1.219142">-1.22%</td>
-              <td class="num neg" data-value="-1219.800000">$-1,219.80</td>
-            </tr>
-            <tr data-status="filled">
-              <td data-value="2026-09-24T15:45:13.526782-04:00">2026-09-24 03:45 PM</td>
-              <td data-value="ASML">ASML</td>
-              <td data-value="ASML Holding N.V. New York Registry Shares">ASML Holding N.V. New York Registry Shares</td>
-              <td class="neg" data-value="sell">SELL</td>
-              <td class="num" data-value="437.000000">437</td>
-              <td data-value="filled">filled</td>
-              <td class="num" data-value="1745.615000">$1,745.62</td>
-              <td class="num" data-value="1723.100000">$1,723.10</td>
-              <td class="num" data-value="752994.700000">$752,994.70</td>
-              <td class="num" data-value="762833.755000">$762,833.76</td>
-              <td class="num pos" data-value="9839.055000">$9,839.06</td>
-              <td class="num pos" data-value="1.306657">+1.31%</td>
-              <td class="num pos" data-value="2.005000">$2.01</td>
-              <td class="num pos" data-value="0.114991">+0.11%</td>
-              <td class="num pos" data-value="876.185000">$876.19</td>
-            </tr>
-            <tr data-status="canceled">
-              <td data-value="2026-09-24T13:50:16.976056-04:00">2026-09-24 01:50 PM</td>
-              <td data-value="CEG">CEG</td>
-              <td data-value="Constellation Energy Corporation Common Stock">Constellation Energy Corporation Common Stock</td>
-              <td class="neg" data-value="sell">SELL</td>
-              <td class="num" data-value="380.000000">380</td>
-              <td data-value="canceled">canceled</td>
-              <td class="num" data-value="260.090000">$260.09</td>
-              <td class="num" data-value="">—</td>
-              <td class="num" data-value="">—</td>
-              <td class="num" data-value="98834.200000">$98,834.20</td>
-              <td class="num " data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-3.210000">$-3.21</td>
-              <td class="num neg" data-value="-1.219142">-1.22%</td>
-              <td class="num neg" data-value="-1219.800000">$-1,219.80</td>
-            </tr>
-            <tr data-status="filled">
-              <td data-value="2026-09-24T13:50:15.099610-04:00">2026-09-24 01:50 PM</td>
-              <td data-value="CEG">CEG</td>
-              <td data-value="Constellation Energy Corporation Common Stock">Constellation Energy Corporation Common Stock</td>
-              <td class="pos" data-value="buy">BUY</td>
-              <td class="num" data-value="380.000000">380</td>
-              <td data-value="filled">filled</td>
-              <td class="num" data-value="260.090000">$260.09</td>
-              <td class="num" data-value="262.710000">$262.71</td>
-              <td class="num" data-value="99829.800000">$99,829.80</td>
-              <td class="num" data-value="98834.200000">$98,834.20</td>
-              <td class="num neg" data-value="-995.600000">$-995.60</td>
-              <td class="num neg" data-value="-0.997297">-1.00%</td>
-              <td class="num neg" data-value="-3.210000">$-3.21</td>
-              <td class="num neg" data-value="-1.219142">-1.22%</td>
-              <td class="num neg" data-value="-1219.800000">$-1,219.80</td>
+              <td class="num" data-value="98336.400000">$98,336.40</td>
+              <td class="num neg" data-value="-1322.400000">$-1,322.40</td>
+              <td class="num neg" data-value="-1.326927">-1.33%</td>
+              <td class="num neg" data-value="-4.520000">$-4.52</td>
+              <td class="num neg" data-value="-1.716673">-1.72%</td>
+              <td class="num neg" data-value="-1717.600000">$-1,717.60</td>
             </tr></tbody>
       </table>
       </div>
@@ -1559,6 +1572,16 @@
           <th class="sortable num" onclick="sortTable('closedTable',7,'num')">% Gain / Loss</th>
         </tr></thead>
         <tbody>
+            <tr>
+              <td data-value="2026-09-28T12:26:39.264221-04:00">2026-09-28 12:26 PM</td>
+              <td data-value="FER">FER</td>
+              <td data-value="Ferrovial N.V. Ordinary Shares">Ferrovial N.V. Ordinary Shares</td>
+              <td class="num" data-value="1802.000000">1802</td>
+              <td class="num" data-value="55.466542">$55.47</td>
+              <td class="num" data-value="55.874811">$55.87</td>
+              <td class="num pos" data-value="735.700738">$735.70</td>
+              <td class="num pos" data-value="0.736064">+0.74%</td>
+            </tr>
             <tr>
               <td data-value="2026-09-25T15:45:23.119538-04:00">2026-09-25 03:45 PM</td>
               <td data-value="MPWR">MPWR</td>
@@ -1774,10 +1797,10 @@
               <td></td>
               <td></td>
               <td></td>
-              <td class="num">$5,801,338.89</td>
-              <td class="num">$5,815,472.17</td>
-              <td class="num pos">$14,133.28</td>
-              <td class="num pos">+0.24%</td>
+              <td class="num">$5,901,289.60</td>
+              <td class="num">$5,916,158.58</td>
+              <td class="num pos">$14,868.98</td>
+              <td class="num pos">+0.25%</td>
             </tr></tbody>
       </table>
       </div>
@@ -1864,7 +1887,7 @@
     // proxy needed); INITIAL_SETTINGS is the snapshot as of when this page
     // was last generated, used as an instant fallback if the live re-fetch
     // on open fails.
-    const SETTINGS_SAVE_ENDPOINT = 'https://stunster.com/orb-settings-save.php';
+    const SETTINGS_SAVE_ENDPOINT = '';
     const SETTINGS_SOURCE_URL = 'https://raw.githubusercontent.com/patrickobirmingham-eng/POB-CL-DT/main/settings.json';
     const SETTINGS_FIELDS = [{"key": "OPENING_RANGE_MINUTES", "label": "Opening range length", "group": "Entry & Opening Range", "type": "number", "step": 1, "min": 1, "suffix": "min", "tooltip": "Length of the opening-range window used to compute breakout levels (e.g. 15 = the first 15 minutes after the open, 9:30\u20139:45 ET)."}, {"key": "MIN_OR_RANGE_PCT", "label": "Min opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01, "tooltip": "Skip a symbol for the day if its opening range is smaller than this % of price \u2014 a range this tight is usually noise, not a real range."}, {"key": "MAX_OR_RANGE_PCT", "label": "Max opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01, "tooltip": "Skip a symbol for the day if its opening range is larger than this % of price \u2014 a range this wide usually means the move already happened."}, {"key": "VOLUME_CONFIRMATION_MULT", "label": "Volume confirmation multiple", "group": "Entry & Opening Range", "type": "number", "step": 0.1, "min": 0, "suffix": "x avg OR volume", "tooltip": "The breakout bar's volume must be at least this many times the average opening-range bar volume to count as a valid breakout."}, {"key": "BREAKOUT_BUFFER_PCT", "label": "Breakout buffer", "group": "Entry & Opening Range", "type": "percent", "step": 0.01, "tooltip": "Price must clear the opening-range high/low by this % before a breakout triggers, to filter out marginal false breaks."}, {"key": "ENTRY_CUTOFF_TIME", "label": "Entry cutoff time (ET)", "group": "Entry & Opening Range", "type": "time", "tooltip": "No new trades are opened after this time (ET), even if a valid breakout occurs."}, {"key": "ALLOW_SHORTS", "label": "Allow short breakdowns", "group": "Entry & Opening Range", "type": "bool", "tooltip": "If enabled, the bot will also short breakdowns below the opening-range low, not just long breakouts above the high. Requires your account to support shorting."}, {"key": "RISK_PCT_PER_TRADE", "label": "Risk per trade", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "% of account equity, sized off stop distance", "tooltip": "The dollar amount risked per trade \u2014 sized as this % of account equity \u2014 based on the distance from entry to stop-loss."}, {"key": "REWARD_RISK_MULTIPLE", "label": "Reward:risk multiple", "group": "Risk Management", "type": "number", "step": 0.1, "min": 0.1, "suffix": "x stop distance", "tooltip": "Take-profit target distance, expressed as a multiple of the stop-loss distance (e.g. 2 = the target is twice as far away as the stop)."}, {"key": "MAX_TRADES_PER_DAY", "label": "Max trades per day", "group": "Risk Management", "type": "number", "step": 1, "min": 1, "tooltip": "Circuit breaker: the bot stops opening new trades once it has opened this many in a single day."}, {"key": "MAX_DAILY_LOSS_PCT", "label": "Daily loss circuit breaker", "group": "Risk Management", "type": "percent", "step": 0.1, "hint": "stop trading for the day after losing this % of equity", "tooltip": "Circuit breaker: if the account's daily P&L drops below \u2212this % of starting equity, the bot flattens all positions and stops trading for the rest of the day."}, {"key": "MAX_CONCURRENT_POSITIONS", "label": "Max concurrent positions", "group": "Risk Management", "type": "number", "step": 1, "min": 1, "tooltip": "The bot won't open a new position if this many positions are already open at once."}, {"key": "ONE_TRADE_PER_SYMBOL_PER_DAY", "label": "One trade per symbol per day", "group": "Risk Management", "type": "bool", "tooltip": "If enabled, a symbol that's already been traded (entered, stopped out, or closed) today won't be re-entered later the same day."}, {"key": "MAX_NOTIONAL_PER_TRADE", "label": "Max notional per trade", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$", "tooltip": "Hard cap on the dollar amount (entry price \u00d7 shares) any single trade can deploy, regardless of what risk-per-trade sizing alone would produce."}, {"key": "MAX_DAILY_NOTIONAL_TRADED", "label": "Max notional per day", "group": "Risk Management", "type": "number", "step": 1000, "min": 0, "prefix": "$", "tooltip": "Hard cap on the total dollar amount deployed across all trades combined in a single day \u2014 trades are sized down (or skipped) once this is reached."}, {"key": "BREAKEVEN_TRIGGER_R", "label": "Breakeven trigger", "group": "Breakeven Stop", "type": "nullable_number", "step": 0.1, "min": 0, "suffix": "x initial risk (R)", "hint": "leave blank to disable moving the stop to breakeven", "tooltip": "Once a position has moved this many multiples of its initial risk (R) in your favor, its stop-loss moves up to breakeven (entry price) so a winner can't turn into a full loss. Blank disables this."}, {"key": "FLATTEN_TIME", "label": "Flatten-all time (ET)", "group": "Time / Session", "type": "time", "tooltip": "All open positions are closed by this time (ET), no exceptions \u2014 the bot's hard end-of-day exit."}, {"key": "MARKET_CLOSE_TIME", "label": "Market close time (ET)", "group": "Time / Session", "type": "time", "tooltip": "The market's official closing time (ET) \u2014 a reference point used elsewhere in the bot, separate from the earlier flatten time above."}, {"key": "POLL_INTERVAL_SECONDS", "label": "Poll interval", "group": "Time / Session", "type": "number", "step": 1, "min": 1, "suffix": "sec", "tooltip": "How often (in seconds) the live bot checks prices for breakouts and manages open positions during the trading session."}, {"key": "DATA_FEED", "label": "Market data feed", "group": "Time / Session", "type": "select", "options": ["iex", "sip"], "tooltip": "Which Alpaca market data feed to use. \u201ciex\u201d works on free/paper accounts; \u201csip\u201d requires a paid data plan but gives fuller market coverage."}, {"key": "BACKTEST_DEFAULT_DAYS", "label": "Default backtest window", "group": "Backtest Defaults", "type": "number", "step": 1, "min": 1, "suffix": "days", "tooltip": "Default number of trading days to look back over when running a backtest, if you don't specify a window."}, {"key": "BACKTEST_SLIPPAGE_PCT", "label": "Assumed slippage", "group": "Backtest Defaults", "type": "percent", "step": 0.01, "tooltip": "Assumed slippage per fill in a backtest, as a % of price \u2014 deliberately pessimistic so backtest results don't overstate real-world performance."}, {"key": "BACKTEST_COMMISSION_PER_TRADE", "label": "Commission per trade", "group": "Backtest Defaults", "type": "number", "step": 0.01, "min": 0, "prefix": "$", "tooltip": "Assumed commission per trade in a backtest. Alpaca is commission-free, so this mainly exists for realism if you ever port the strategy elsewhere."}, {"key": "NTFY_ENABLED", "label": "Push notifications enabled", "group": "Notifications", "type": "bool", "tooltip": "Turns push notifications to your phone (via the ntfy.sh app) on or off."}, {"key": "NTFY_TOPIC", "label": "ntfy.sh topic", "group": "Notifications", "type": "text", "hint": "treat like a password \u2014 anyone who knows it can subscribe", "tooltip": "The ntfy.sh topic name notifications are sent to \u2014 acts like an unlisted channel. Treat it like a password: anyone who knows it can subscribe to your notifications."}, {"key": "WATCHLIST", "label": "Watchlist (comma-separated symbols)", "group": "Watchlist (Advanced)", "type": "watchlist", "tooltip": "The list of symbols the bot scans for opening-range breakouts each trading day."}];
     const INITIAL_SETTINGS = {"OPENING_RANGE_MINUTES": 15, "MIN_OR_RANGE_PCT": 0.001, "MAX_OR_RANGE_PCT": 0.04, "VOLUME_CONFIRMATION_MULT": 1.5, "BREAKOUT_BUFFER_PCT": 0.0005, "ENTRY_CUTOFF_TIME": "15:00", "ALLOW_SHORTS": false, "RISK_PCT_PER_TRADE": 0.01, "REWARD_RISK_MULTIPLE": 2, "MAX_TRADES_PER_DAY": 6, "MAX_DAILY_LOSS_PCT": 0.03, "MAX_CONCURRENT_POSITIONS": 6, "ONE_TRADE_PER_SYMBOL_PER_DAY": true, "MAX_NOTIONAL_PER_TRADE": 100000, "MAX_DAILY_NOTIONAL_TRADED": 1000000, "BREAKEVEN_TRIGGER_R": 1, "FLATTEN_TIME": "15:45", "MARKET_CLOSE_TIME": "16:00", "POLL_INTERVAL_SECONDS": 15, "DATA_FEED": "iex", "BACKTEST_DEFAULT_DAYS": 60, "BACKTEST_SLIPPAGE_PCT": 0.0005, "BACKTEST_COMMISSION_PER_TRADE": 0, "NTFY_ENABLED": true, "NTFY_TOPIC": "pob-orb-vkfmwlc1yr", "WATCHLIST": ["ADBE", "AMD", "ABNB", "ALNY", "GOOGL", "GOOG", "AMZN", "AEP", "AMGN", "ADI", "AAPL", "AMAT", "APP", "ARM", "ASML", "ALAB", "ADSK", "ADP", "AXON", "BKR", "BKNG", "AVGO", "CDNS", "CTAS", "CSCO", "CCEP", "CMCSA", "CEG", "CPRT", "CRWV", "COST", "CRWD", "CSX", "DDOG", "DXCM", "FANG", "DASH", "EA", "EXC", "FAST", "FER", "FTNT", "GEHC", "GILD", "HON", "IDXX", "INTC", "INTU", "ISRG", "KDP", "KLAC", "KHC", "LRCX", "LIN", "LITE", "MAR", "MRVL", "MELI", "META", "MCHP", "MU", "MSFT", "MSTR", "MDLZ", "MPWR", "MNST", "NBIS", "NFLX", "NVDA", "NXPI", "ORLY", "ODFL", "PCAR", "PLTR", "PANW", "PAYX", "PYPL", "PDD", "PEP", "QCOM", "REGN", "RKLB", "ROP", "ROST", "SNDK", "STX", "SHOP", "SBUX", "SNPS", "TMUS", "TTWO", "TER", "TSLA", "TXN", "TRI", "VRTX", "WMT", "WBD", "WDC", "WDAY", "XEL"]};
