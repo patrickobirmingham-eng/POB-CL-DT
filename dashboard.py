@@ -486,6 +486,7 @@ def generate(client=None):
     open_orders_rows = ""
     total_projected_pl = total_projected_cost_basis = 0.0
     total_stop_pl = total_stop_cost_basis = 0.0
+    total_current_mkt_value = 0.0
     if open_orders:
         for o in open_orders:
             submitted_dt = o.submitted_at.astimezone(ET)
@@ -505,6 +506,8 @@ def generate(client=None):
                 if (purchase_price is not None and current_price is not None) else None
             )
             current_mkt_value = qty * delta_price if delta_price is not None else None
+            if current_mkt_value is not None:
+                total_current_mkt_value += current_mkt_value
 
             limit_minus_purchase = (
                 limit_price - purchase_price
@@ -565,6 +568,7 @@ def generate(client=None):
         total_pct_class = "pos" if (total_projected_pct is not None and total_projected_pct >= 0) else ""
         total_stop_pl_class = "pos" if total_stop_pl >= 0 else "neg"
         total_stop_pct_class = "pos" if (total_stop_pct is not None and total_stop_pct >= 0) else ""
+        total_current_mkt_value_class = "pos" if total_current_mkt_value >= 0 else "neg"
         open_orders_rows += f"""
             <tr class="totals-row">
               <td>Total</td>
@@ -574,7 +578,7 @@ def generate(client=None):
               <td></td>
               <td></td>
               <td></td>
-              <td></td>
+              <td class="num {total_current_mkt_value_class}">{fmt_money(total_current_mkt_value)}</td>
               <td></td>
               <td></td>
               <td></td>
@@ -1407,7 +1411,7 @@ def generate(client=None):
       const positionsBySymbol = {{}};
       (positions || []).forEach(p => {{ positionsBySymbol[p.symbol] = p; }});
       let rows = '';
-      let totalPl = 0, totalCostBasis = 0, totalStopPl = 0, totalStopCostBasis = 0;
+      let totalPl = 0, totalCostBasis = 0, totalStopPl = 0, totalStopCostBasis = 0, totalCurrentMktValue = 0;
       openOrders.forEach(o => {{
         const submittedDt = new Date(o.submitted_at);
         const submitted = submittedDt.toLocaleString('en-US', {{
@@ -1424,6 +1428,7 @@ def generate(client=None):
         const purchasePrice = pos ? Number(pos.avg_entry_price) : null;
         const deltaPrice = (purchasePrice != null && currentPrice != null) ? (currentPrice - purchasePrice) : null;
         const currentMktValue = deltaPrice != null ? (qty * deltaPrice) : null;
+        if (currentMktValue != null) {{ totalCurrentMktValue += currentMktValue; }}
         const limitMinusPurchase = (limitPrice != null && purchasePrice != null) ? (limitPrice - purchasePrice) : null;
 
         let projectedPl = null, projectedPct = null;
@@ -1469,7 +1474,9 @@ def generate(client=None):
       const totalPct = totalCostBasis ? (totalPl / totalCostBasis * 100) : null;
       const totalStopPct = totalStopCostBasis ? (totalStopPl / totalStopCostBasis * 100) : null;
       rows += `<tr class="totals-row">
-        <td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td>Total</td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td class="num ${{cls(totalCurrentMktValue)}}">${{fmtMoneyJS(totalCurrentMktValue)}}</td>
+        <td></td><td></td><td></td><td></td>
         <td class="num ${{cls(totalPl)}}">${{fmtMoneyJS(totalPl)}}</td>
         <td class="num ${{cls(totalPct)}}">${{totalPct != null ? pctJS(totalPct) : '—'}}</td>
         <td></td>
