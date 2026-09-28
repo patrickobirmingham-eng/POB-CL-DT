@@ -96,6 +96,11 @@ SETTINGS_FIELDS = [
     {"key": "BREAKEVEN_TRIGGER_R", "label": "Breakeven trigger", "group": "Breakeven Stop", "type": "nullable_number", "step": 0.1, "min": 0, "suffix": "x initial risk (R)", "hint": "leave blank to disable moving the stop to breakeven",
      "tooltip": "Once a position has moved this many multiples of its initial risk (R) in your favor, its stop-loss moves up to breakeven (entry price) so a winner can't turn into a full loss. Blank disables this."},
 
+    {"key": "TIGHTEN_BEFORE_CLOSE_MINUTES", "label": "Tighten window before close", "group": "Closing-Time Tightening", "type": "nullable_number", "step": 1, "min": 0, "suffix": "min before flatten", "hint": "leave blank to disable tightening take-profit near the close",
+     "tooltip": "Starting this many minutes before the flatten-all time, the take-profit limit on each open position is progressively pulled down toward the live price, so a position that popped earlier but has since faded doesn't ride that fade all the way to the forced close. Blank disables this."},
+    {"key": "TIGHTEN_STEP_SECONDS", "label": "Tighten update interval", "group": "Closing-Time Tightening", "type": "number", "step": 15, "min": 15, "suffix": "sec",
+     "tooltip": "Minimum time between take-profit limit adjustments for the same symbol during the tighten window — keeps this from replacing the order on every single poll."},
+
     {"key": "FLATTEN_TIME", "label": "Flatten-all time (ET)", "group": "Time / Session", "type": "time",
      "tooltip": "All open positions are closed by this time (ET), no exceptions — the bot's hard end-of-day exit."},
     {"key": "MARKET_CLOSE_TIME", "label": "Market close time (ET)", "group": "Time / Session", "type": "time",
