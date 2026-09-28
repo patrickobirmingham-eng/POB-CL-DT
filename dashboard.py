@@ -497,7 +497,6 @@ def generate(client=None):
             limit_price = float(o.limit_price) if o.limit_price else None
             stop_price = float(o.stop_price) if getattr(o, "stop_price", None) else None
             current_price, _ = snapshot_prices(o.symbol)
-            current_mkt_value = qty * current_price if current_price is not None else None
 
             pos = positions_by_symbol.get(o.symbol)
             purchase_price = float(pos.avg_entry_price) if pos is not None else None
@@ -505,6 +504,7 @@ def generate(client=None):
                 current_price - purchase_price
                 if (purchase_price is not None and current_price is not None) else None
             )
+            current_mkt_value = qty * delta_price if delta_price is not None else None
 
             limit_minus_purchase = (
                 limit_price - purchase_price
@@ -1420,10 +1420,10 @@ def generate(client=None):
         const limitPrice = o.limit_price != null ? Number(o.limit_price) : null;
         const stopPrice = o.stop_price != null ? Number(o.stop_price) : null;
         const [currentPrice] = snapshotPrices(snapshots, o.symbol);
-        const currentMktValue = currentPrice != null ? (qty * currentPrice) : null;
         const pos = positionsBySymbol[o.symbol];
         const purchasePrice = pos ? Number(pos.avg_entry_price) : null;
         const deltaPrice = (purchasePrice != null && currentPrice != null) ? (currentPrice - purchasePrice) : null;
+        const currentMktValue = deltaPrice != null ? (qty * deltaPrice) : null;
         const limitMinusPurchase = (limitPrice != null && purchasePrice != null) ? (limitPrice - purchasePrice) : null;
 
         let projectedPl = null, projectedPct = null;
