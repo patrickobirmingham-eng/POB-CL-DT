@@ -197,6 +197,93 @@ def apply_breakeven_stops(trading_client, day_state, positions):
             log(f"{symbol}: failed to move stop to breakeven: {e}")
 
 
+def apply_closing_tighten(trading_client, day_state, positions, now):
+    """Starting config.TIGHTEN_BEFORE_CLOSE_MINUTES before the flatten time,
+    progressively pull each open position's take-profit limit down toward the
+    live price instead of leaving it sitting at its original target.
+
+    Without this, a position that popped nicely earlier in the day but has
+    since faded back toward (or through) breakeven just rides that fade all
+    the way to the 15:45 flatten — giving back a gain that could have been
+    locked in, or riding a small loss deeper, for no reason other than the
+    original target was never going to be hit today. This linearly
+    interpolates the limit from the original target to the live price over
+    the tighten window, so by the moment flatten fires the limit is
+    effectively "sell here" rather than "sell at a target that's no longer
+    realistic". It ratchets toward the live price only (never loosens back
+    out) and never touches the stop-loss leg — apply_breakeven_stops() above
+    already covers downside protection. Best-effort and throttled to at most
+    once every config.TIGHTEN_STEP_SECONDS per symbol, so a killed/late poll
+    or a transient API error here never interrupts trading.
+    """
+    if not config.TIGHTEN_BEFORE_CLOSE_MINUTES:
+        return
+
+    flatten_t = strategy.flatten_time()
+    flatten_dt = datetime.combine(now.date(), flatten_t, tzinfo=ET)
+    window_start_dt = flatten_dt - pd.Timedelta(minutes=config.TIGHTEN_BEFORE_CLOSE_MINUTES)
+    if now < window_start_dt or now >= flatten_dt:
+        return
+
+    total_window = (flatten_dt - window_start_dt).total_seconds()
+    remaining = (flatten_dt - now).total_seconds()
+    fraction_remaining = max(0.0, min(1.0, remaining / total_window))
+
+    meta = day_state.setdefault("trade_meta", {})
+    last_tightened = day_state.setdefault("last_tightened_at", {})
+
+    for p in positions:
+        symbol = p.symbol
+        info = meta.get(symbol)
+        if info is None or info.get("target_price") is None or p.current_price is None:
+            continue
+
+        last_ts = last_tightened.get(symbol)
+        if last_ts is not None:
+            elapsed = (now - datetime.fromisoformat(last_ts)).total_seconds()
+            if elapsed < config.TIGHTEN_STEP_SECONDS:
+                continue
+
+        current_price = float(p.current_price)
+        original_target = info["target_price"]
+        direction = info["direction"]
+        new_limit = round(current_price + (original_target - current_price) * fraction_remaining, 2)
+
+        try:
+            open_orders = trading_client.get_orders(
+                filter=GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[symbol])
+            )
+            limit_leg = next((o for o in open_orders if o.order_type == OrderType.LIMIT), None)
+            if limit_leg is None:
+                continue
+
+            current_limit = float(limit_leg.limit_price) if limit_leg.limit_price else None
+
+            # Only ratchet toward the live price -- never loosen the limit
+            # back out toward the original target if price bounces around.
+            if current_limit is not None:
+                if direction == "long" and new_limit >= current_limit:
+                    last_tightened[symbol] = now.isoformat()
+                    continue
+                if direction == "short" and new_limit <= current_limit:
+                    last_tightened[symbol] = now.isoformat()
+                    continue
+                if abs(current_limit - new_limit) < 0.01:
+                    last_tightened[symbol] = now.isoformat()
+                    continue
+
+            trading_client.replace_order_by_id(
+                order_id=limit_leg.id,
+                order_data=ReplaceOrderRequest(limit_price=new_limit),
+            )
+            last_tightened[symbol] = now.isoformat()
+            log(f"{symbol}: tightened take-profit limit to ${new_limit:.2f} "
+                f"({fraction_remaining:.0%} of the {config.TIGHTEN_BEFORE_CLOSE_MINUTES}-min "
+                f"closing window remaining).")
+        except Exception as e:
+            log(f"{symbol}: failed to tighten take-profit limit: {e}")
+
+
 def push_dashboard_update(trading_client, reason: str):
     """Regenerates docs/index.html from live account state and commits + pushes
     it immediately, so the dashboard reflects each trade as it happens rather
@@ -342,6 +429,7 @@ def load_state(path: str):
         "notional_deployed_today": raw.get("notional_deployed_today", 0.0),
         "trade_meta": raw.get("trade_meta", {}),
         "breakeven_moved": set(raw.get("breakeven_moved", [])),
+        "last_tightened_at": raw.get("last_tightened_at", {}),
     }
 
 
@@ -362,6 +450,7 @@ def save_state(path: str, day_state: dict):
         "notional_deployed_today": day_state["notional_deployed_today"],
         "trade_meta": day_state.get("trade_meta", {}),
         "breakeven_moved": sorted(day_state.get("breakeven_moved", set())),
+        "last_tightened_at": day_state.get("last_tightened_at", {}),
     }
     with open(path, "w") as f:
         json.dump(serializable, f, indent=2)
@@ -401,8 +490,9 @@ def main():
             "starting_equity": None,
             "flattened": False,
             "notional_deployed_today": 0.0,
-            "trade_meta": {},       # symbol -> {direction, entry_price, stop_price}
+            "trade_meta": {},       # symbol -> {direction, entry_price, stop_price, target_price}
             "breakeven_moved": set(),
+            "last_tightened_at": {},  # symbol -> ISO timestamp of last take-profit tighten
         }
 
     flatten_t = strategy.flatten_time()
@@ -428,7 +518,7 @@ def main():
                 "date": today_str, "opening_ranges": {}, "traded_today": set(),
                 "trade_count": 0, "starting_equity": float(trading_client.get_account().equity),
                 "flattened": False, "notional_deployed_today": 0.0,
-                "trade_meta": {}, "breakeven_moved": set(),
+                "trade_meta": {}, "breakeven_moved": set(), "last_tightened_at": {},
             })
 
         now_t = now.time()
@@ -489,6 +579,13 @@ def main():
         # poll, regardless of whether we're free to open new trades right now —
         # this is about protecting existing winners, not about entries.
         apply_breakeven_stops(trading_client, day_state, positions_list)
+
+        # In the closing window before flatten_t, progressively tighten each
+        # open position's take-profit limit toward the live price. Also runs
+        # regardless of whether we're free to open new trades — this is about
+        # not giving back gains (or letting losses drift further) on positions
+        # that are still open with the day almost over.
+        apply_closing_tighten(trading_client, day_state, positions_list, now)
 
         if len(open_positions) >= config.MAX_CONCURRENT_POSITIONS:
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
@@ -569,6 +666,7 @@ def main():
                     "direction": sig.direction,
                     "entry_price": sig.entry_price,
                     "stop_price": sig.stop_price,
+                    "target_price": sig.target_price,
                 }
                 log_trade_row({
                     "timestamp": ts, "symbol": symbol, "direction": sig.direction,

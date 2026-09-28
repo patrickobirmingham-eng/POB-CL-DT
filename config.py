@@ -65,6 +65,24 @@ MAX_DAILY_NOTIONAL_TRADED = 1_000_000   # e.g. 1_000_000 = never deploy more tha
 # stop-loss loss. Set to None to disable this behavior entirely.
 BREAKEVEN_TRIGGER_R = 1.0
 
+# --- Closing-time take-profit tightening -------------------------------------
+# Starting this many minutes before FLATTEN_TIME, progressively pull each open
+# position's take-profit limit down toward the live price instead of leaving it
+# sitting at its original target. A position that popped earlier in the day but
+# has since faded back toward (or through) breakeven would otherwise just ride
+# that fade all the way to the 15:45 flatten instead of locking in whatever's
+# left. This interpolates linearly from the original target to the live price
+# over the window, so by the moment flatten fires the limit is effectively
+# "sell here" rather than "sell at a target that's no longer realistic today".
+# It never loosens (only ratchets toward the live price) and never touches the
+# stop-loss leg — apply_breakeven_stops() already covers downside protection.
+# Set to None/0 to disable this behavior entirely.
+TIGHTEN_BEFORE_CLOSE_MINUTES = 60
+# Minimum seconds between limit-order replace calls for the same symbol during
+# the tightening window, so this doesn't hit Alpaca's replace-order API on
+# every single 15s poll — a periodic ratchet is plenty for this purpose.
+TIGHTEN_STEP_SECONDS = 300
+
 # --- Time stop -------------------------------------------------------------
 FLATTEN_TIME = "15:45"              # ET — close everything by this time, no exceptions
 MARKET_CLOSE_TIME = "16:00"
@@ -117,7 +135,8 @@ _OVERRIDABLE_KEYS = {
     "VOLUME_CONFIRMATION_MULT", "ALLOW_SHORTS", "ENTRY_CUTOFF_TIME", "BREAKOUT_BUFFER_PCT",
     "RISK_PCT_PER_TRADE", "REWARD_RISK_MULTIPLE", "MAX_TRADES_PER_DAY", "MAX_DAILY_LOSS_PCT",
     "MAX_CONCURRENT_POSITIONS", "ONE_TRADE_PER_SYMBOL_PER_DAY", "MAX_NOTIONAL_PER_TRADE",
-    "MAX_DAILY_NOTIONAL_TRADED", "BREAKEVEN_TRIGGER_R", "FLATTEN_TIME", "MARKET_CLOSE_TIME",
+    "MAX_DAILY_NOTIONAL_TRADED", "BREAKEVEN_TRIGGER_R", "TIGHTEN_BEFORE_CLOSE_MINUTES",
+    "TIGHTEN_STEP_SECONDS", "FLATTEN_TIME", "MARKET_CLOSE_TIME",
     "POLL_INTERVAL_SECONDS", "DATA_FEED", "BACKTEST_DEFAULT_DAYS", "BACKTEST_SLIPPAGE_PCT",
     "BACKTEST_COMMISSION_PER_TRADE", "NTFY_ENABLED", "NTFY_TOPIC",
 }
