@@ -97,6 +97,29 @@ on Alpaca's own bracket order stops/targets to manage risk even if the script it
 isn't running, which is why every entry is placed as a bracket order rather than managed
 purely in-process.
 
+## AI trade filter (Claude)
+
+Before any breakout order is sent, `live_bot.py` passes the signal to `ai_filter.py`,
+which asks Claude (acting as a risk officer) to **CONFIRM** or **VETO** it. Claude sees
+the opening range, the breakout bar's relative volume, VWAP, the session high/low,
+the prior day's high/low/close, the gap, today's volume pace and QQQ's move.
+
+- It can only make a trade smaller or skip it: veto, cut size to 0.25x-1.0x, and set
+  the take-profit between 1R and 3R. The stop always stays at the opening-range level.
+- A confirmation below `AI_MIN_CONFIDENCE` (default 0.55) counts as a veto, and any
+  signal whose stop is more than `AI_MAX_STOP_PCT` (default 3%) from entry is skipped in code.
+- A vetoed symbol is not re-evaluated for the rest of the day.
+- If the API key is missing or the API is slow, erroring or rate limited, the trade
+  goes ahead as plain ORB, so an outage never stops the bot.
+- `AI_FILTER_MODE` switches between `enforce` (default), `shadow` (log only) and `off`,
+  from the dashboard's Settings panel.
+- Every decision is logged to `ai_decisions.csv` and shown on the dashboard, with the
+  realized P&L of confirmed trades so the AI's record can be judged.
+
+Setup: add a repository secret named `ANTHROPIC_API_KEY` (Settings -> Secrets and
+variables -> Actions). Until it exists, the filter logs "fail open" and the bot trades
+as plain ORB.
+
 ## Running it for free on GitHub (no computer required to stay on)
 
 The `live_bot.py` script and its `--session-start` / `--session-end` / `--state-file`

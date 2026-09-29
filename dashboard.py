@@ -6,6 +6,7 @@ each bot session, with the output committed and served via GitHub Pages.
 
 This is read-only — it never places or modifies orders.
 """
+import csv
 import json
 import math
 import os
@@ -122,6 +123,13 @@ SETTINGS_FIELDS = [
      "tooltip": "Turns push notifications to your phone (via the ntfy.sh app) on or off."},
     {"key": "NTFY_TOPIC", "label": "ntfy.sh topic", "group": "Notifications", "type": "text", "hint": "treat like a password — anyone who knows it can subscribe",
      "tooltip": "The ntfy.sh topic name notifications are sent to — acts like an unlisted channel. Treat it like a password: anyone who knows it can subscribe to your notifications."},
+
+    {"key": "AI_FILTER_MODE", "label": "AI trade filter", "group": "AI Trade Filter", "type": "select", "options": ["enforce", "shadow", "off"],
+     "tooltip": "enforce: Claude confirms or vetoes every breakout before it is traded, and can shrink the position or adjust the target (1R-3R). shadow: Claude's decisions are only logged; every signal trades as plain ORB. off: the filter is not called."},
+    {"key": "AI_MIN_CONFIDENCE", "label": "Minimum AI confidence", "group": "AI Trade Filter", "type": "number", "step": 0.05, "min": 0, "hint": "0-1; a CONFIRM below this is treated as a veto",
+     "tooltip": "Claude reports the probability the trade reaches +1R before its stop. Confirmations below this threshold are treated as vetoes."},
+    {"key": "AI_MAX_STOP_PCT", "label": "Max stop distance", "group": "AI Trade Filter", "type": "percent", "step": 0.1, "hint": "hard limit, enforced in code",
+     "tooltip": "Any breakout whose stop is further than this % from entry is skipped, regardless of what the AI says."},
 
     {"key": "WATCHLIST", "label": "Watchlist (comma-separated symbols)", "group": "Watchlist (Advanced)", "type": "watchlist",
      "tooltip": "The list of symbols the bot scans for opening-range breakouts each trading day."},
@@ -776,6 +784,62 @@ def generate(client=None):
     daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
     daily_pl_chart_html = build_daily_pl_chart(daily_pl_points)
 
+    # AI filter decisions (ai_decisions.csv, written by ai_filter.py), newest
+    # first. Confirmed trades are matched to that symbol's realized P&L for the
+    # same day, so the AI's calls can be judged against real outcomes.
+    pl_by_symbol_day = defaultdict(float)
+    for t in closed_trades:
+        pl_by_symbol_day[(t["symbol"], t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d"))] += t["pl"]
+    ai_rows_data = []
+    try:
+        with open("ai_decisions.csv", newline="") as f:
+            ai_rows_data = list(csv.DictReader(f))
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        print(f"dashboard: could not read ai_decisions.csv ({e})")
+    ai_rows_data = ai_rows_data[::-1][:100]
+    today_str = datetime.now(ET).strftime("%Y-%m-%d")
+    ai_today = [r for r in ai_rows_data if r.get("timestamp", "").startswith(today_str)]
+    ai_confirmed_today = sum(1 for r in ai_today if r.get("action") == "CONFIRM")
+    ai_vetoed_today = sum(1 for r in ai_today if r.get("action") == "VETO")
+    ai_mode_now = str(getattr(bot_config, "AI_FILTER_MODE", "enforce"))
+    ai_rows = ""
+    for r in ai_rows_data:
+        ts = r.get("timestamp", "")
+        try:
+            ts_dt = datetime.fromisoformat(ts)
+            ts_disp = ts_dt.strftime("%Y-%m-%d %I:%M %p")
+            day = ts_dt.strftime("%Y-%m-%d")
+        except ValueError:
+            ts_disp, day = ts, ""
+        sym = r.get("symbol", "")
+        action = r.get("action", "")
+        act_class = "pos" if action == "CONFIRM" else "neg"
+        source = r.get("source", "")
+        source_label = {"ai": "AI", "fail_open": "Fallback (no AI)", "hard_limit": "Hard limit"}.get(source, source)
+        if r.get("mode") == "shadow":
+            source_label += " · shadow"
+        outcome = pl_by_symbol_day.get((sym, day)) if action == "CONFIRM" else None
+        out_class = "" if outcome is None else ("pos" if outcome >= 0 else "neg")
+        reasoning = (r.get("reasoning", "") or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        ai_rows += f"""
+            <tr>
+              <td data-value="{ts}">{ts_disp}</td>
+              <td data-value="{sym}">{sym}</td>
+              <td data-value="{r.get('direction', '')}">{(r.get('direction', '') or '').upper()}</td>
+              <td class="num" data-value="{raw_num(r.get('entry_price'))}">{fmt_money(r.get('entry_price'))}</td>
+              <td class="{act_class}" data-value="{action}"><strong>{action}</strong></td>
+              <td class="num" data-value="{raw_num(r.get('confidence')) if source == 'ai' else ''}">{r.get('confidence', '') if source == 'ai' else '—'}</td>
+              <td class="num" data-value="{raw_num(r.get('size_mult'))}">x{r.get('size_mult', '')}</td>
+              <td class="num" data-value="{raw_num(r.get('take_profit_r'))}">{r.get('take_profit_r', '')}R</td>
+              <td data-value="{source_label}">{source_label}</td>
+              <td class="num {out_class}" data-value="{raw_num(outcome)}">{fmt_money(outcome) if outcome is not None else "—"}</td>
+              <td class="reason">{reasoning}</td>
+            </tr>"""
+    if not ai_rows:
+        ai_rows = "<tr><td colspan='11' class='muted'>No AI decisions yet — they appear here as breakouts are evaluated.</td></tr>"
+
     wins = sum(1 for t in closed_trades if t["pl"] > 0)
     win_rate_text = f"{wins / len(closed_trades) * 100:.0f}%" if closed_trades else "—"
 
@@ -890,6 +954,8 @@ def generate(client=None):
   .symbol-search::placeholder {{ color: var(--faint); }}
   .symbol-search:focus {{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }}
   tr.no-match td {{ color: var(--muted); padding: 18px 8px; }}
+  td.reason {{ text-align: left; color: var(--muted); font-size: 12.5px; min-width: 260px; }}
+  .ai-summary {{ font-size: 12.5px; }}
   .panel h2 {{
     font-size: 13px; font-weight: 650; margin: 0 0 16px 0; color: var(--text);
     text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 10px;
@@ -1166,7 +1232,7 @@ def generate(client=None):
       <div class="panel-head">
         <h2>Recent Orders (last 50)</h2>
         <input type="search" id="ordersSearch" class="symbol-search" placeholder="Search symbols or dates, e.g. AAPL, 2026-09-28"
-               aria-label="Filter recent orders by stock symbol or submitted date"autocomplete="off" spellcheck="false" oninput="filterOrders()">
+               aria-label="Filter recent orders by stock symbol or submitted date" autocomplete="off" spellcheck="false" oninput="filterOrders()">
       </div>
       <div class="filters">{status_filters_html}</div>
       <div class="table-scroll">
@@ -1197,7 +1263,7 @@ def generate(client=None):
       <div class="panel-head">
         <h2>Closed Orders</h2>
         <input type="search" id="closedSearch" class="symbol-search" placeholder="Search symbols or dates, e.g. AAPL, 2026-09-28"
-               aria-label="Filter closed orders by stock symbol or transaction date"autocomplete="off" spellcheck="false" oninput="filterClosed()">
+               aria-label="Filter closed orders by stock symbol or transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed()">
       </div>
       <div class="table-scroll">
       <table id="closedTable">
@@ -1212,6 +1278,31 @@ def generate(client=None):
           <th class="sortable num" onclick="sortTable('closedTable',7,'num')">% Gain / Loss</th>
         </tr></thead>
         <tbody>{closed_rows}</tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>AI Trade Filter Decisions</h2>
+        <span class="muted ai-summary">Mode: <strong>{ai_mode_now}</strong> &middot; Today: {ai_confirmed_today} confirmed, {ai_vetoed_today} vetoed</span>
+      </div>
+      <div class="table-scroll">
+      <table id="aiTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('aiTable',0,'text')">Time</th>
+          <th class="sortable" onclick="sortTable('aiTable',1,'text')">Symbol</th>
+          <th class="sortable" onclick="sortTable('aiTable',2,'text')">Side</th>
+          <th class="sortable num" onclick="sortTable('aiTable',3,'num')">Entry</th>
+          <th class="sortable" onclick="sortTable('aiTable',4,'text')">Decision</th>
+          <th class="sortable num" onclick="sortTable('aiTable',5,'num')">Confidence</th>
+          <th class="sortable num" onclick="sortTable('aiTable',6,'num')">Size</th>
+          <th class="sortable num" onclick="sortTable('aiTable',7,'num')">Target</th>
+          <th class="sortable" onclick="sortTable('aiTable',8,'text')">Source</th>
+          <th class="sortable num" onclick="sortTable('aiTable',9,'num')">Realized P&amp;L (day)</th>
+          <th>Reasoning</th>
+        </tr></thead>
+        <tbody>{ai_rows}</tbody>
       </table>
       </div>
     </div>

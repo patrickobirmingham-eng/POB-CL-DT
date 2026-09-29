@@ -81,6 +81,9 @@ jobs:
         env:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
+          # AI trade filter (ai_filter.py). If this secret isn't set the filter
+          # fails open and the bot trades as plain ORB.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DASHBOARD_REFRESH_URL: ${{ vars.DASHBOARD_REFRESH_URL }}
           DASHBOARD_REFRESH_TOKEN: ${{ vars.DASHBOARD_REFRESH_TOKEN }}
         run: |
@@ -106,7 +109,7 @@ jobs:
           # particular won't exist yet on days with no trades, and `git add` fails
           # for ALL listed paths (not just the missing one) if any single path
           # doesn't match, which was silently dropping every other file too.
-          for f in state.json trade_log.csv docs/index.html docs/.nojekyll; do
+          for f in state.json trade_log.csv ai_decisions.csv docs/index.html docs/.nojekyll; do
             [ -e "$f" ] && git add "$f"
           done
           git diff --cached --quiet || git commit -m "Update bot state and dashboard [skip ci]"
