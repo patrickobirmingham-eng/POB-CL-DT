@@ -6,65 +6,135 @@
 <title>Claude.AI Paper Day Trading</title>
 <style>
   :root {
-    --bg: #0b0e14; --panel: #131722; --border: #232838;
-    --text: #e6e9ef; --muted: #8b93a7; --pos: #16a34a; --neg: #dc2626; --accent: #3b82f6;
+    --bg: #0a0d14; --bg-2: #0d1119; --panel: #111621; --panel-2: #151b28; --border: #1f2637; --border-strong: #2b344a;
+    --text: #e8ebf2; --muted: #8791a7; --faint: #5d667b;
+    --pos: #22c55e; --neg: #f0504e; --accent: #4f8cff; --accent-soft: rgba(79, 140, 255, 0.14);
+    --row-hover: rgba(255, 255, 255, 0.03); --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --grid: rgba(255, 255, 255, 0.06);
   }
   :root[data-theme="light"] {
-    --bg: #f5f7fa; --panel: #ffffff; --border: #dde2ec;
-    --text: #1a1f2b; --muted: #5b6577; --pos: #158a41; --neg: #c92a2a; --accent: #2563eb;
+    --bg: #f3f5f9; --bg-2: #eaeef5; --panel: #ffffff; --panel-2: #f8f9fc; --border: #e3e8f0; --border-strong: #cfd6e3;
+    --text: #131a29; --muted: #5a6479; --faint: #8a93a6;
+    --pos: #12833f; --neg: #c62828; --accent: #1f5fe0; --accent-soft: rgba(31, 95, 224, 0.10);
+    --row-hover: rgba(15, 30, 60, 0.035); --shadow: 0 1px 2px rgba(20, 30, 60, 0.06);
+    --grid: rgba(15, 30, 60, 0.08);
   }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;
+    font-feature-settings: "tnum" 1, "cv11" 1;
     transition: background 0.15s ease, color 0.15s ease;
   }
-  .wrap { max-width: 1800px; width: 100%; margin: 0 auto; }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  #topActions {
-    position: fixed; top: 16px; right: 16px; z-index: 100;
-    display: flex; gap: 8px;
+  .wrap { max-width: 1800px; width: 100%; margin: 0 auto; padding: 28px 32px 40px 32px; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
   }
-  #topActions button {
-    background: var(--panel); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  .topbar-inner {
+    max-width: 1800px; margin: 0 auto; padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
   }
-  #topActions button:hover { border-color: var(--accent); }
-  .updated { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
-  .card .value { font-size: 22px; font-weight: 600; }
-  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-  .panel h2 { font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .table-scroll { overflow-x: hidden; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; }
-  th { text-align: center; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.25; vertical-align: bottom; }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand-mark {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), #7c5cff);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700;
+  }
+  .brand h1 { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand .sub { color: var(--muted); font-size: 12px; margin-top: 1px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
+    color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  #topActions { display: flex; gap: 8px; align-items: center; }
+  #topActions button, #refreshBtn {
+    background: var(--panel); color: var(--text); border: 1px solid var(--border-strong);
+    border-radius: 8px; padding: 7px 13px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }
+  #topActions button:hover, #refreshBtn:hover { border-color: var(--accent); background: var(--panel-2); }
+
+  .updated {
+    color: var(--muted); font-size: 12.5px; margin-bottom: 22px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  }
+  .updated #lastUpdated { color: var(--text); font-weight: 500; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border-strong); }
+  .card.primary::before { background: var(--accent); }
+  .card.pos-card::before { background: var(--pos); }
+  .card.neg-card::before { background: var(--neg); }
+  .card .label { color: var(--muted); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+  .card .value { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 22px 22px 22px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .panel h2 {
+    font-size: 13px; font-weight: 650; margin: 0 0 16px 0; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 10px;
+  }
+  .panel h2::before { content: ""; width: 3px; height: 14px; border-radius: 2px; background: var(--accent); }
+  .table-scroll { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; font-variant-numeric: tabular-nums; }
+  th {
+    text-align: center; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 10px 8px; border-bottom: 1px solid var(--border-strong); background: var(--panel-2);
+    white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.3; vertical-align: bottom;
+  }
+  th:first-child { border-top-left-radius: 8px; }
+  th:last-child { border-top-right-radius: 8px; }
   th.sortable { cursor: pointer; user-select: none; }
   th.sortable:hover { color: var(--text); }
-  th.sortable::after { content: "⇅"; color: var(--border); margin-left: 4px; font-size: 10px; }
+  th.sortable::after { content: "⇅"; color: var(--faint); margin-left: 4px; font-size: 10px; }
   th.sortable[data-dir="asc"]::after { content: "▲"; color: var(--accent); }
   th.sortable[data-dir="desc"]::after { content: "▼"; color: var(--accent); }
-  td { padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; text-align: center; }
-  .totals-row td { font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }
+  td { padding: 10px 8px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; text-align: center; }
+  tbody tr:not(.totals-row):hover td { background: var(--row-hover); }
+  tbody tr:last-child td { border-bottom: none; }
+  .totals-row td { font-weight: 650; background: var(--panel-2); border-top: 1px solid var(--border-strong); border-bottom: none; }
   .pos { color: var(--pos); }
   .neg { color: var(--neg); }
   .muted { color: var(--muted); }
-  .pl-chart { width: 100%; height: 240px; }
+  .pl-chart { width: 100%; height: auto; max-height: 320px; display: block; }
   .chart-wrap { position: relative; }
-  .pl-bar { cursor: pointer; }
-  .pl-bar:hover { opacity: 0.75; }
+  .pl-bar { cursor: pointer; transition: opacity 0.1s ease; }
+  .pl-bar.up { fill: var(--pos); }
+  .pl-bar.down { fill: var(--neg); }
+  .pl-bar:hover { opacity: 0.7; }
+  .pl-grid { stroke: var(--grid); stroke-width: 1; }
+  .pl-zero { stroke: var(--border-strong); stroke-width: 1.2; }
+  .pl-axis { fill: var(--muted); font-size: 10.5px; }
   .pl-tooltip {
     position: absolute; display: none; pointer-events: none;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    padding: 6px 10px; font-size: 12px; color: var(--text); white-space: nowrap;
-    transform: translate(-50%, -100%); margin-top: -8px; z-index: 10;
+    background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    padding: 7px 11px; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap;
+    transform: translate(-50%, -100%); margin-top: -10px; z-index: 10;
   }
-  .disclaimer { color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }
-  .filters { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }
-  .filter-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
-  .filter-chip input { accent-color: var(--accent); cursor: pointer; }
+  .disclaimer { color: var(--faint); font-size: 12px; margin-top: 28px; line-height: 1.6; text-align: center; border-top: 1px solid var(--border); padding-top: 18px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); cursor: pointer;
+    padding: 5px 11px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--panel-2);
+    transition: border-color 0.12s ease, color 0.12s ease;
+  }
+  .filter-chip:hover { border-color: var(--accent); color: var(--text); }
+  .filter-chip input { accent-color: var(--accent); cursor: pointer; margin: 0; }
 
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 200;
@@ -126,39 +196,43 @@
   #settingsSaveBtn:disabled { opacity: 0.5; cursor: default; }
   .settings-loading { color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }
 
-  #refreshBtn {
-    margin-left: 10px; background: var(--panel); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
-  }
-  #refreshBtn:hover { border-color: var(--accent); }
   #refreshBtn:disabled { opacity: 0.5; cursor: default; }
 
   @media (max-width: 720px) {
-    body { padding: 16px 12px 16px 12px; }
-    #topActions {
-      position: static; display: flex; margin-bottom: 12px;
-    }
+    .wrap { padding: 16px 12px 28px 12px; }
+    .topbar-inner { padding: 10px 12px; }
+    .brand .sub, #topActions .badge { display: none; }
+    .cards .card:last-child:nth-child(odd) { grid-column: span 2; }
+    .brand-mark { width: 28px; height: 28px; font-size: 14px; }
+    .brand h1 { font-size: 14px; }
+    #topActions button { padding: 6px 10px; font-size: 12px; }
     .modal-overlay { padding: 20px 10px; }
     .settings-row { flex-wrap: wrap; }
-    h1 { font-size: 18px; }
-    .cards { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
-    .card { padding: 12px; }
-    .card .value { font-size: 17px; }
-    .panel { padding: 12px; margin-bottom: 14px; }
-    .panel h2 { font-size: 13px; }
+    .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+    .card { padding: 13px 14px; }
+    .card .value { font-size: 19px; }
+    .panel { padding: 14px 12px; margin-bottom: 14px; }
     table { font-size: 12px; }
-    th, td { padding: 6px 7px; }
-    .filters { gap: 8px; }
-    .updated { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-    .pl-chart { height: 180px; }
+    th, td { padding: 8px 7px; }
+    .updated { gap: 6px; }
   }
 </style>
 </head>
 <body>
-  <div id="topActions">
-    <button id="settingsBtn" onclick="openSettingsModal()" aria-label="Trading bot settings">&#9881; Settings</button>
-    <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
-  </div>
+  <header class="topbar"><div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">&#9650;</div>
+      <div>
+        <h1>Claude.AI Paper Day Trading</h1>
+        <div class="sub">Opening Range Breakout &middot; Alpaca paper account</div>
+      </div>
+    </div>
+    <div id="topActions">
+      <span class="badge">Paper</span>
+      <button id="settingsBtn" onclick="openSettingsModal()" aria-label="Trading bot settings">&#9881; Settings</button>
+      <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
+    </div>
+  </div></header>
 
   <div id="settingsModal" class="modal-overlay" style="display:none;" onclick="if (event.target === this) closeSettingsModal();">
     <div class="modal">
@@ -183,31 +257,31 @@
   </div>
 
   <div class="wrap">
-    <h1>Claude.AI Paper Day Trading</h1>
     <div class="updated">
-      Last updated: <span id="lastUpdated">2026-09-28 06:27 PM ET</span>
+      <span>Last updated</span> <span id="lastUpdated">2026-09-28 08:19 PM ET</span>
       <button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>
       <span id="refreshStatus" class="muted"></span>
     </div>
 
     <div class="cards">
-      <div class="card"><div class="label">Equity</div><div class="value">$1,016,197.02</div></div>
+      <div class="card primary"><div class="label">Equity</div><div class="value">$1,016,197.02</div></div>
       <div class="card"><div class="label">Cash</div><div class="value">$1,016,197.02</div></div>
       <div class="card"><div class="label">Buying Power</div><div class="value">$4,064,788.08</div></div>
       <div class="card"><div class="label">Open Positions</div><div class="value">0</div></div>
+      <div class="card pos-card"><div class="label">Realized P&amp;L</div><div class="value pos">$16,197.02</div></div>
+      <div class="card"><div class="label">Win Rate</div><div class="value">52%</div></div>
+      <div class="card"><div class="label">Closed Trades</div><div class="value">29</div></div>
     </div>
 
     <div class="panel">
       <h2>Daily Profit / (Loss)</h2>
       <div class="chart-wrap">
         
-    <svg viewBox="0 0 900 240" class="pl-chart" style="color: var(--muted);">
-      <line x1="72" y1="185.1" x2="884" y2="185.1" stroke="currentColor" stroke-opacity="0.3" stroke-width="1" />
-      <rect class="pl-bar" x="96.4" y="16.0" width="113.7" height="169.1" fill="#16a34a" data-date="2026-09-22" data-pl="$13,335.69"><title>2026-09-22: $13,335.69</title></rect><rect class="pl-bar" x="258.8" y="178.5" width="113.7" height="6.6" fill="#16a34a" data-date="2026-09-23" data-pl="$518.55"><title>2026-09-23: $518.55</title></rect><rect class="pl-bar" x="421.2" y="162.7" width="113.7" height="22.4" fill="#16a34a" data-date="2026-09-24" data-pl="$1,768.92"><title>2026-09-24: $1,768.92</title></rect><rect class="pl-bar" x="583.6" y="185.1" width="113.7" height="18.9" fill="#dc2626" data-date="2026-09-25" data-pl="$-1,489.87"><title>2026-09-25: $-1,489.87</title></rect><rect class="pl-bar" x="746.0" y="158.9" width="113.7" height="26.2" fill="#16a34a" data-date="2026-09-28" data-pl="$2,063.74"><title>2026-09-28: $2,063.74</title></rect>
-      <text x="153.2" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-22</text><text x="315.6" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-23</text><text x="478.0" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-24</text><text x="640.4" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-25</text><text x="802.8" y="222" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.65">2026-09-28</text>
-      <text x="64" y="24" font-size="10" fill="currentColor" text-anchor="end" opacity="0.65">$13,335.69</text>
-      <text x="64" y="188.1" font-size="10" fill="currentColor" text-anchor="end" opacity="0.65">$0</text>
-      <text x="64" y="204" font-size="10" fill="currentColor" text-anchor="end" opacity="0.65">$-1,489.87</text>
+    <svg viewBox="0 0 900 240" class="pl-chart">
+      <line class="pl-grid" x1="72" y1="185.1" x2="884" y2="185.1" /><text class="pl-axis" x="64" y="188.1" text-anchor="end">$0</text><line class="pl-grid" x1="72" y1="121.7" x2="884" y2="121.7" /><text class="pl-axis" x="64" y="124.7" text-anchor="end">$5,000</text><line class="pl-grid" x1="72" y1="58.3" x2="884" y2="58.3" /><text class="pl-axis" x="64" y="61.3" text-anchor="end">$10,000</text>
+      <line class="pl-zero" x1="72" y1="185.1" x2="884" y2="185.1" />
+      <rect class="pl-bar up" x="96.4" y="16.0" width="113.7" height="169.1" rx="2" data-date="2026-09-22" data-pl="$13,335.69"><title>2026-09-22: $13,335.69</title></rect><rect class="pl-bar up" x="258.8" y="178.5" width="113.7" height="6.6" rx="2" data-date="2026-09-23" data-pl="$518.55"><title>2026-09-23: $518.55</title></rect><rect class="pl-bar up" x="421.2" y="162.7" width="113.7" height="22.4" rx="2" data-date="2026-09-24" data-pl="$1,768.92"><title>2026-09-24: $1,768.92</title></rect><rect class="pl-bar down" x="583.6" y="185.1" width="113.7" height="18.9" rx="2" data-date="2026-09-25" data-pl="-$1,489.87"><title>2026-09-25: -$1,489.87</title></rect><rect class="pl-bar up" x="746.0" y="158.9" width="113.7" height="26.2" rx="2" data-date="2026-09-28" data-pl="$2,063.74"><title>2026-09-28: $2,063.74</title></rect>
+      <text class="pl-axis" x="153.2" y="222" text-anchor="middle">2026-09-22</text><text class="pl-axis" x="315.6" y="222" text-anchor="middle">2026-09-23</text><text class="pl-axis" x="478.0" y="222" text-anchor="middle">2026-09-24</text><text class="pl-axis" x="640.4" y="222" text-anchor="middle">2026-09-25</text><text class="pl-axis" x="802.8" y="222" text-anchor="middle">2026-09-28</text>
     </svg>
     
         <div id="plTooltip" class="pl-tooltip"></div>
@@ -240,7 +314,7 @@
               <td class="num" data-value="8.000000">8</td>
               <td class="num" data-value="797494.889889">$797,494.89</td>
               <td class="num" data-value="796005.019083">$796,005.02</td>
-              <td class="num neg" data-value="-1489.870806">$-1,489.87</td>
+              <td class="num neg" data-value="-1489.870806">-$1,489.87</td>
               <td class="num neg" data-value="-0.186819">-0.19%</td>
             </tr>
             <tr>
@@ -364,7 +438,7 @@
               <td class="num" data-value="95.460000">$95.46</td>
               <td class="num" data-value="100233.000000">$100,233.00</td>
               <td class="num" data-value="100054.500000">$100,054.50</td>
-              <td class="num neg" data-value="-178.500000">$-178.50</td>
+              <td class="num neg" data-value="-178.500000">-$178.50</td>
               <td class="num neg" data-value="-0.178085">-0.18%</td>
               <td class="num pos" data-value="0.415000">$0.42</td>
               <td class="num pos" data-value="0.437418">+0.44%</td>
@@ -381,7 +455,7 @@
               <td class="num" data-value="86.560000">$86.56</td>
               <td class="num" data-value="100063.360000">$100,063.36</td>
               <td class="num" data-value="99982.440000">$99,982.44</td>
-              <td class="num neg" data-value="-80.920000">$-80.92</td>
+              <td class="num neg" data-value="-80.920000">-$80.92</td>
               <td class="num neg" data-value="-0.080869">-0.08%</td>
               <td class="num pos" data-value="0.380000">$0.38</td>
               <td class="num pos" data-value="0.441296">+0.44%</td>
@@ -398,7 +472,7 @@
               <td class="num" data-value="359.090000">$359.09</td>
               <td class="num" data-value="101263.380000">$101,263.38</td>
               <td class="num" data-value="101087.130000">$101,087.13</td>
-              <td class="num neg" data-value="-176.250000">$-176.25</td>
+              <td class="num neg" data-value="-176.250000">-$176.25</td>
               <td class="num neg" data-value="-0.174051">-0.17%</td>
               <td class="num pos" data-value="6.435000">$6.44</td>
               <td class="num pos" data-value="1.827969">+1.83%</td>
@@ -432,7 +506,7 @@
               <td class="num" data-value="50.760000">$50.76</td>
               <td class="num" data-value="100504.800000">$100,504.80</td>
               <td class="num" data-value="99990.000000">$99,990.00</td>
-              <td class="num neg" data-value="-514.800000">$-514.80</td>
+              <td class="num neg" data-value="-514.800000">-$514.80</td>
               <td class="num neg" data-value="-0.512214">-0.51%</td>
               <td class="num pos" data-value="0.075000">$0.08</td>
               <td class="num pos" data-value="0.148736">+0.15%</td>
@@ -449,11 +523,11 @@
               <td class="num" data-value="425.810000">$425.81</td>
               <td class="num" data-value="99213.730000">$99,213.73</td>
               <td class="num" data-value="99014.515000">$99,014.51</td>
-              <td class="num neg" data-value="-199.215000">$-199.21</td>
+              <td class="num neg" data-value="-199.215000">-$199.21</td>
               <td class="num neg" data-value="-0.200794">-0.20%</td>
-              <td class="num neg" data-value="-5.080000">$-5.08</td>
+              <td class="num neg" data-value="-5.080000">-$5.08</td>
               <td class="num neg" data-value="-1.181299">-1.18%</td>
-              <td class="num neg" data-value="-1183.640000">$-1,183.64</td>
+              <td class="num neg" data-value="-1183.640000">-$1,183.64</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T15:45:12.391700-04:00">2026-09-28 03:45 PM</td>
@@ -466,7 +540,7 @@
               <td class="num" data-value="166.610000">$166.61</td>
               <td class="num" data-value="100132.610000">$100,132.61</td>
               <td class="num" data-value="100054.480000">$100,054.48</td>
-              <td class="num neg" data-value="-78.130000">$-78.13</td>
+              <td class="num neg" data-value="-78.130000">-$78.13</td>
               <td class="num neg" data-value="-0.078027">-0.08%</td>
               <td class="num pos" data-value="0.990000">$0.99</td>
               <td class="num pos" data-value="0.598223">+0.60%</td>
@@ -500,7 +574,7 @@
               <td class="num" data-value="415.048382">$415.05</td>
               <td class="num" data-value="100026.660062">$100,026.66</td>
               <td class="num" data-value="99980.055000">$99,980.06</td>
-              <td class="num neg" data-value="-46.605062">$-46.61</td>
+              <td class="num neg" data-value="-46.605062">-$46.61</td>
               <td class="num neg" data-value="-0.046593">-0.05%</td>
               <td class="num pos" data-value="9.735000">$9.74</td>
               <td class="num pos" data-value="2.402992">+2.40%</td>
@@ -536,9 +610,9 @@
               <td class="num" data-value="99014.515000">$99,014.51</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-5.080000">$-5.08</td>
+              <td class="num neg" data-value="-5.080000">-$5.08</td>
               <td class="num neg" data-value="-1.181299">-1.18%</td>
-              <td class="num neg" data-value="-1183.640000">$-1,183.64</td>
+              <td class="num neg" data-value="-1183.640000">-$1,183.64</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T13:00:55.358476-04:00">2026-09-28 01:00 PM</td>
@@ -551,11 +625,11 @@
               <td class="num" data-value="426.940000">$426.94</td>
               <td class="num" data-value="99477.020000">$99,477.02</td>
               <td class="num" data-value="99014.515000">$99,014.51</td>
-              <td class="num neg" data-value="-462.505000">$-462.51</td>
+              <td class="num neg" data-value="-462.505000">-$462.51</td>
               <td class="num neg" data-value="-0.464937">-0.46%</td>
-              <td class="num neg" data-value="-5.080000">$-5.08</td>
+              <td class="num neg" data-value="-5.080000">-$5.08</td>
               <td class="num neg" data-value="-1.181299">-1.18%</td>
-              <td class="num neg" data-value="-1183.640000">$-1,183.64</td>
+              <td class="num neg" data-value="-1183.640000">-$1,183.64</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-28T13:00:55.338598-04:00">2026-09-28 01:00 PM</td>
@@ -570,9 +644,9 @@
               <td class="num" data-value="99014.515000">$99,014.51</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-5.080000">$-5.08</td>
+              <td class="num neg" data-value="-5.080000">-$5.08</td>
               <td class="num neg" data-value="-1.181299">-1.18%</td>
-              <td class="num neg" data-value="-1183.640000">$-1,183.64</td>
+              <td class="num neg" data-value="-1183.640000">-$1,183.64</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-28T09:50:18.670483-04:00">2026-09-28 09:50 AM</td>
@@ -602,7 +676,7 @@
               <td class="num" data-value="50.530000">$50.53</td>
               <td class="num" data-value="100049.400000">$100,049.40</td>
               <td class="num" data-value="99990.000000">$99,990.00</td>
-              <td class="num neg" data-value="-59.400000">$-59.40</td>
+              <td class="num neg" data-value="-59.400000">-$59.40</td>
               <td class="num neg" data-value="-0.059371">-0.06%</td>
               <td class="num pos" data-value="0.075000">$0.08</td>
               <td class="num pos" data-value="0.148736">+0.15%</td>
@@ -806,7 +880,7 @@
               <td class="num" data-value="166.610000">$166.61</td>
               <td class="num" data-value="100132.610000">$100,132.61</td>
               <td class="num" data-value="100054.480000">$100,054.48</td>
-              <td class="num neg" data-value="-78.130000">$-78.13</td>
+              <td class="num neg" data-value="-78.130000">-$78.13</td>
               <td class="num neg" data-value="-0.078027">-0.08%</td>
               <td class="num pos" data-value="0.990000">$0.99</td>
               <td class="num pos" data-value="0.598223">+0.60%</td>
@@ -840,11 +914,11 @@
               <td class="num" data-value="55.874811">$55.87</td>
               <td class="num" data-value="100686.409422">$100,686.41</td>
               <td class="num" data-value="100515.560000">$100,515.56</td>
-              <td class="num neg" data-value="-170.849422">$-170.85</td>
+              <td class="num neg" data-value="-170.849422">-$170.85</td>
               <td class="num neg" data-value="-0.169685">-0.17%</td>
-              <td class="num neg" data-value="-0.055000">$-0.05</td>
+              <td class="num neg" data-value="-0.055000">-$0.05</td>
               <td class="num neg" data-value="-0.098505">-0.10%</td>
-              <td class="num neg" data-value="-99.110000">$-99.11</td>
+              <td class="num neg" data-value="-99.110000">-$99.11</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-28T09:47:09.264362-04:00">2026-09-28 09:47 AM</td>
@@ -859,9 +933,9 @@
               <td class="num" data-value="100515.560000">$100,515.56</td>
               <td class="num pos" data-value="564.851316">$564.85</td>
               <td class="num pos" data-value="0.565130">+0.57%</td>
-              <td class="num neg" data-value="-0.055000">$-0.05</td>
+              <td class="num neg" data-value="-0.055000">-$0.05</td>
               <td class="num neg" data-value="-0.098505">-0.10%</td>
-              <td class="num neg" data-value="-99.110000">$-99.11</td>
+              <td class="num neg" data-value="-99.110000">-$99.11</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-28T09:47:09.257792-04:00">2026-09-28 09:47 AM</td>
@@ -876,9 +950,9 @@
               <td class="num" data-value="100515.560000">$100,515.56</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.055000">$-0.05</td>
+              <td class="num neg" data-value="-0.055000">-$0.05</td>
               <td class="num neg" data-value="-0.098505">-0.10%</td>
-              <td class="num neg" data-value="-99.110000">$-99.11</td>
+              <td class="num neg" data-value="-99.110000">-$99.11</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T15:45:16.449436-04:00">2026-09-25 03:45 PM</td>
@@ -891,11 +965,11 @@
               <td class="num" data-value="1360.580959">$1,360.58</td>
               <td class="num" data-value="99322.410007">$99,322.41</td>
               <td class="num" data-value="98736.880000">$98,736.88</td>
-              <td class="num neg" data-value="-585.530007">$-585.53</td>
+              <td class="num neg" data-value="-585.530007">-$585.53</td>
               <td class="num neg" data-value="-0.589525">-0.59%</td>
-              <td class="num neg" data-value="-14.340000">$-14.34</td>
+              <td class="num neg" data-value="-14.340000">-$14.34</td>
               <td class="num neg" data-value="-1.049089">-1.05%</td>
-              <td class="num neg" data-value="-1046.820000">$-1,046.82</td>
+              <td class="num neg" data-value="-1046.820000">-$1,046.82</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T15:45:16.427078-04:00">2026-09-25 03:45 PM</td>
@@ -908,11 +982,11 @@
               <td class="num" data-value="46.780042">$46.78</td>
               <td class="num" data-value="99641.489460">$99,641.49</td>
               <td class="num" data-value="99620.100000">$99,620.10</td>
-              <td class="num neg" data-value="-21.389460">$-21.39</td>
+              <td class="num neg" data-value="-21.389460">-$21.39</td>
               <td class="num neg" data-value="-0.021466">-0.02%</td>
-              <td class="num neg" data-value="-0.010000">$-0.01</td>
+              <td class="num neg" data-value="-0.010000">-$0.01</td>
               <td class="num neg" data-value="-0.021377">-0.02%</td>
-              <td class="num neg" data-value="-21.300000">$-21.30</td>
+              <td class="num neg" data-value="-21.300000">-$21.30</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T15:45:16.407350-04:00">2026-09-25 03:45 PM</td>
@@ -942,7 +1016,7 @@
               <td class="num" data-value="106.860000">$106.86</td>
               <td class="num" data-value="98631.780000">$98,631.78</td>
               <td class="num" data-value="98539.480000">$98,539.48</td>
-              <td class="num neg" data-value="-92.300000">$-92.30</td>
+              <td class="num neg" data-value="-92.300000">-$92.30</td>
               <td class="num neg" data-value="-0.093580">-0.09%</td>
               <td class="num pos" data-value="0.075000">$0.08</td>
               <td class="num pos" data-value="0.070300">+0.07%</td>
@@ -976,11 +1050,11 @@
               <td class="num" data-value="262.090000">$262.09</td>
               <td class="num" data-value="98283.750000">$98,283.75</td>
               <td class="num" data-value="97691.250000">$97,691.25</td>
-              <td class="num neg" data-value="-592.500000">$-592.50</td>
+              <td class="num neg" data-value="-592.500000">-$592.50</td>
               <td class="num neg" data-value="-0.602846">-0.60%</td>
-              <td class="num neg" data-value="-2.790000">$-2.79</td>
+              <td class="num neg" data-value="-2.790000">-$2.79</td>
               <td class="num neg" data-value="-1.059628">-1.06%</td>
-              <td class="num neg" data-value="-1046.250000">$-1,046.25</td>
+              <td class="num neg" data-value="-1046.250000">-$1,046.25</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:11.995976-04:00">2026-09-25 10:01 AM</td>
@@ -995,9 +1069,9 @@
               <td class="num" data-value="98736.880000">$98,736.88</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-14.340000">$-14.34</td>
+              <td class="num neg" data-value="-14.340000">-$14.34</td>
               <td class="num neg" data-value="-1.049089">-1.05%</td>
-              <td class="num neg" data-value="-1046.820000">$-1,046.82</td>
+              <td class="num neg" data-value="-1046.820000">-$1,046.82</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:01:09.982990-04:00">2026-09-25 10:01 AM</td>
@@ -1010,11 +1084,11 @@
               <td class="num" data-value="1363.500000">$1,363.50</td>
               <td class="num" data-value="99535.500000">$99,535.50</td>
               <td class="num" data-value="98736.880000">$98,736.88</td>
-              <td class="num neg" data-value="-798.620000">$-798.62</td>
+              <td class="num neg" data-value="-798.620000">-$798.62</td>
               <td class="num neg" data-value="-0.802347">-0.80%</td>
-              <td class="num neg" data-value="-14.340000">$-14.34</td>
+              <td class="num neg" data-value="-14.340000">-$14.34</td>
               <td class="num neg" data-value="-1.049089">-1.05%</td>
-              <td class="num neg" data-value="-1046.820000">$-1,046.82</td>
+              <td class="num neg" data-value="-1046.820000">-$1,046.82</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:09.964640-04:00">2026-09-25 10:01 AM</td>
@@ -1029,9 +1103,9 @@
               <td class="num" data-value="98736.880000">$98,736.88</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-14.340000">$-14.34</td>
+              <td class="num neg" data-value="-14.340000">-$14.34</td>
               <td class="num neg" data-value="-1.049089">-1.05%</td>
-              <td class="num neg" data-value="-1046.820000">$-1,046.82</td>
+              <td class="num neg" data-value="-1046.820000">-$1,046.82</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:07.939456-04:00">2026-09-25 10:01 AM</td>
@@ -1046,9 +1120,9 @@
               <td class="num" data-value="99620.100000">$99,620.10</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.010000">$-0.01</td>
+              <td class="num neg" data-value="-0.010000">-$0.01</td>
               <td class="num neg" data-value="-0.021377">-0.02%</td>
-              <td class="num neg" data-value="-21.300000">$-21.30</td>
+              <td class="num neg" data-value="-21.300000">-$21.30</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:07.510330-04:00">2026-09-25 10:01 AM</td>
@@ -1078,11 +1152,11 @@
               <td class="num" data-value="46.930000">$46.93</td>
               <td class="num" data-value="99960.900000">$99,960.90</td>
               <td class="num" data-value="99620.100000">$99,620.10</td>
-              <td class="num neg" data-value="-340.800000">$-340.80</td>
+              <td class="num neg" data-value="-340.800000">-$340.80</td>
               <td class="num neg" data-value="-0.340933">-0.34%</td>
-              <td class="num neg" data-value="-0.010000">$-0.01</td>
+              <td class="num neg" data-value="-0.010000">-$0.01</td>
               <td class="num neg" data-value="-0.021377">-0.02%</td>
-              <td class="num neg" data-value="-21.300000">$-21.30</td>
+              <td class="num neg" data-value="-21.300000">-$21.30</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:07.115678-04:00">2026-09-25 10:01 AM</td>
@@ -1097,9 +1171,9 @@
               <td class="num" data-value="99620.100000">$99,620.10</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-0.010000">$-0.01</td>
+              <td class="num neg" data-value="-0.010000">-$0.01</td>
               <td class="num neg" data-value="-0.021377">-0.02%</td>
-              <td class="num neg" data-value="-21.300000">$-21.30</td>
+              <td class="num neg" data-value="-21.300000">-$21.30</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:05.589006-04:00">2026-09-25 10:01 AM</td>
@@ -1114,9 +1188,9 @@
               <td class="num" data-value="97691.250000">$97,691.25</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num neg" data-value="-2.790000">$-2.79</td>
+              <td class="num neg" data-value="-2.790000">-$2.79</td>
               <td class="num neg" data-value="-1.059628">-1.06%</td>
-              <td class="num neg" data-value="-1046.250000">$-1,046.25</td>
+              <td class="num neg" data-value="-1046.250000">-$1,046.25</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-09-25T10:01:04.300768-04:00">2026-09-25 10:01 AM</td>
@@ -1129,11 +1203,11 @@
               <td class="num" data-value="265.870000">$265.87</td>
               <td class="num" data-value="99701.250000">$99,701.25</td>
               <td class="num" data-value="97691.250000">$97,691.25</td>
-              <td class="num neg" data-value="-2010.000000">$-2,010.00</td>
+              <td class="num neg" data-value="-2010.000000">-$2,010.00</td>
               <td class="num neg" data-value="-2.016023">-2.02%</td>
-              <td class="num neg" data-value="-2.790000">$-2.79</td>
+              <td class="num neg" data-value="-2.790000">-$2.79</td>
               <td class="num neg" data-value="-1.059628">-1.06%</td>
-              <td class="num neg" data-value="-1046.250000">$-1,046.25</td>
+              <td class="num neg" data-value="-1046.250000">-$1,046.25</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-09-25T10:01:01.956873-04:00">2026-09-25 10:01 AM</td>
@@ -1249,7 +1323,7 @@
               <td class="num" data-value="233.000000">233</td>
               <td class="num" data-value="426.940000">$426.94</td>
               <td class="num" data-value="425.810000">$425.81</td>
-              <td class="num neg" data-value="-263.290000">$-263.29</td>
+              <td class="num neg" data-value="-263.290000">-$263.29</td>
               <td class="num neg" data-value="-0.264674">-0.26%</td>
             </tr>
             <tr>
@@ -1279,7 +1353,7 @@
               <td class="num" data-value="241.000000">241</td>
               <td class="num" data-value="415.048382">$415.05</td>
               <td class="num" data-value="414.550000">$414.55</td>
-              <td class="num neg" data-value="-120.110062">$-120.11</td>
+              <td class="num neg" data-value="-120.110062">-$120.11</td>
               <td class="num neg" data-value="-0.120078">-0.12%</td>
             </tr>
             <tr>
@@ -1309,7 +1383,7 @@
               <td class="num" data-value="73.000000">73</td>
               <td class="num" data-value="1363.500000">$1,363.50</td>
               <td class="num" data-value="1360.580959">$1,360.58</td>
-              <td class="num neg" data-value="-213.089993">$-213.09</td>
+              <td class="num neg" data-value="-213.089993">-$213.09</td>
               <td class="num neg" data-value="-0.214084">-0.21%</td>
             </tr>
             <tr>
@@ -1319,7 +1393,7 @@
               <td class="num" data-value="2130.000000">2130</td>
               <td class="num" data-value="46.930000">$46.93</td>
               <td class="num" data-value="46.780042">$46.78</td>
-              <td class="num neg" data-value="-319.410540">$-319.41</td>
+              <td class="num neg" data-value="-319.410540">-$319.41</td>
               <td class="num neg" data-value="-0.319535">-0.32%</td>
             </tr>
             <tr>
@@ -1339,7 +1413,7 @@
               <td class="num" data-value="923.000000">923</td>
               <td class="num" data-value="108.170715">$108.17</td>
               <td class="num" data-value="106.860000">$106.86</td>
-              <td class="num neg" data-value="-1209.789945">$-1,209.79</td>
+              <td class="num neg" data-value="-1209.789945">-$1,209.79</td>
               <td class="num neg" data-value="-1.211710">-1.21%</td>
             </tr>
             <tr>
@@ -1349,7 +1423,7 @@
               <td class="num" data-value="56.000000">56</td>
               <td class="num" data-value="1758.479999">$1,758.48</td>
               <td class="num" data-value="1734.120000">$1,734.12</td>
-              <td class="num neg" data-value="-1364.159944">$-1,364.16</td>
+              <td class="num neg" data-value="-1364.159944">-$1,364.16</td>
               <td class="num neg" data-value="-1.385287">-1.39%</td>
             </tr>
             <tr>
@@ -1359,7 +1433,7 @@
               <td class="num" data-value="375.000000">375</td>
               <td class="num" data-value="265.870000">$265.87</td>
               <td class="num" data-value="262.090000">$262.09</td>
-              <td class="num neg" data-value="-1417.500000">$-1,417.50</td>
+              <td class="num neg" data-value="-1417.500000">-$1,417.50</td>
               <td class="num neg" data-value="-1.421747">-1.42%</td>
             </tr>
             <tr>
@@ -1379,7 +1453,7 @@
               <td class="num" data-value="999.000000">999</td>
               <td class="num" data-value="99.950000">$99.95</td>
               <td class="num" data-value="99.200000">$99.20</td>
-              <td class="num neg" data-value="-749.250000">$-749.25</td>
+              <td class="num neg" data-value="-749.250000">-$749.25</td>
               <td class="num neg" data-value="-0.750375">-0.75%</td>
             </tr>
             <tr>
@@ -1399,7 +1473,7 @@
               <td class="num" data-value="380.000000">380</td>
               <td class="num" data-value="262.710000">$262.71</td>
               <td class="num" data-value="262.260000">$262.26</td>
-              <td class="num neg" data-value="-171.000000">$-171.00</td>
+              <td class="num neg" data-value="-171.000000">-$171.00</td>
               <td class="num neg" data-value="-0.171292">-0.17%</td>
             </tr>
             <tr>
@@ -1419,7 +1493,7 @@
               <td class="num" data-value="2.000000">2</td>
               <td class="num" data-value="62.150000">$62.15</td>
               <td class="num" data-value="61.440000">$61.44</td>
-              <td class="num neg" data-value="-1.420000">$-1.42</td>
+              <td class="num neg" data-value="-1.420000">-$1.42</td>
               <td class="num neg" data-value="-1.142397">-1.14%</td>
             </tr>
             <tr>
@@ -1449,7 +1523,7 @@
               <td class="num" data-value="286.000000">286</td>
               <td class="num" data-value="61.619685">$61.62</td>
               <td class="num" data-value="61.147063">$61.15</td>
-              <td class="num neg" data-value="-135.169892">$-135.17</td>
+              <td class="num neg" data-value="-135.169892">-$135.17</td>
               <td class="num neg" data-value="-0.766998">-0.77%</td>
             </tr>
             <tr>
@@ -1479,7 +1553,7 @@
               <td class="num" data-value="6.000000">6</td>
               <td class="num" data-value="197.500000">$197.50</td>
               <td class="num" data-value="196.530000">$196.53</td>
-              <td class="num neg" data-value="-5.820000">$-5.82</td>
+              <td class="num neg" data-value="-5.820000">-$5.82</td>
               <td class="num neg" data-value="-0.491139">-0.49%</td>
             </tr>
             <tr>
@@ -1499,7 +1573,7 @@
               <td class="num" data-value="4113.000000">4113</td>
               <td class="num" data-value="257.054428">$257.05</td>
               <td class="num" data-value="255.397877">$255.40</td>
-              <td class="num neg" data-value="-6813.394263">$-6,813.39</td>
+              <td class="num neg" data-value="-6813.394263">-$6,813.39</td>
               <td class="num neg" data-value="-0.644436">-0.64%</td>
             </tr>
             <tr>
