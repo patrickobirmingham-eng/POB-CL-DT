@@ -1,0 +1,60 @@
+name: Run Backtest
+
+# Manual-only. Downloads historical minute bars and simulates the strategy —
+# read-only market data, never places orders, never commits anything. Results
+# show on the run's Summary page; the per-trade CSVs are attached as an
+# artifact. Uses the current settings.json values (config.py loads them).
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Trading days to test"
+        default: "90"
+        required: true
+      equity:
+        description: "Account size used for position sizing ($)"
+        default: "100000"
+        required: true
+      compare_shorts:
+        description: "Compare long-only vs long + short"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run backtest
+        env:
+          APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
+          APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
+        run: |
+          if [ "${{ inputs.compare_shorts }}" = "true" ]; then
+            python backtest.py --days "${{ inputs.days }}" --equity "${{ inputs.equity }}" --compare-shorts
+          else
+            python backtest.py --days "${{ inputs.days }}" --equity "${{ inputs.equity }}"
+          fi
+
+      - name: Upload trade lists
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-trades
+          path: backtest_*.csv
+          if-no-files-found: ignore

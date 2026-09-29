@@ -121,6 +121,24 @@ def get_recent_bars_bulk(data_client, symbols, since):
 
 
 _daily_cache = {}  # (date, symbol) -> dict of prior-day stats
+_shortable_cache = {}  # (date, symbol) -> bool
+
+
+def is_shortable(trading_client, symbol, today):
+    """True only if Alpaca reports the stock as shortable AND easy to borrow.
+    Checked once per symbol per day. If the lookup fails, answer False: better
+    to skip a short than to send an order that will be rejected."""
+    key = (today, symbol)
+    if key not in _shortable_cache:
+        try:
+            asset = trading_client.get_asset(symbol)
+            _shortable_cache[key] = bool(getattr(asset, "shortable", False)) and bool(getattr(asset, "easy_to_borrow", False))
+        except Exception as e:
+            log(f"{symbol}: could not check shortability ({e}); skipping short.")
+            _shortable_cache[key] = False
+        if not _shortable_cache[key]:
+            log(f"{symbol}: not shortable / not easy to borrow today — short breakdowns skipped.")
+    return _shortable_cache[key]
 
 
 def get_prior_day_stats(data_client, symbols, today):
@@ -739,6 +757,11 @@ def main():
 
             sig = strategy.check_breakout(orange, last_bar, ts, symbol in day_state["traded_today"])
             if sig is None:
+                continue
+
+            # Shorts need borrowable shares; skip quietly rather than send an
+            # order Alpaca will reject (and alert on every poll).
+            if sig.direction == "short" and not is_shortable(trading_client, symbol, now.date()):
                 continue
 
             shares = strategy.position_size(equity, sig.risk_per_share)
