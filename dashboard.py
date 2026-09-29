@@ -7,6 +7,7 @@ each bot session, with the output committed and served via GitHub Pages.
 This is read-only — it never places or modifies orders.
 """
 import json
+import math
 import os
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
@@ -170,12 +171,12 @@ def build_daily_pl_chart(points, width=900, height=240, pad_left=72, pad_right=1
         top = y(max(v, 0.0))
         bottom = y(min(v, 0.0))
         h = max(bottom - top, 1.0)
-        color = "#16a34a" if v >= 0 else "#dc2626"
+        cls_name = "up" if v >= 0 else "down"
         # data-date/data-pl feed the JS hover tooltip below; the <title> is a
         # native-tooltip fallback for anyone viewing the raw SVG.
         bars += (
-            f'<rect class="pl-bar" x="{x:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" '
-            f'fill="{color}" data-date="{d}" data-pl="{fmt_money(v)}"><title>{d}: {fmt_money(v)}</title></rect>'
+            f'<rect class="pl-bar {cls_name}" x="{x:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" rx="2" '
+            f'data-date="{d}" data-pl="{fmt_money(v)}"><title>{d}: {fmt_money(v)}</title></rect>'
         )
 
     # Sample ~8 evenly-spaced date labels across the X axis rather than one per
@@ -187,42 +188,42 @@ def build_daily_pl_chart(points, width=900, height=240, pad_left=72, pad_right=1
         d, _ = points[i]
         lx = pad_left + i * gap + gap / 2
         x_labels += (
-            f'<text x="{lx:.1f}" y="{height - pad_bottom + 18}" font-size="10" '
-            f'fill="currentColor" text-anchor="middle" opacity="0.65">{d}</text>'
+            f'<text class="pl-axis" x="{lx:.1f}" y="{height - pad_bottom + 18}" '
+            f'text-anchor="middle">{d}</text>'
         )
 
     zero_line = (
-        f'<line x1="{pad_left}" y1="{zero_y:.1f}" x2="{width - pad_right}" y2="{zero_y:.1f}" '
-        f'stroke="currentColor" stroke-opacity="0.3" stroke-width="1" />'
+        f'<line class="pl-zero" x1="{pad_left}" y1="{zero_y:.1f}" x2="{width - pad_right}" y2="{zero_y:.1f}" />'
     )
-    y_hi_label = (
-        f'<text x="{pad_left - 8}" y="{pad_top + 8}" font-size="10" fill="currentColor" '
-        f'text-anchor="end" opacity="0.65">{fmt_money(hi)}</text>'
-    )
-    y_lo_label = (
-        f'<text x="{pad_left - 8}" y="{height - pad_bottom}" font-size="10" fill="currentColor" '
-        f'text-anchor="end" opacity="0.65">{fmt_money(lo)}</text>'
-    )
-    y_zero_label = (
-        f'<text x="{pad_left - 8}" y="{zero_y + 3:.1f}" font-size="10" fill="currentColor" '
-        f'text-anchor="end" opacity="0.65">$0</text>'
-    )
+    # Gridlines at "nice" round dollar values (1/2/5 x 10^k) inside [lo, hi].
+    raw_step = span / 5
+    mag = 10 ** math.floor(math.log10(raw_step))
+    step = next(m * mag for m in (1, 2, 2.5, 5, 10) if m * mag >= raw_step)
+    grid_lines = ""
+    gv = math.ceil(lo / step) * step
+    while gv <= hi + 1e-9:
+        gy = y(gv)
+        grid_lines += f'<line class="pl-grid" x1="{pad_left}" y1="{gy:.1f}" x2="{width - pad_right}" y2="{gy:.1f}" />'
+        grid_lines += (
+            f'<text class="pl-axis" x="{pad_left - 8}" y="{gy + 3:.1f}" text-anchor="end">'
+            f'{fmt_money(gv).replace(".00", "")}</text>'
+        )
+        gv += step
 
     return f"""
-    <svg viewBox="0 0 {width} {height}" class="pl-chart" style="color: var(--muted);">
+    <svg viewBox="0 0 {width} {height}" class="pl-chart">
+      {grid_lines}
       {zero_line}
       {bars}
       {x_labels}
-      {y_hi_label}
-      {y_zero_label if abs(zero_y - y(hi)) > 12 and abs(zero_y - y(lo)) > 12 else ""}
-      {y_lo_label}
     </svg>
     """
 
 
 def fmt_money(v):
     try:
-        return f"${float(v):,.2f}"
+        n = float(v)
+        return f"-${abs(n):,.2f}" if n < 0 else f"${n:,.2f}"
     except (TypeError, ValueError):
         return "—"
 
@@ -775,6 +776,9 @@ def generate(client=None):
     daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
     daily_pl_chart_html = build_daily_pl_chart(daily_pl_points)
 
+    wins = sum(1 for t in closed_trades if t["pl"] > 0)
+    win_rate_text = f"{wins / len(closed_trades) * 100:.0f}%" if closed_trades else "—"
+
     refresh_button_html = (
         '<button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>'
         if REFRESH_ENDPOINT else ""
@@ -797,65 +801,135 @@ def generate(client=None):
 <title>Claude.AI Paper Day Trading</title>
 <style>
   :root {{
-    --bg: #0b0e14; --panel: #131722; --border: #232838;
-    --text: #e6e9ef; --muted: #8b93a7; --pos: #16a34a; --neg: #dc2626; --accent: #3b82f6;
+    --bg: #0a0d14; --bg-2: #0d1119; --panel: #111621; --panel-2: #151b28; --border: #1f2637; --border-strong: #2b344a;
+    --text: #e8ebf2; --muted: #8791a7; --faint: #5d667b;
+    --pos: #22c55e; --neg: #f0504e; --accent: #4f8cff; --accent-soft: rgba(79, 140, 255, 0.14);
+    --row-hover: rgba(255, 255, 255, 0.03); --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --grid: rgba(255, 255, 255, 0.06);
   }}
   :root[data-theme="light"] {{
-    --bg: #f5f7fa; --panel: #ffffff; --border: #dde2ec;
-    --text: #1a1f2b; --muted: #5b6577; --pos: #158a41; --neg: #c92a2a; --accent: #2563eb;
+    --bg: #f3f5f9; --bg-2: #eaeef5; --panel: #ffffff; --panel-2: #f8f9fc; --border: #e3e8f0; --border-strong: #cfd6e3;
+    --text: #131a29; --muted: #5a6479; --faint: #8a93a6;
+    --pos: #12833f; --neg: #c62828; --accent: #1f5fe0; --accent-soft: rgba(31, 95, 224, 0.10);
+    --row-hover: rgba(15, 30, 60, 0.035); --shadow: 0 1px 2px rgba(20, 30, 60, 0.06);
+    --grid: rgba(15, 30, 60, 0.08);
   }}
   * {{ box-sizing: border-box; }}
+  html {{ -webkit-text-size-adjust: 100%; }}
   body {{
-    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased;
+    font-feature-settings: "tnum" 1, "cv11" 1;
     transition: background 0.15s ease, color 0.15s ease;
   }}
-  .wrap {{ max-width: 1800px; width: 100%; margin: 0 auto; }}
-  h1 {{ font-size: 22px; margin-bottom: 4px; }}
-  #topActions {{
-    position: fixed; top: 16px; right: 16px; z-index: 100;
-    display: flex; gap: 8px;
+  .wrap {{ max-width: 1800px; width: 100%; margin: 0 auto; padding: 28px 32px 40px 32px; }}
+
+  .topbar {{
+    position: sticky; top: 0; z-index: 100;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
   }}
-  #topActions button {{
-    background: var(--panel); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+  .topbar-inner {{
+    max-width: 1800px; margin: 0 auto; padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
   }}
-  #topActions button:hover {{ border-color: var(--accent); }}
-  .updated {{ color: var(--muted); font-size: 13px; margin-bottom: 24px; }}
-  .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }}
-  .card {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }}
-  .card .label {{ color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }}
-  .card .value {{ font-size: 22px; font-weight: 600; }}
-  .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 20px; }}
-  .panel h2 {{ font-size: 15px; margin: 0 0 14px 0; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }}
-  .table-scroll {{ overflow-x: hidden; }}
-  table {{ width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; }}
-  th {{ text-align: center; color: var(--muted); font-weight: 500; padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.25; vertical-align: bottom; }}
+  .brand {{ display: flex; align-items: center; gap: 12px; min-width: 0; }}
+  .brand-mark {{
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), #7c5cff);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700;
+  }}
+  .brand h1 {{ font-size: 16px; font-weight: 650; letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+  .brand .sub {{ color: var(--muted); font-size: 12px; margin-top: 1px; }}
+  .badge {{
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
+    color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  }}
+  .badge::before {{ content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }}
+  #topActions {{ display: flex; gap: 8px; align-items: center; }}
+  #topActions button, #refreshBtn {{
+    background: var(--panel); color: var(--text); border: 1px solid var(--border-strong);
+    border-radius: 8px; padding: 7px 13px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+  }}
+  #topActions button:hover, #refreshBtn:hover {{ border-color: var(--accent); background: var(--panel-2); }}
+
+  .updated {{
+    color: var(--muted); font-size: 12.5px; margin-bottom: 22px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  }}
+  .updated #lastUpdated {{ color: var(--text); font-weight: 500; }}
+
+  .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 22px; }}
+  .card {{
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }}
+  .card::before {{ content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border-strong); }}
+  .card.primary::before {{ background: var(--accent); }}
+  .card.pos-card::before {{ background: var(--pos); }}
+  .card.neg-card::before {{ background: var(--neg); }}
+  .card .label {{ color: var(--muted); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }}
+  .card .value {{ font-size: 26px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }}
+
+  .panel {{
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 22px 22px 22px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }}
+  .panel h2 {{
+    font-size: 13px; font-weight: 650; margin: 0 0 16px 0; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 10px;
+  }}
+  .panel h2::before {{ content: ""; width: 3px; height: 14px; border-radius: 2px; background: var(--accent); }}
+  .table-scroll {{ overflow-x: auto; margin: 0 -4px; padding: 0 4px; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; font-variant-numeric: tabular-nums; }}
+  th {{
+    text-align: center; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 10px 8px; border-bottom: 1px solid var(--border-strong); background: var(--panel-2);
+    white-space: normal; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.3; vertical-align: bottom;
+  }}
+  th:first-child {{ border-top-left-radius: 8px; }}
+  th:last-child {{ border-top-right-radius: 8px; }}
   th.sortable {{ cursor: pointer; user-select: none; }}
   th.sortable:hover {{ color: var(--text); }}
-  th.sortable::after {{ content: "⇅"; color: var(--border); margin-left: 4px; font-size: 10px; }}
+  th.sortable::after {{ content: "⇅"; color: var(--faint); margin-left: 4px; font-size: 10px; }}
   th.sortable[data-dir="asc"]::after {{ content: "▲"; color: var(--accent); }}
   th.sortable[data-dir="desc"]::after {{ content: "▼"; color: var(--accent); }}
-  td {{ padding: 8px 6px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; text-align: center; }}
-  .totals-row td {{ font-weight: 600; border-top: 2px solid var(--border); border-bottom: none; }}
+  td {{ padding: 10px 8px; border-bottom: 1px solid var(--border); white-space: normal; word-wrap: break-word; overflow-wrap: break-word; text-align: center; }}
+  tbody tr:not(.totals-row):hover td {{ background: var(--row-hover); }}
+  tbody tr:last-child td {{ border-bottom: none; }}
+  .totals-row td {{ font-weight: 650; background: var(--panel-2); border-top: 1px solid var(--border-strong); border-bottom: none; }}
   .pos {{ color: var(--pos); }}
   .neg {{ color: var(--neg); }}
   .muted {{ color: var(--muted); }}
-  .pl-chart {{ width: 100%; height: 240px; }}
+  .pl-chart {{ width: 100%; height: auto; max-height: 320px; display: block; }}
   .chart-wrap {{ position: relative; }}
-  .pl-bar {{ cursor: pointer; }}
-  .pl-bar:hover {{ opacity: 0.75; }}
+  .pl-bar {{ cursor: pointer; transition: opacity 0.1s ease; }}
+  .pl-bar.up {{ fill: var(--pos); }}
+  .pl-bar.down {{ fill: var(--neg); }}
+  .pl-bar:hover {{ opacity: 0.7; }}
+  .pl-grid {{ stroke: var(--grid); stroke-width: 1; }}
+  .pl-zero {{ stroke: var(--border-strong); stroke-width: 1.2; }}
+  .pl-axis {{ fill: var(--muted); font-size: 10.5px; }}
   .pl-tooltip {{
     position: absolute; display: none; pointer-events: none;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    padding: 6px 10px; font-size: 12px; color: var(--text); white-space: nowrap;
-    transform: translate(-50%, -100%); margin-top: -8px; z-index: 10;
+    background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    padding: 7px 11px; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap;
+    transform: translate(-50%, -100%); margin-top: -10px; z-index: 10;
   }}
-  .disclaimer {{ color: var(--muted); font-size: 12px; margin-top: 28px; line-height: 1.5; }}
-  .filters {{ display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }}
-  .filter-chip {{ display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }}
-  .filter-chip input {{ accent-color: var(--accent); cursor: pointer; }}
+  .disclaimer {{ color: var(--faint); font-size: 12px; margin-top: 28px; line-height: 1.6; text-align: center; border-top: 1px solid var(--border); padding-top: 18px; }}
+  .filters {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }}
+  .filter-chip {{
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); cursor: pointer;
+    padding: 5px 11px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--panel-2);
+    transition: border-color 0.12s ease, color 0.12s ease;
+  }}
+  .filter-chip:hover {{ border-color: var(--accent); color: var(--text); }}
+  .filter-chip input {{ accent-color: var(--accent); cursor: pointer; margin: 0; }}
 
   .modal-overlay {{
     position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 200;
@@ -917,39 +991,43 @@ def generate(client=None):
   #settingsSaveBtn:disabled {{ opacity: 0.5; cursor: default; }}
   .settings-loading {{ color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }}
 
-  #refreshBtn {{
-    margin-left: 10px; background: var(--panel); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
-  }}
-  #refreshBtn:hover {{ border-color: var(--accent); }}
   #refreshBtn:disabled {{ opacity: 0.5; cursor: default; }}
 
   @media (max-width: 720px) {{
-    body {{ padding: 16px 12px 16px 12px; }}
-    #topActions {{
-      position: static; display: flex; margin-bottom: 12px;
-    }}
+    .wrap {{ padding: 16px 12px 28px 12px; }}
+    .topbar-inner {{ padding: 10px 12px; }}
+    .brand .sub, #topActions .badge {{ display: none; }}
+    .cards .card:last-child:nth-child(odd) {{ grid-column: span 2; }}
+    .brand-mark {{ width: 28px; height: 28px; font-size: 14px; }}
+    .brand h1 {{ font-size: 14px; }}
+    #topActions button {{ padding: 6px 10px; font-size: 12px; }}
     .modal-overlay {{ padding: 20px 10px; }}
     .settings-row {{ flex-wrap: wrap; }}
-    h1 {{ font-size: 18px; }}
-    .cards {{ grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }}
-    .card {{ padding: 12px; }}
-    .card .value {{ font-size: 17px; }}
-    .panel {{ padding: 12px; margin-bottom: 14px; }}
-    .panel h2 {{ font-size: 13px; }}
+    .cards {{ grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }}
+    .card {{ padding: 13px 14px; }}
+    .card .value {{ font-size: 19px; }}
+    .panel {{ padding: 14px 12px; margin-bottom: 14px; }}
     table {{ font-size: 12px; }}
-    th, td {{ padding: 6px 7px; }}
-    .filters {{ gap: 8px; }}
-    .updated {{ display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }}
-    .pl-chart {{ height: 180px; }}
+    th, td {{ padding: 8px 7px; }}
+    .updated {{ gap: 6px; }}
   }}
 </style>
 </head>
 <body>
-  <div id="topActions">
-    {settings_button_html}
-    <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
-  </div>
+  <header class="topbar"><div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">&#9650;</div>
+      <div>
+        <h1>Claude.AI Paper Day Trading</h1>
+        <div class="sub">Opening Range Breakout &middot; Alpaca paper account</div>
+      </div>
+    </div>
+    <div id="topActions">
+      <span class="badge">Paper</span>
+      {settings_button_html}
+      <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
+    </div>
+  </div></header>
 
   <div id="settingsModal" class="modal-overlay" style="display:none;" onclick="if (event.target === this) closeSettingsModal();">
     <div class="modal">
@@ -974,18 +1052,20 @@ def generate(client=None):
   </div>
 
   <div class="wrap">
-    <h1>Claude.AI Paper Day Trading</h1>
     <div class="updated">
-      Last updated: <span id="lastUpdated">{generated_at}</span>
+      <span>Last updated</span> <span id="lastUpdated">{generated_at}</span>
       {refresh_button_html}
       <span id="refreshStatus" class="muted"></span>
     </div>
 
     <div class="cards">
-      <div class="card"><div class="label">Equity</div><div class="value">{fmt_money(account.equity)}</div></div>
+      <div class="card primary"><div class="label">Equity</div><div class="value">{fmt_money(account.equity)}</div></div>
       <div class="card"><div class="label">Cash</div><div class="value">{fmt_money(account.cash)}</div></div>
       <div class="card"><div class="label">Buying Power</div><div class="value">{fmt_money(account.buying_power)}</div></div>
       <div class="card"><div class="label">Open Positions</div><div class="value">{len(positions)}</div></div>
+      <div class="card {'pos-card' if total_closed_pl >= 0 else 'neg-card'}"><div class="label">Realized P&amp;L</div><div class="value {'pos' if total_closed_pl >= 0 else 'neg'}">{fmt_money(total_closed_pl)}</div></div>
+      <div class="card"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
+      <div class="card"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
     </div>
 
     <div class="panel">
