@@ -83,6 +83,19 @@ TIGHTEN_BEFORE_CLOSE_MINUTES = 60
 # every single 15s poll — a periodic ratchet is plenty for this purpose.
 TIGHTEN_STEP_SECONDS = 300
 
+# --- AI trade filter (ai_filter.py) -------------------------------------------
+# Before each breakout order is sent, Claude reviews the signal (volume quality,
+# nearby prior-day levels, extension from VWAP, market backdrop, stop width) and
+# either CONFIRMs or VETOes it. It can also shrink the position and shorten or
+# extend the take-profit within 1R-3R. It can never widen the stop or enlarge a
+# position. If the API is unavailable, trades go ahead as plain ORB.
+#   "enforce" - the AI's decision is applied (default)
+#   "shadow"  - the AI's decision is only logged; trades go ahead as plain ORB
+#   "off"     - the filter is not called at all
+AI_FILTER_MODE = "enforce"
+AI_MIN_CONFIDENCE = 0.55     # a CONFIRM below this confidence is treated as a VETO
+AI_MAX_STOP_PCT = 0.03       # hard limit: never take a trade whose stop is > 3% from entry
+
 # --- Time stop -------------------------------------------------------------
 FLATTEN_TIME = "15:45"              # ET — close everything by this time, no exceptions
 MARKET_CLOSE_TIME = "16:00"
@@ -139,6 +152,7 @@ _OVERRIDABLE_KEYS = {
     "TIGHTEN_STEP_SECONDS", "FLATTEN_TIME", "MARKET_CLOSE_TIME",
     "POLL_INTERVAL_SECONDS", "DATA_FEED", "BACKTEST_DEFAULT_DAYS", "BACKTEST_SLIPPAGE_PCT",
     "BACKTEST_COMMISSION_PER_TRADE", "NTFY_ENABLED", "NTFY_TOPIC",
+    "AI_FILTER_MODE", "AI_MIN_CONFIDENCE", "AI_MAX_STOP_PCT",
 }
 
 

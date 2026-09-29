@@ -21,7 +21,7 @@ import os
 import subprocess
 import sys
 import time as time_module
-from datetime import datetime, time as dtime
+from datetime import datetime, timedelta, time as dtime
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -31,6 +31,7 @@ import config
 import strategy
 import notify
 import dashboard
+import ai_filter
 
 load_dotenv()
 
@@ -117,6 +118,104 @@ def get_recent_bars_bulk(data_client, symbols, since):
         sym: group.set_index("timestamp").sort_index()
         for sym, group in df.groupby("symbol")
     }
+
+
+_daily_cache = {}  # (date, symbol) -> dict of prior-day stats
+
+
+def get_prior_day_stats(data_client, symbols, today):
+    """Prior completed session's high/low/close/volume per symbol, fetched once
+    per symbol per day (daily bars) and cached. Used only to give the AI filter
+    context on nearby levels; failures just mean less context."""
+    missing = [s for s in symbols if (today, s) not in _daily_cache]
+    if missing:
+        try:
+            req = StockBarsRequest(
+                symbol_or_symbols=missing,
+                timeframe=TimeFrame.Day,
+                start=datetime.combine(today - timedelta(days=10), dtime(0, 0), tzinfo=ET),
+                end=datetime.combine(today, dtime(0, 0), tzinfo=ET),
+                feed=config.DATA_FEED,
+            )
+            df = data_client.get_stock_bars(req).df
+            if not df.empty:
+                df = df.reset_index()
+                for sym, g in df.groupby("symbol"):
+                    last = g.sort_values("timestamp").iloc[-1]
+                    _daily_cache[(today, sym)] = {
+                        "prior_day_high": float(last["high"]), "prior_day_low": float(last["low"]),
+                        "prior_day_close": float(last["close"]), "prior_day_volume": float(last["volume"]),
+                    }
+        except Exception as e:
+            log(f"AI filter: prior-day stats unavailable ({e})")
+        for sym in missing:
+            _daily_cache.setdefault((today, sym), {})
+    return {s: _daily_cache.get((today, s), {}) for s in symbols}
+
+
+def build_ai_context(data_client, sig, orange, bars, now):
+    """Everything the AI filter sees about one breakout signal."""
+    r2 = lambda v: round(float(v), 4)
+    entry = float(sig.entry_price)
+    last = bars.iloc[-1]
+    typical = (bars["high"] + bars["low"] + bars["close"]) / 3
+    vwap = float((typical * bars["volume"]).sum() / bars["volume"].sum()) if bars["volume"].sum() else None
+    minutes_open = max(1, int((now - datetime.combine(now.date(), dtime(9, 30), tzinfo=ET)).total_seconds() // 60))
+    cum_vol = float(bars["volume"].sum())
+    ctx = {
+        "symbol": sig.symbol,
+        "direction": sig.direction,
+        "time_et": now.strftime("%H:%M"),
+        "minutes_since_open": minutes_open,
+        "minutes_until_forced_exit": int((datetime.combine(now.date(), strategy.flatten_time(), tzinfo=ET) - now).total_seconds() // 60),
+        "entry_price": r2(entry),
+        "stop_price": r2(sig.stop_price),
+        "strategy_target_price": r2(sig.target_price),
+        "risk_per_share": r2(sig.risk_per_share),
+        "stop_distance_pct": round(sig.risk_per_share / entry * 100, 3) if entry else None,
+        "max_allowed_stop_pct": round(float(config.AI_MAX_STOP_PCT) * 100, 2),
+        "default_take_profit_r": float(config.REWARD_RISK_MULTIPLE),
+        "opening_range_minutes": int(config.OPENING_RANGE_MINUTES),
+        "opening_range_high": r2(orange.high),
+        "opening_range_low": r2(orange.low),
+        "opening_range_pct_of_price": round(orange.range_size / entry * 100, 3) if entry else None,
+        "opening_range_avg_bar_volume": round(float(orange.avg_volume), 1),
+        "breakout_bar": {"open": r2(last["open"]), "high": r2(last["high"]), "low": r2(last["low"]),
+                         "close": r2(last["close"]), "volume": float(last["volume"])},
+        "breakout_bar_relative_volume": round(float(last["volume"]) / orange.avg_volume, 2) if orange.avg_volume else None,
+        "required_relative_volume": float(config.VOLUME_CONFIRMATION_MULT),
+        "session_open": r2(bars["open"].iloc[0]),
+        "session_high_so_far": r2(bars["high"].max()),
+        "session_low_so_far": r2(bars["low"].min()),
+        "vwap": r2(vwap) if vwap else None,
+        "entry_vs_vwap_pct": round((entry - vwap) / vwap * 100, 3) if vwap else None,
+        "cumulative_volume_today": cum_vol,
+        "last_10_bars_close": [r2(x) for x in bars["close"].iloc[-10:].tolist()],
+        "last_10_bars_volume": [float(x) for x in bars["volume"].iloc[-10:].tolist()],
+        "volume_feed_note": f"{config.DATA_FEED} feed; volumes are partial, compare ratios",
+    }
+    stats = get_prior_day_stats(data_client, [sig.symbol, "QQQ"], now.date())
+    pd_ = stats.get(sig.symbol) or {}
+    if pd_:
+        ctx.update({k: r2(v) for k, v in pd_.items()})
+        pdc = pd_.get("prior_day_close")
+        if pdc:
+            ctx["gap_pct"] = round((ctx["session_open"] - pdc) / pdc * 100, 3)
+            ctx["change_today_pct"] = round((entry - pdc) / pdc * 100, 3)
+        if pd_.get("prior_day_volume"):
+            ctx["cumulative_volume_vs_prior_day_pct"] = round(cum_vol / pd_["prior_day_volume"] * 100, 1)
+            ctx["session_elapsed_pct"] = round(minutes_open / 390 * 100, 1)
+    try:
+        qqq = get_recent_bars(data_client, "QQQ", datetime.combine(now.date(), dtime(9, 30), tzinfo=ET))
+        if not qqq.empty:
+            q_last = float(qqq["close"].iloc[-1])
+            ctx["qqq_change_since_open_pct"] = round((q_last - float(qqq["open"].iloc[0])) / float(qqq["open"].iloc[0]) * 100, 3)
+            qpc = (stats.get("QQQ") or {}).get("prior_day_close")
+            if qpc:
+                ctx["qqq_change_today_pct"] = round((q_last - qpc) / qpc * 100, 3)
+    except Exception as e:
+        log(f"AI filter: QQQ context unavailable ({e})")
+    return ctx
 
 
 def submit_bracket_order(trading_client, symbol, direction, shares, stop_price, target_price):
@@ -302,6 +401,8 @@ def push_dashboard_update(trading_client, reason: str):
         subprocess.run(["git", "config", "user.name", "orb-trading-bot"], check=False)
         subprocess.run(["git", "config", "user.email", "actions@users.noreply.github.com"], check=False)
         subprocess.run(["git", "add", "docs/index.html", "docs/.nojekyll"], check=False)
+        if os.path.exists(ai_filter.DECISIONS_FILE):
+            subprocess.run(["git", "add", ai_filter.DECISIONS_FILE], check=False)
 
         diff = subprocess.run(["git", "diff", "--cached", "--quiet"])
         if diff.returncode == 0:
@@ -430,6 +531,7 @@ def load_state(path: str):
         "trade_meta": raw.get("trade_meta", {}),
         "breakeven_moved": set(raw.get("breakeven_moved", [])),
         "last_tightened_at": raw.get("last_tightened_at", {}),
+        "ai_vetoed": set(raw.get("ai_vetoed", [])),
     }
 
 
@@ -451,6 +553,7 @@ def save_state(path: str, day_state: dict):
         "trade_meta": day_state.get("trade_meta", {}),
         "breakeven_moved": sorted(day_state.get("breakeven_moved", set())),
         "last_tightened_at": day_state.get("last_tightened_at", {}),
+        "ai_vetoed": sorted(day_state.get("ai_vetoed", set())),
     }
     with open(path, "w") as f:
         json.dump(serializable, f, indent=2)
@@ -493,6 +596,7 @@ def main():
             "trade_meta": {},       # symbol -> {direction, entry_price, stop_price, target_price}
             "breakeven_moved": set(),
             "last_tightened_at": {},  # symbol -> ISO timestamp of last take-profit tighten
+            "ai_vetoed": set(),       # symbols the AI filter vetoed today (not re-asked)
         }
 
     flatten_t = strategy.flatten_time()
@@ -519,6 +623,7 @@ def main():
                 "trade_count": 0, "starting_equity": float(trading_client.get_account().equity),
                 "flattened": False, "notional_deployed_today": 0.0,
                 "trade_meta": {}, "breakeven_moved": set(), "last_tightened_at": {},
+                "ai_vetoed": set(),
             })
 
         now_t = now.time()
@@ -609,6 +714,9 @@ def main():
             symbol for symbol in config.WATCHLIST
             if symbol not in open_positions
             and not (symbol in day_state["traded_today"] and config.ONE_TRADE_PER_SYMBOL_PER_DAY)
+            # A veto stands for the rest of the day. Without this, the same
+            # breakout would be re-sent to the AI on every 15 s poll.
+            and symbol not in day_state.setdefault("ai_vetoed", set())
         ]
         since = datetime.combine(now.date(), market_open_t, tzinfo=ET)
         bars_by_symbol = get_recent_bars_bulk(data_client, candidates, since)
@@ -636,6 +744,38 @@ def main():
             shares = strategy.position_size(equity, sig.risk_per_share)
             if shares <= 0:
                 continue
+
+            # --- AI filter: Claude confirms or vetoes the signal before any
+            # order is sent. It can skip the trade, shrink it, or move the
+            # target within 1R-3R; it can never widen the stop or add size.
+            ai_mode = ai_filter.mode()
+            ai_note = ""
+            if ai_mode != "off":
+                ctx = build_ai_context(data_client, sig, orange, bars, datetime.now(ET))
+                decision = ai_filter.evaluate(ctx)
+                log(f"AI {decision.action} {symbol} ({decision.source}, conf {decision.confidence_score:.2f}, "
+                    f"size x{decision.position_size_multiplier:.2f}, target {decision.take_profit_r:.1f}R, "
+                    f"{decision.latency_ms} ms): {decision.reasoning}")
+                if ai_mode == "enforce":
+                    if not decision.approved:
+                        day_state["ai_vetoed"].add(symbol)
+                        notify.send(
+                            f"ORB Bot: AI vetoed {symbol}",
+                            f"{sig.direction.upper()} breakout @ ${sig.entry_price:.2f} skipped "
+                            f"(confidence {decision.confidence_score:.2f}).\n{decision.reasoning}",
+                            priority="low", tags="no_entry",
+                        )
+                        continue
+                    shares = int(shares * decision.position_size_multiplier)
+                    if shares <= 0:
+                        continue
+                    r = decision.take_profit_r
+                    if sig.direction == "long":
+                        sig.target_price = sig.entry_price + r * sig.risk_per_share
+                    else:
+                        sig.target_price = sig.entry_price - r * sig.risk_per_share
+                    ai_note = (f"\nAI: confidence {decision.confidence_score:.2f}, size x{decision.position_size_multiplier:.2f}, "
+                               f"target {r:.1f}R. {decision.reasoning}")
 
             # Hard per-trade notional cap — no single trade may deploy more
             # than MAX_NOTIONAL_PER_TRADE, independent of risk-per-trade sizing
@@ -687,7 +827,7 @@ def main():
                 notify.send(
                     f"ORB Bot: Entered {symbol} {sig.direction.upper()}",
                     f"{shares} shares @ ${sig.entry_price:.2f}\n"
-                    f"Stop: ${sig.stop_price:.2f}  Target: ${sig.target_price:.2f}",
+                    f"Stop: ${sig.stop_price:.2f}  Target: ${sig.target_price:.2f}{ai_note}",
                     tags="chart_with_upwards_trend" if sig.direction == "long" else "chart_with_downwards_trend",
                 )
                 push_dashboard_update(trading_client, reason=f"entered {symbol}")
