@@ -934,11 +934,11 @@ def generate(client=None):
   .modal-overlay {{
     position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 200;
     display: flex; align-items: flex-start; justify-content: center;
-    padding: 60px 16px 40px 16px; overflow-y: auto;
+    padding: 60px 16px 0 16px; overflow-y: auto;
   }}
   .modal {{
     background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    max-width: 640px; width: 100%; padding: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    max-width: 640px; width: 100%; padding: 20px 20px 0 20px; margin-bottom: 40px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
   }}
   .modal-header {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }}
   .modal-header h2 {{ font-size: 17px; margin: 0; }}
@@ -948,9 +948,11 @@ def generate(client=None):
   }}
   .modal-close:hover {{ color: var(--text); }}
   .settings-subtitle {{ color: var(--muted); font-size: 12px; margin: 0 0 16px 0; line-height: 1.5; }}
-  .settings-status {{ font-size: 13px; margin-bottom: 12px; min-height: 18px; }}
-  .settings-status.ok {{ color: var(--pos); }}
-  .settings-status.err {{ color: var(--neg); }}
+  .settings-status {{ font-size: 13px; font-weight: 500; padding: 9px 12px; border-radius: 8px; display: none; }}
+  .settings-status.ok, .settings-status.err, .settings-status.info {{ display: block; }}
+  .settings-status.info {{ color: var(--muted); background: var(--panel-2); border: 1px solid var(--border); }}
+  .settings-status.ok {{ color: var(--pos); background: color-mix(in srgb, var(--pos) 12%, transparent); border: 1px solid color-mix(in srgb, var(--pos) 40%, transparent); }}
+  .settings-status.err {{ color: var(--neg); background: color-mix(in srgb, var(--neg) 12%, transparent); border: 1px solid color-mix(in srgb, var(--neg) 40%, transparent); }}
   .settings-group {{ margin-bottom: 18px; }}
   .settings-group h3 {{
     font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
@@ -976,9 +978,11 @@ def generate(client=None):
     font-family: inherit; resize: vertical;
   }}
   .modal-footer {{
-    display: flex; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px;
+    display: flex; flex-direction: column; gap: 10px; margin-top: 18px; padding: 14px 0 20px 0;
     border-top: 1px solid var(--border);
+    position: sticky; bottom: 0; background: var(--panel); z-index: 5;
   }}
+  .modal-footer-row {{ display: flex; align-items: center; gap: 10px; }}
   #settingsToken {{
     flex: 1; background: var(--bg); color: var(--text); border: 1px solid var(--border);
     border-radius: 6px; padding: 7px 10px; font-size: 13px;
@@ -1001,7 +1005,7 @@ def generate(client=None):
     .brand-mark {{ width: 28px; height: 28px; font-size: 14px; }}
     .brand h1 {{ font-size: 14px; }}
     #topActions button {{ padding: 6px 10px; font-size: 12px; }}
-    .modal-overlay {{ padding: 20px 10px; }}
+    .modal-overlay {{ padding: 20px 10px 0 10px; }}
     .settings-row {{ flex-wrap: wrap; }}
     .cards {{ grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }}
     .card {{ padding: 13px 14px; }}
@@ -1040,13 +1044,15 @@ def generate(client=None):
         same values. live_bot.py and strategy.py pick them up on their next run/poll — usually within
         a few minutes, not immediately mid-session.
       </p>
-      <div id="settingsStatus" class="settings-status"></div>
       <div class="modal-body" id="settingsBody">
         <div class="settings-loading">Loading current settings…</div>
       </div>
       <div class="modal-footer">
-        <input type="password" id="settingsToken" placeholder="Passcode to save" autocomplete="off">
-        <button id="settingsSaveBtn" onclick="saveSettings()">Save Changes</button>
+        <div id="settingsStatus" class="settings-status" role="status" aria-live="polite"></div>
+        <div class="modal-footer-row">
+          <input type="password" id="settingsToken" placeholder="Passcode to save" autocomplete="off">
+          <button id="settingsSaveBtn" onclick="saveSettings()">Save Changes</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1276,6 +1282,19 @@ def generate(client=None):
     const SETTINGS_FIELDS = {settings_fields_json};
     const INITIAL_SETTINGS = {current_settings_json};
 
+    const SETTINGS_API_URL = 'https://api.github.com/repos/patrickobirmingham-eng/POB-CL-DT/contents/settings.json';
+    const SAVED_KEY = 'orb-dashboard-last-saved-settings';
+    function rememberSavedSettings(values) {{
+      try {{ localStorage.setItem(SAVED_KEY, JSON.stringify({{ at: Date.now(), values: values }})); }} catch (e) {{ /* ignore */ }}
+    }}
+    function recentlySavedSettings() {{
+      try {{
+        const rec = JSON.parse(localStorage.getItem(SAVED_KEY) || 'null');
+        if (rec && Date.now() - rec.at < 10 * 60 * 1000) return rec.values || {{}};
+      }} catch (e) {{ /* ignore */ }}
+      return {{}};
+    }}
+
     function formatFieldValue(field, raw) {{
       if (field.type === 'percent') return raw == null ? '' : (Number(raw) * 100);
       if (field.type === 'watchlist') return Array.isArray(raw) ? raw.join(', ') : (raw || '');
@@ -1369,13 +1388,23 @@ def generate(client=None):
       statusEl.className = 'settings-status';
       document.getElementById('settingsBody').innerHTML = '<div class="settings-loading">Loading current settings…</div>';
       let values = INITIAL_SETTINGS;
-      try {{
-        const resp = await fetch(SETTINGS_SOURCE_URL + '?_=' + Date.now());
-        if (resp.ok) {{
-          const fresh = await resp.json();
-          values = Object.assign({{}}, INITIAL_SETTINGS, fresh);
-        }}
-      }} catch (e) {{ /* fall back to INITIAL_SETTINGS embedded at generation time */ }}
+      // raw.githubusercontent.com is CDN-cached for a few minutes, so right
+      // after a save it can still return the OLD file. The GitHub contents
+      // API is much fresher; try it first, then the raw URL as a fallback.
+      let fresh = null;
+      for (const [url, headers] of [
+        [SETTINGS_API_URL + '?ref=main&_=' + Date.now(), {{ 'Accept': 'application/vnd.github.raw+json' }}],
+        [SETTINGS_SOURCE_URL + '?_=' + Date.now(), {{}}],
+      ]) {{
+        try {{
+          const resp = await fetch(url, {{ headers: headers, cache: 'no-store' }});
+          if (resp.ok) {{ fresh = await resp.json(); break; }}
+        }} catch (e) {{ /* try next source */ }}
+      }}
+      if (fresh) values = Object.assign({{}}, INITIAL_SETTINGS, fresh);
+      // If this browser saved within the last 10 minutes, those values win
+      // over anything fetched (which may still be a stale cached copy).
+      values = Object.assign({{}}, values, recentlySavedSettings());
       renderSettingsForm(values);
     }}
 
@@ -1396,7 +1425,7 @@ def generate(client=None):
       const values = collectSettingsValues();
       btn.disabled = true;
       statusEl.textContent = 'Saving…';
-      statusEl.className = 'settings-status';
+      statusEl.className = 'settings-status info';
       try {{
         const resp = await fetch(SETTINGS_SAVE_ENDPOINT, {{
           method: 'POST',
@@ -1405,6 +1434,7 @@ def generate(client=None):
         }});
         const data = await resp.json().catch(() => ({{}}));
         if (!resp.ok || !data.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+        rememberSavedSettings(values);
         statusEl.textContent = 'Saved. The bot will pick this up on its next run/poll.';
         statusEl.className = 'settings-status ok';
         tokenEl.value = '';
