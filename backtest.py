@@ -290,13 +290,17 @@ def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"
             out(f"| {label} | ${up['pnl'].sum():,.0f} | ${dn['pnl'].sum():,.0f} | {fmt_r(up)} | {fmt_r(dn)} |")
 
     lo, ls = _stats(results["Long only"], equity), _stats(both, equity)
+    sh = _stats(both[both["direction"] == "short"] if not both.empty else both, equity)
     out()
-    if ls["pnl"] > lo["pnl"] and ls["avg_r"] >= lo["avg_r"] - 0.02 and ls["max_dd"] <= lo["max_dd"] * 1.25 + 0.005:
-        out("**Verdict:** adding shorts improved total P&L without materially worse expectancy or drawdown "
-            "over this window. Worth paper-trading, and re-testing on another window first.")
+    if lo["avg_r"] <= 0 and ls["avg_r"] <= 0:
+        out("**Verdict:** neither variant made money over this window (average R <= 0 for both). "
+            "Enabling shorts would not fix that; the entry rules need work first.")
+    elif sh["trades"] and sh["avg_r"] > 0 and ls["pnl"] > lo["pnl"] and ls["max_dd"] <= lo["max_dd"] * 1.25 + 0.005:
+        out("**Verdict:** shorts were profitable on their own and adding them improved total P&L without a "
+            "materially deeper drawdown. Worth paper-trading, after re-testing on another window.")
     else:
-        out("**Verdict:** adding shorts did not clearly improve results over this window "
-            "(lower P&L, lower expectancy, or a noticeably deeper drawdown). Keep shorts off for now.")
+        out("**Verdict:** shorts did not add a clear edge over this window (unprofitable on their own, lower "
+            "total P&L, or a deeper drawdown). Keep shorts off.")
     out()
     out("Caveats: backtests use IEX minute bars and bar-level fills; they ignore whether a stock could be "
         "borrowed, the concurrent-position cap, the daily notional cap and the daily-loss breaker. "
