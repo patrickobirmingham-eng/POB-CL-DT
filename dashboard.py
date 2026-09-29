@@ -879,6 +879,17 @@ def generate(client=None):
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 20px 22px 22px 22px; margin-bottom: 20px; box-shadow: var(--shadow);
   }}
+  .panel-head {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }}
+  .panel-head h2 {{ margin: 0; }}
+  .symbol-search {{
+    width: 280px; max-width: 100%; margin-left: auto;
+    background: var(--bg); color: var(--text); border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 7px 12px; font-size: 13px; font-family: inherit;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }}
+  .symbol-search::placeholder {{ color: var(--faint); }}
+  .symbol-search:focus {{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }}
+  tr.no-match td {{ color: var(--muted); padding: 18px 8px; }}
   .panel h2 {{
     font-size: 13px; font-weight: 650; margin: 0 0 16px 0; color: var(--text);
     text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 10px;
@@ -1011,6 +1022,7 @@ def generate(client=None):
     .card {{ padding: 13px 14px; }}
     .card .value {{ font-size: 19px; }}
     .panel {{ padding: 14px 12px; margin-bottom: 14px; }}
+    .symbol-search {{ width: 100%; margin-left: 0; }}
     table {{ font-size: 12px; }}
     th, td {{ padding: 8px 7px; }}
     .updated {{ gap: 6px; }}
@@ -1151,7 +1163,11 @@ def generate(client=None):
     </div>
 
     <div class="panel">
-      <h2>Recent Orders (last 50)</h2>
+      <div class="panel-head">
+        <h2>Recent Orders (last 50)</h2>
+        <input type="search" id="ordersSearch" class="symbol-search" placeholder="Search symbols, e.g. AAPL, MSFT"
+               aria-label="Filter recent orders by stock symbol" autocomplete="off" spellcheck="false" oninput="filterOrders()">
+      </div>
       <div class="filters">{status_filters_html}</div>
       <div class="table-scroll">
       <table id="ordersTable">
@@ -1178,7 +1194,11 @@ def generate(client=None):
     </div>
 
     <div class="panel">
-      <h2>Closed Orders</h2>
+      <div class="panel-head">
+        <h2>Closed Orders</h2>
+        <input type="search" id="closedSearch" class="symbol-search" placeholder="Search symbols, e.g. AAPL, MSFT"
+               aria-label="Filter closed orders by stock symbol" autocomplete="off" spellcheck="false" oninput="filterClosed()">
+      </div>
       <div class="table-scroll">
       <table id="closedTable">
         <thead><tr>
@@ -1207,7 +1227,7 @@ def generate(client=None):
     function sortTable(tableId, colIdx, type) {{
       const table = document.getElementById(tableId);
       const tbody = table.tBodies[0];
-      const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row)'));
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row):not(.no-match)'));
       if (rows.length < 2) return;
       const headerRow = table.tHead.rows[0];
       const th = headerRow.cells[colIdx];
@@ -1231,17 +1251,94 @@ def generate(client=None):
       }});
 
       rows.forEach(r => tbody.appendChild(r));
+      const noMatchRow = tbody.querySelector('tr.no-match');
+      if (noMatchRow) tbody.appendChild(noMatchRow);
       // keep the totals row (if any) pinned at the bottom
       const totalsRow = tbody.querySelector('tr.totals-row');
       if (totalsRow) tbody.appendChild(totalsRow);
     }}
 
+    // Symbols typed in a search box: comma/space separated, case-insensitive,
+    // exact match against each row's Symbol column (e.g. "aapl, msft").
+    function parseSymbols(inputId) {{
+      const el = document.getElementById(inputId);
+      if (!el) return [];
+      return el.value.split(/[\\s,]+/).map(x => x.trim().toUpperCase()).filter(Boolean);
+    }}
+    function rowSymbol(row) {{
+      const cell = row.cells[1];
+      return cell ? (cell.getAttribute('data-value') || cell.textContent.trim()).toUpperCase() : '';
+    }}
+    function setNoMatch(tableId, show, message) {{
+      const table = document.getElementById(tableId);
+      const tbody = table.tBodies[0];
+      const existing = tbody.querySelector('tr.no-match');
+      if (existing) existing.remove();
+      if (!show) return;
+      const tr = document.createElement('tr');
+      tr.className = 'no-match';
+      const td = document.createElement('td');
+      td.colSpan = table.tHead.rows[0].cells.length;
+      td.textContent = message;
+      tr.appendChild(td);
+      const totals = tbody.querySelector('tr.totals-row');
+      tbody.insertBefore(tr, totals);
+    }}
+
+    // Recent Orders: status checkboxes AND symbol search must both match.
     function filterOrders() {{
       const checked = Array.from(document.querySelectorAll('.status-filter:checked')).map(c => c.value);
+      const syms = parseSymbols('ordersSearch');
+      let total = 0, shown = 0;
       document.querySelectorAll('#ordersTable tbody tr[data-status]').forEach(row => {{
+        total++;
         const status = row.getAttribute('data-status');
-        row.style.display = checked.includes(status) ? '' : 'none';
+        const ok = checked.includes(status) && (syms.length === 0 || syms.includes(rowSymbol(row)));
+        row.style.display = ok ? '' : 'none';
+        if (ok) shown++;
       }});
+      setNoMatch('ordersTable', total > 0 && shown === 0,
+        syms.length ? 'No orders for ' + syms.join(', ') + ' with the selected statuses.' : 'No orders match the selected statuses.');
+    }}
+
+    // Closed Orders: symbol search; the Total row is recomputed for whatever
+    // is visible (and restored to the full totals when the search is cleared).
+    let closedTotalsOriginal = null;
+    function filterClosed() {{
+      const table = document.getElementById('closedTable');
+      const tbody = table.tBodies[0];
+      const totals = tbody.querySelector('tr.totals-row');
+      if (totals && closedTotalsOriginal === null) closedTotalsOriginal = totals.innerHTML;
+      const syms = parseSymbols('closedSearch');
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row):not(.no-match)')).filter(r => r.cells.length > 2);
+      let shown = 0, cost = 0, proceeds = 0, pl = 0;
+      rows.forEach(row => {{
+        const ok = syms.length === 0 || syms.includes(rowSymbol(row));
+        row.style.display = ok ? '' : 'none';
+        if (!ok) return;
+        shown++;
+        const shares = parseFloat(row.cells[3].getAttribute('data-value'));
+        cost += shares * parseFloat(row.cells[4].getAttribute('data-value'));
+        proceeds += shares * parseFloat(row.cells[5].getAttribute('data-value'));
+        pl += parseFloat(row.cells[6].getAttribute('data-value'));
+      }});
+      setNoMatch('closedTable', rows.length > 0 && shown === 0, 'No closed orders for ' + syms.join(', ') + '.');
+      if (!totals) return;
+      if (syms.length === 0) {{
+        totals.style.display = '';
+        if (closedTotalsOriginal !== null) totals.innerHTML = closedTotalsOriginal;
+      }} else if (shown === 0) {{
+        totals.style.display = 'none';
+      }} else {{
+        totals.style.display = '';
+        const gain = cost ? pl / cost * 100 : 0;
+        totals.cells[4].textContent = fmtMoneyJS(cost);
+        totals.cells[5].textContent = fmtMoneyJS(proceeds);
+        totals.cells[6].textContent = fmtMoneyJS(pl);
+        totals.cells[6].className = 'num ' + (pl >= 0 ? 'pos' : 'neg');
+        totals.cells[7].textContent = pctJS(gain);
+        totals.cells[7].className = 'num ' + (gain >= 0 ? 'pos' : 'neg');
+      }}
     }}
 
     (function() {{
@@ -1684,6 +1781,7 @@ def generate(client=None):
     // Apply the default status filter (Filled only, checked above) on first
     // load, same as if the user had just toggled the checkboxes themselves.
     filterOrders();
+    filterClosed();
 
     // --- Dark / light theme toggle ------------------------------------------------
     // Defaults to dark (matches the original look) and remembers the choice
