@@ -537,6 +537,25 @@ def main():
         equity = float(account.equity)
         daily_pnl_pct = (equity - day_state["starting_equity"]) / day_state["starting_equity"]
 
+        # Detect closed positions and refresh the dashboard FIRST, before any of
+        # the early `continue`s below (daily-loss breaker, flatten time, trade
+        # cap, etc.). A position can close on its own between polls — Alpaca
+        # fills the bracket's stop-loss or take-profit leg server-side, with no
+        # action from this script. Detect that by diffing against what we saw
+        # open last pass, and push a dashboard update so the Daily P&L chart,
+        # Income by Day and Closed Orders reflect it promptly. This used to sit
+        # further down, so once the trade cap was hit (or after the daily-loss
+        # breaker) closes were never noticed and the dashboard went stale until
+        # the end-of-session rebuild.
+        positions_list = trading_client.get_all_positions()
+        open_now = {p.symbol for p in positions_list}
+        previously_open = day_state.get("_last_seen_open_positions")
+        if previously_open is not None and previously_open != open_now:
+            closed = previously_open - open_now
+            if closed:
+                push_dashboard_update(trading_client, reason=f"position closed: {', '.join(sorted(closed))}")
+        day_state["_last_seen_open_positions"] = open_now
+
         # Circuit breakers
         if daily_pnl_pct <= -config.MAX_DAILY_LOSS_PCT:
             if not day_state["flattened"]:
@@ -561,19 +580,7 @@ def main():
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue
 
-        positions_list = trading_client.get_all_positions()
         open_positions = {p.symbol for p in positions_list}
-
-        # A position can close on its own between polls — Alpaca fills the bracket's
-        # stop-loss or take-profit leg server-side, with no action from this script.
-        # Detect that by diffing against what we saw open last pass, and push a
-        # dashboard update so a stop/target hit shows up promptly too, not just entries.
-        previously_open = day_state.get("_last_seen_open_positions")
-        if previously_open is not None and previously_open != open_positions:
-            closed = previously_open - open_positions
-            if closed:
-                push_dashboard_update(trading_client, reason=f"position closed: {', '.join(sorted(closed))}")
-        day_state["_last_seen_open_positions"] = open_positions
 
         # Check every open position against the breakeven-stop trigger on every
         # poll, regardless of whether we're free to open new trades right now —
