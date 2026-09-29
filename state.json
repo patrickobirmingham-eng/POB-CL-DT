@@ -8,5 +8,6 @@
   "notional_deployed_today": 0.0,
   "trade_meta": {},
   "breakeven_moved": [],
-  "last_tightened_at": {}
+  "last_tightened_at": {},
+  "ai_vetoed": []
 }
