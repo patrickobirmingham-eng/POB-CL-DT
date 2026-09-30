@@ -633,13 +633,18 @@ def generate(client=None):
 
             current_price, lastday_price = snapshot_prices(o.symbol)
 
-            # "Purchase Price" / "Cost Basis" mirror the open-positions table: the
-            # price this order actually filled at, and qty * that price. Only
-            # meaningful for filled orders — unfilled/canceled orders show "—".
-            cost_basis = qty * filled_price if filled_price is not None else None
-            mkt_value = qty * current_price if current_price is not None else None
-            pl = (mkt_value - cost_basis) if (mkt_value is not None and cost_basis is not None) else None
-            gain_pct = (pl / cost_basis * 100) if (pl is not None and cost_basis not in (None, 0)) else None
+            # Math uses the shares that actually FILLED (a canceled or partly
+            # filled order didn't trade its full quantity). Profit / (Loss) is
+            # signed by side: a BUY gains when the price rises after it, a SELL
+            # gains when the price falls after it. That way a buy and its sell
+            # add up to the real realized profit, and the Total row is correct.
+            filled_qty = float(o.filled_qty) if getattr(o, "filled_qty", None) else 0.0
+            filled = filled_price is not None and filled_qty > 0
+            sign = 1 if side == "buy" else -1
+            cost_basis = filled_qty * filled_price if filled else None
+            mkt_value = filled_qty * current_price if (filled and current_price is not None) else None
+            pl = sign * (mkt_value - cost_basis) if (mkt_value is not None and cost_basis is not None) else None
+            gain_pct = (pl / cost_basis * 100) if (pl is not None and cost_basis) else None
 
             daily_price_change = (
                 current_price - lastday_price
@@ -651,7 +656,15 @@ def generate(client=None):
                 if (daily_price_change is not None and lastday_price)
                 else None
             )
-            todays_change = qty * daily_price_change if daily_price_change is not None else None
+            # Today's Change: what this order's shares made or lost today —
+            # from the fill price if it filled today, else from yesterday's close.
+            filled_at = getattr(o, "filled_at", None)
+            filled_today = bool(filled_at) and filled_at.astimezone(ET).date() == datetime.now(ET).date()
+            base_price = filled_price if filled_today else lastday_price
+            todays_change = (
+                sign * filled_qty * (current_price - base_price)
+                if (filled and current_price is not None and base_price is not None) else None
+            )
 
             pl_class = "pos" if (pl is not None and pl >= 0) else ("neg" if pl is not None else "")
             gain_class = "pos" if (gain_pct is not None and gain_pct >= 0) else ("neg" if gain_pct is not None else "")
@@ -1271,7 +1284,7 @@ def generate(client=None):
           <th class="sortable num" onclick="sortTable('ordersTable',4,'num')"># of Shares</th>
           <th class="sortable" onclick="sortTable('ordersTable',5,'text')">Status</th>
           <th class="sortable num" onclick="sortTable('ordersTable',6,'num')">Last Price</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',7,'num')">Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',7,'num')">Fill Price</th>
           <th class="sortable num" onclick="sortTable('ordersTable',8,'num')">Cost Basis</th>
           <th class="sortable num" onclick="sortTable('ordersTable',9,'num')">Mkt Value</th>
           <th class="sortable num" onclick="sortTable('ordersTable',10,'num')">Profit / (Loss)</th>
@@ -1896,13 +1909,20 @@ def generate(client=None):
         const filledPrice = o.filled_avg_price != null ? Number(o.filled_avg_price) : null;
         const qty = o.qty != null ? Number(o.qty) : 0;
         const [current, lastday] = snapshotPrices(snapshots, o.symbol);
-        const costBasis = filledPrice != null ? qty * filledPrice : null;
-        const mktValue = current != null ? qty * current : null;
-        const pl = (mktValue != null && costBasis != null) ? (mktValue - costBasis) : null;
+        // Same math as the server-rendered table: filled shares only, signed by side.
+        const filledQty = o.filled_qty != null ? Number(o.filled_qty) : 0;
+        const filled = filledPrice != null && filledQty > 0;
+        const sign = side === 'buy' ? 1 : -1;
+        const costBasis = filled ? filledQty * filledPrice : null;
+        const mktValue = (filled && current != null) ? filledQty * current : null;
+        const pl = (mktValue != null && costBasis != null) ? sign * (mktValue - costBasis) : null;
         const gainPct = (pl != null && costBasis) ? (pl / costBasis * 100) : null;
         const dailyChange = (current != null && lastday != null) ? (current - lastday) : null;
         const dailyPct = (dailyChange != null && lastday) ? (dailyChange / lastday * 100) : null;
-        const todaysChange = dailyChange != null ? qty * dailyChange : null;
+        const etDay = d => d.toLocaleDateString('en-US', {{ timeZone: 'America/New_York' }});
+        const filledToday = !!o.filled_at && etDay(new Date(o.filled_at)) === etDay(new Date());
+        const basePrice = filledToday ? filledPrice : lastday;
+        const todaysChange = (filled && current != null && basePrice != null) ? sign * filledQty * (current - basePrice) : null;
         const name = (names && names[o.symbol]) || o.symbol;
         rows += `<tr data-status="${{status}}">
           <td data-value="${{submittedDt.toISOString()}}">${{submitted}}</td>
