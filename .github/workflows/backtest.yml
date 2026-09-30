@@ -20,6 +20,7 @@ on:
         description: "What to compare"
         type: choice
         options:
+          - research-inplay-orb
           - in-play
           - settings
           - market-filter
@@ -33,7 +34,7 @@ permissions:
 jobs:
   backtest:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 150
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
@@ -51,6 +52,11 @@ jobs:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
+          if [ "${{ inputs.comparison }}" = "research-inplay-orb" ]; then
+            # Published 5-min ORB on stocks in play, full-market (SIP) data
+            python research_orb_inplay.py --days "${{ inputs.days }}"
+            exit 0
+          fi
           case "${{ inputs.comparison }}" in
             in-play)       FLAG="--compare-in-play" ;;
             settings)      FLAG="--compare-settings" ;;
@@ -65,5 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backtest-trades
-          path: backtest_*.csv
+          path: |
+            backtest_*.csv
+            research_*.csv
           if-no-files-found: ignore
