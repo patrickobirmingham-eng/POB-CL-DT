@@ -93,7 +93,12 @@ def prepare_days(m: pd.DataFrame):
     return days
 
 
-def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MAX_LEV, every=30):
+def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MAX_LEV, every=30,
+             take_profit=None, tp_reenter=False):
+    """take_profit: optional fraction (0.01 = +1%). A resting limit order sells
+    (or covers) as soon as any minute bar reaches entry * (1 +/- take_profit),
+    filled at the target price. tp_reenter: after a take-profit, keep taking
+    new signals at later checks (False = done for the day)."""
     trades, daily = [], []
     for i in range(LOOKBACK + 1, len(days)):
         day = days[i]
@@ -124,14 +129,32 @@ def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MA
             pnl_day -= COMMISSION * shares
             n_tr += 1
 
-        for t in (ms.CHECK_TIMES if every == 30 else ms.make_check_times(every)):
-            bar = ms.check_bar(t)
+        check_bars = [ms.check_bar(t) for t in (ms.CHECK_TIMES if every == 30 else ms.make_check_times(every))]
+        if take_profit is None:
+            minutes = check_bars
+        else:
+            grid = list(b.index)
+            minutes = grid[grid.index(check_bars[0]):]
+            check_set = set(check_bars)
+        tp_done = False
+        for bar in minutes:
+            if take_profit is not None and pos != 0:
+                # Resting take-profit limit, checked on every minute after entry.
+                target = entry * (1 + take_profit) if pos > 0 else entry * (1 - take_profit)
+                # A limit only surely fills if price trades THROUGH it, so require one cent beyond.
+                hit = b.at[bar, "high"] >= target + 0.01 if pos > 0 else b.at[bar, "low"] <= target - 0.01
+                if hit:
+                    # Limit fill at exactly the target (close_pos subtracts slippage, so add it back).
+                    close_pos(target + slip if pos > 0 else target - slip)
+                    tp_done = not tp_reenter
+            if take_profit is not None and bar not in check_set:
+                continue
             px = b.at[bar, "close"]
             exit_now, new_side = ms.decide(pos, px, upper[bar], lower[bar], b.at[bar, "vwap"],
                                            allow_shorts=not long_only)
             if exit_now:
                 close_pos(px)
-            if new_side:
+            if new_side and not tp_done:
                 open_pos(new_side, px)
         if pos != 0:
             close_pos(b["close"].iloc[-1])
@@ -186,11 +209,53 @@ def compare_intervals(client, sym, start, end, intervals, out):
                 "after-publication Sharpe, doubled costs, profitable years). Keep 30 minutes.")
 
 
+def compare_take_profit(client, sym, start, end, levels, out):
+    """Current rules vs the same rules plus a fixed take-profit target."""
+    days = prepare_days(fetch_minutes(client, sym, start, end))
+    out()
+    out(f"### {sym}: take-profit targets vs the current trailing exit")
+    out()
+    out("| Exit rule | Trades | All: return | All: Sharpe | All: max DD | Avg winning day | Best day | "
+        "Out-of-sample return | Out-of-sample Sharpe | OOS Sharpe, 2x slippage | Profitable years |")
+    out("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    variants = [("Current (trailing line, no target)", None, False)]
+    for lv in levels:
+        variants.append((f"+{lv:g}% target, then done for the day", lv / 100, False))
+        variants.append((f"+{lv:g}% target, may re-enter", lv / 100, True))
+    rows = {}
+    for label, tp, re_ in variants:
+        trades, daily = simulate(days, take_profit=tp, tp_reenter=re_)
+        _, daily2 = simulate(days, take_profit=tp, tp_reenter=re_, slip=0.02)
+        daily["year"] = daily["date"].str[:4]
+        a = summarize(daily)
+        o = summarize(daily[daily["date"] >= PUBLISHED])
+        o2 = summarize(daily2[daily2["date"] >= PUBLISHED])
+        yp = sum(1 for _, g in daily.groupby("year") if g["pnl"].sum() > 0)
+        yn = daily["year"].nunique()
+        wins = daily[daily["pnl"] > 0]["pnl"] / EQUITY
+        rows[label] = (a, o, o2, yp)
+        out(f"| {label} | {len(trades)} | {a['ret']:+.1%} | {a['sharpe']:.2f} | {a['dd']:.1%} | "
+            f"{wins.mean() if len(wins) else 0:+.2%} | {daily['pnl'].max() / EQUITY:+.2%} | "
+            f"{o['ret']:+.1%} | {o['sharpe']:.2f} | {o2['sharpe']:.2f} | {yp}/{yn} |")
+    base = rows[variants[0][0]]
+    better = [l for l, (a, o, o2, yp) in rows.items() if l != variants[0][0]
+              and o["sharpe"] >= base[1]["sharpe"] + 0.2 and a["sharpe"] >= base[0]["sharpe"] + 0.1
+              and o2["sharpe"] >= base[2]["sharpe"] and yp >= base[3]]
+    out()
+    if better:
+        out(f"**Verdict:** {'; '.join(better)} beat the current exit clearly and consistently "
+            f"(higher Sharpe overall and after publication, robust to doubled costs, at least as many profitable years).")
+    else:
+        out("**Verdict:** no take-profit target clearly beats the current trailing exit on all counts "
+            "(overall Sharpe, after-publication Sharpe, doubled costs, profitable years). Keep the current exit.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--start", default="2016-01-01")
     ap.add_argument("--symbols", default="SPY,QQQ")
     ap.add_argument("--intervals", default="", help="e.g. 10,15,30,60: compare decision frequencies instead")
+    ap.add_argument("--take-profit", default="", help="e.g. 0.5,1,1.5,2 (percent): compare take-profit targets instead")
     args = ap.parse_args()
     key, secret = os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_KEY")
     if not key or not secret:
@@ -203,6 +268,19 @@ def main():
     def out(s=""):
         print(s)
         lines.append(s)
+
+    if args.take_profit:
+        out("## Research: intraday momentum — does a fixed take-profit target help?")
+        out()
+        out(f"Same rules, sizing and costs as the main study, plus a resting limit order at entry +/- the target "
+            f"(filled at the target only if price trades a cent beyond it). Out-of-sample = on/after {PUBLISHED}.")
+        for sym in [x.strip().upper() for x in args.symbols.split(",") if x.strip()]:
+            compare_take_profit(client, sym, start, end, [float(x) for x in args.take_profit.split(",")], out)
+        path = os.getenv("GITHUB_STEP_SUMMARY")
+        if path:
+            with open(path, "a") as f:
+                f.write("\n".join(lines) + "\n")
+        return
 
     if args.intervals:
         out("## Research: intraday momentum — how often should the bot decide?")

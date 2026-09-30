@@ -27,6 +27,7 @@ on:
           - research-inplay-orb
           - research-intraday-momentum
           - research-momentum-intervals
+          - research-momentum-take-profit
           - in-play
           - settings
           - market-filter
@@ -58,6 +59,11 @@ jobs:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
+          if [ "${{ inputs.comparison }}" = "research-momentum-take-profit" ]; then
+            # Would a fixed profit target beat the trailing exit? (days input unused)
+            python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'QQQ' }}" --take-profit 0.5,1,1.5,2
+            exit 0
+          fi
           if [ "${{ inputs.comparison }}" = "research-momentum-intervals" ]; then
             # How often should the momentum strategy decide? (days input unused)
             python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'QQQ' }}" --intervals 10,15,30,60
