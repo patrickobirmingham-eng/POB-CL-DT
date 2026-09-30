@@ -5,6 +5,7 @@ market data API.
 Usage:
     python backtest.py --days 60 --equity 25000
     python backtest.py --days 90 --equity 100000 --compare-shorts
+    python backtest.py --days 90 --equity 100000 --compare-market-filter
 """
 import argparse
 import os
@@ -52,7 +53,42 @@ def fetch_minute_bars(client, symbols, days):
     return bars
 
 
-def simulate(bars: pd.DataFrame, starting_equity: float, compound: bool = True):
+def build_market_context(market_bars: pd.DataFrame) -> dict:
+    """{timestamp: (close, session_open, running_vwap)} for the market ETF, using
+    only data up to and including that minute (no look-ahead)."""
+    ctx = {}
+    if market_bars.empty:
+        return ctx
+    m = market_bars.set_index("timestamp").sort_index().between_time("09:30", "16:00")
+    for _, g in m.groupby(m.index.date):
+        typical = (g["high"] + g["low"] + g["close"]) / 3
+        vwap = (typical * g["volume"]).cumsum() / g["volume"].cumsum().replace(0, float("nan"))
+        day_open = float(g["open"].iloc[0])
+        # IEX can skip minutes for the ETF; carry the last known value forward so
+        # a stock's signal minute always has the latest market reading.
+        full = pd.date_range(g.index[0], g.index[-1], freq="1min")
+        closes = g["close"].reindex(full).ffill()
+        vwap = vwap.reindex(full).ffill()
+        for ts, close, vw in zip(full, closes, vwap):
+            ctx[ts] = (float(close), day_open, float(vw) if vw == vw else float(close))
+    return ctx
+
+
+def market_allows(direction: str, ts, market_ctx: dict, mode: str) -> bool:
+    """mode 'open': longs only when the market is at/above its open at that
+    minute, shorts only when below. 'open_vwap': also requires the market to be
+    on the same side of its running VWAP. Missing market data -> no trade."""
+    m = market_ctx.get(ts)
+    if m is None:
+        return False
+    close, day_open, vwap = m
+    if direction == "long":
+        return close >= day_open and (mode != "open_vwap" or close >= vwap)
+    return close < day_open and (mode != "open_vwap" or close < vwap)
+
+
+def simulate(bars: pd.DataFrame, starting_equity: float, compound: bool = True,
+             market_ctx: dict = None, market_mode: str = None):
     """compound=False sizes every trade off starting_equity instead of the running
     equity. Symbols are simulated one after another, so with compounding a
     symbol's position sizes depend on how earlier symbols did; fixed sizing
@@ -83,6 +119,10 @@ def simulate(bars: pd.DataFrame, starting_equity: float, compound: bool = True):
             for ts, bar in post_or.iterrows():
                 if open_trade is None:
                     sig = strategy.check_breakout(orange, bar, ts, traded_today)
+                    if sig is not None and market_mode and not market_allows(sig.direction, ts, market_ctx, market_mode):
+                        # Against the market: skip this bar's signal. The symbol is
+                        # not marked traded, so a later aligned signal can still fire.
+                        sig = None
                     if sig is not None:
                         shares = strategy.position_size(equity if compound else starting_equity,
                                                         sig.risk_per_share)
@@ -223,10 +263,26 @@ def _stats(t: pd.DataFrame, equity: float) -> dict:
     }
 
 
-def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"):
-    """Runs the same data twice, long-only vs long+short, with fixed sizing and
-    the daily trade cap, and reports the difference overall and on up vs down
-    market days (by market_symbol's open-to-close move)."""
+SHORTS_VARIANTS = [
+    ("Long only", False, None),
+    ("Long + short", True, None),
+]
+MARKET_FILTER_VARIANTS = [
+    ("Long only (today's bot)", False, None),
+    ("Long only, with market", False, "open"),
+    ("Long + short, with market", True, "open"),
+    ("Long only, with market + VWAP", False, "open_vwap"),
+    ("Long + short, with market + VWAP", True, "open_vwap"),
+]
+
+
+def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ",
+                   variants=None, title="ORB backtest: long-only vs long + short"):
+    """Runs the same data through several variants (shorts on/off, optional
+    trade-with-the-market filter) with fixed sizing and the daily trade cap, and
+    reports them overall and on up vs down market days (by market_symbol's
+    open-to-close move)."""
+    variants = variants or SHORTS_VARIANTS
     market = bars[bars["symbol"] == market_symbol]
     trade_bars = bars[bars["symbol"] != market_symbol]
     mkt_dir = {}
@@ -235,13 +291,14 @@ def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"
         for d, g in m.groupby(m.index.date):
             mkt_dir[str(d)] = "up" if g["close"].iloc[-1] >= g["open"].iloc[0] else "down"
 
+    market_ctx = build_market_context(market) if any(v[2] for v in variants) else {}
     original = config.ALLOW_SHORTS
     results = {}
     try:
-        for label, allow in (("Long only", False), ("Long + short", True)):
+        for label, allow, mode in variants:
             config.ALLOW_SHORTS = allow
             print(f"Simulating: {label}...")
-            t, _ = simulate(trade_bars, equity, compound=False)
+            t, _ = simulate(trade_bars, equity, compound=False, market_ctx=market_ctx, market_mode=mode)
             results[label] = _apply_daily_trade_cap(t)
     finally:
         config.ALLOW_SHORTS = original
@@ -252,7 +309,7 @@ def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"
         lines.append(line)
 
     days = sorted(mkt_dir) or sorted({d for t in results.values() if not t.empty for d in t["date"]})
-    out(f"## ORB backtest: long-only vs long + short")
+    out(f"## {title}")
     out()
     out(f"{len(days)} trading days ({days[0] if days else '?'} to {days[-1] if days else '?'}), "
         f"{trade_bars['symbol'].nunique()} symbols, fixed risk of {config.RISK_PCT_PER_TRADE:.1%} "
@@ -263,11 +320,12 @@ def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"
     out()
     out("| | Trades | Win rate | Avg R | Total P&L | Return | Max drawdown | Worst day | Losing days |")
     out("|---|---:|---:|---:|---:|---:|---:|---:|---:|")
-    rows = [(k, v) for k, v in results.items()]
-    both = results["Long + short"]
-    if not both.empty:
-        rows += [("  of which longs", both[both["direction"] == "long"]),
-                 ("  of which shorts", both[both["direction"] == "short"])]
+    rows = []
+    for k, v in results.items():
+        rows.append((k, v))
+        if not v.empty and (v["direction"] == "short").any():
+            rows += [("  of which longs", v[v["direction"] == "long"]),
+                     ("  of which shorts", v[v["direction"] == "short"])]
     for label, t in rows:
         s = _stats(t, equity)
         out(f"| {label} | {s['trades']} | {s['win_rate']:.1%} | {s['avg_r']:+.2f}R | ${s['pnl']:,.0f} | "
@@ -289,26 +347,49 @@ def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"
             fmt_r = lambda x: f"{x['r_multiple'].mean():+.2f}R" if len(x) else "–"
             out(f"| {label} | ${up['pnl'].sum():,.0f} | ${dn['pnl'].sum():,.0f} | {fmt_r(up)} | {fmt_r(dn)} |")
 
-    lo, ls = _stats(results["Long only"], equity), _stats(both, equity)
-    sh = _stats(both[both["direction"] == "short"] if not both.empty else both, equity)
     out()
-    if lo["avg_r"] <= 0 and ls["avg_r"] <= 0:
-        out("**Verdict:** neither variant made money over this window (average R <= 0 for both). "
-            "Enabling shorts would not fix that; the entry rules need work first.")
-    elif sh["trades"] and sh["avg_r"] > 0 and ls["pnl"] > lo["pnl"] and ls["max_dd"] <= lo["max_dd"] * 1.25 + 0.005:
-        out("**Verdict:** shorts were profitable on their own and adding them improved total P&L without a "
-            "materially deeper drawdown. Worth paper-trading, after re-testing on another window.")
+    if variants is SHORTS_VARIANTS:
+        both = results["Long + short"]
+        lo, ls = _stats(results["Long only"], equity), _stats(both, equity)
+        sh = _stats(both[both["direction"] == "short"] if not both.empty else both, equity)
+        if lo["avg_r"] <= 0 and ls["avg_r"] <= 0:
+            out("**Verdict:** neither variant made money over this window (average R <= 0 for both). "
+                "Enabling shorts would not fix that; the entry rules need work first.")
+        elif sh["trades"] and sh["avg_r"] > 0 and ls["pnl"] > lo["pnl"] and ls["max_dd"] <= lo["max_dd"] * 1.25 + 0.005:
+            out("**Verdict:** shorts were profitable on their own and adding them improved total P&L without a "
+                "materially deeper drawdown. Worth paper-trading, after re-testing on another window.")
+        else:
+            out("**Verdict:** shorts did not add a clear edge over this window (unprofitable on their own, lower "
+                "total P&L, or a deeper drawdown). Keep shorts off.")
     else:
-        out("**Verdict:** shorts did not add a clear edge over this window (unprofitable on their own, lower "
-            "total P&L, or a deeper drawdown). Keep shorts off.")
+        stats = {k: _stats(v, equity) for k, v in results.items()}
+        base_label = variants[0][0]
+        base = stats[base_label]
+        best_label = max((k for k in stats if k != base_label), key=lambda k: stats[k]["pnl"])
+        best = stats[best_label]
+        if best["avg_r"] <= 0:
+            out(f"**Verdict:** no market-filter variant made money over this window "
+                f"(best: {best_label}, {best['avg_r']:+.2f}R). Don't add the filter on this evidence.")
+        elif best["pnl"] <= base["pnl"]:
+            out(f"**Verdict:** the best filter variant ({best_label}, {best['avg_r']:+.2f}R) did not beat "
+                f"today's bot (${best['pnl']:,.0f} vs ${base['pnl']:,.0f}). Don't add the filter on this evidence.")
+        elif best["trades"] < 30 or best["max_dd"] > max(base["max_dd"], 0.01) * 1.25 + 0.005:
+            out(f"**Verdict:** {best_label} was profitable ({best['avg_r']:+.2f}R) but on too few trades or with "
+                f"a deeper drawdown than today's bot. Re-test on a longer window before adopting it.")
+        else:
+            out(f"**Verdict:** best variant is **{best_label}**: {best['avg_r']:+.2f}R per trade, "
+                f"${best['pnl']:,.0f} vs ${base['pnl']:,.0f} for today's bot, over {best['trades']} trades. "
+                f"Worth confirming on a different window before adopting it.")
     out()
     out("Caveats: backtests use IEX minute bars and bar-level fills; they ignore whether a stock could be "
         "borrowed, the concurrent-position cap, the daily notional cap and the daily-loss breaker. "
         "Treat the difference between the two rows as the signal, not the absolute numbers.")
 
+    import re as _re
     for label, t in results.items():
         if not t.empty:
-            t.to_csv(f"backtest_{'long_only' if label == 'Long only' else 'long_short'}.csv", index=False)
+            slug = _re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+            t.to_csv(f"backtest_{slug}.csv", index=False)
     summary_path = os.getenv("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a") as f:
@@ -322,15 +403,21 @@ def main():
     parser.add_argument("--symbols", type=str, default=",".join(config.WATCHLIST))
     parser.add_argument("--compare-shorts", action="store_true",
                         help="Run long-only and long+short on the same data and compare them.")
+    parser.add_argument("--compare-market-filter", action="store_true",
+                        help="Compare today's bot with 'trade with the market' (QQQ) variants.")
     args = parser.parse_args()
 
     symbols = args.symbols.split(",")
     client = get_client()
-    if args.compare_shorts:
+    if args.compare_shorts or args.compare_market_filter:
         fetch = symbols + (["QQQ"] if "QQQ" not in symbols else [])
         print(f"Fetching {args.days} days of minute bars for {len(fetch)} symbols...")
         bars = fetch_minute_bars(client, fetch, args.days)
-        compare_shorts(bars, args.equity)
+        if args.compare_market_filter:
+            compare_shorts(bars, args.equity, variants=MARKET_FILTER_VARIANTS,
+                           title="ORB backtest: trading with the market (QQQ) vs today's bot")
+        else:
+            compare_shorts(bars, args.equity)
         return
 
     print(f"Fetching {args.days} days of minute bars for {symbols}...")

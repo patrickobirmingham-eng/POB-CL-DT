@@ -16,10 +16,14 @@ on:
         description: "Account size used for position sizing ($)"
         default: "100000"
         required: true
-      compare_shorts:
-        description: "Compare long-only vs long + short"
-        type: boolean
-        default: true
+      comparison:
+        description: "What to compare"
+        type: choice
+        options:
+          - market-filter
+          - shorts
+          - none
+        default: market-filter
 
 permissions:
   contents: read
@@ -45,11 +49,12 @@ jobs:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
-          if [ "${{ inputs.compare_shorts }}" = "true" ]; then
-            python backtest.py --days "${{ inputs.days }}" --equity "${{ inputs.equity }}" --compare-shorts
-          else
-            python backtest.py --days "${{ inputs.days }}" --equity "${{ inputs.equity }}"
-          fi
+          case "${{ inputs.comparison }}" in
+            market-filter) FLAG="--compare-market-filter" ;;
+            shorts)        FLAG="--compare-shorts" ;;
+            *)             FLAG="" ;;
+          esac
+          python backtest.py --days "${{ inputs.days }}" --equity "${{ inputs.equity }}" $FLAG
 
       - name: Upload trade lists
         if: always()
