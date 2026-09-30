@@ -546,26 +546,18 @@ def push_dashboard_update(trading_client, reason: str):
         if not os.path.isdir(".git"):
             return
 
-        subprocess.run(["git", "config", "user.name", "orb-trading-bot"], check=False)
-        subprocess.run(["git", "config", "user.email", "actions@users.noreply.github.com"], check=False)
-        subprocess.run(["git", "add", "docs/index.html", "docs/.nojekyll"], check=False)
-        if os.path.exists(ai_filter.DECISIONS_FILE):
-            subprocess.run(["git", "add", ai_filter.DECISIONS_FILE], check=False)
-
-        diff = subprocess.run(["git", "diff", "--cached", "--quiet"])
-        if diff.returncode == 0:
-            return  # nothing changed, nothing to commit
-
-        subprocess.run(["git", "commit", "-m", f"Live dashboard update: {reason} [skip ci]"], check=False)
-
-        for attempt in range(1, 6):
-            push = subprocess.run(["git", "push"])
-            if push.returncode == 0:
-                log(f"Dashboard pushed live ({reason}).")
-                return
-            log(f"Dashboard push rejected (attempt {attempt}) — pulling latest and retrying...")
-            subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", "main"], check=False)
-        log("Dashboard push still failing after 5 attempts — will retry after the next trade/flatten.")
+        # Commit just the generated files on top of the latest main (see
+        # scripts/publish_files.sh — never merges, so it can't get stuck).
+        files = ["docs/index.html", "docs/.nojekyll", ai_filter.DECISIONS_FILE]
+        result = subprocess.run(
+            ["bash", "scripts/publish_files.sh", f"Live dashboard update: {reason} [skip ci]", *files],
+            capture_output=True, text=True,
+        )
+        out = (result.stdout or result.stderr or "").strip().splitlines()
+        if result.returncode == 0:
+            log(f"Dashboard update ({reason}): {out[-1] if out else 'done'}")
+        else:
+            log(f"Dashboard push failed ({reason}); will retry on the next update. {out[-1] if out else ''}")
     except Exception as e:
         log(f"Live dashboard update failed (non-fatal): {e}")
 

@@ -102,31 +102,9 @@ jobs:
         run: python dashboard.py
 
       - name: Commit updated state, logs, and dashboard
+        if: always()   # save state even if an earlier step failed
         run: |
-          git config user.name "orb-trading-bot"
-          git config user.email "actions@users.noreply.github.com"
-          # Add each file individually and only if it exists — trade_log.csv in
-          # particular won't exist yet on days with no trades, and `git add` fails
-          # for ALL listed paths (not just the missing one) if any single path
-          # doesn't match, which was silently dropping every other file too.
-          for f in state.json trade_log.csv ai_decisions.csv docs/index.html docs/.nojekyll; do
-            [ -e "$f" ] && git add "$f"
-          done
-          git diff --cached --quiet || git commit -m "Update bot state and dashboard [skip ci]"
-
-          # The repo can move ahead between this job's checkout and this push (e.g. you
-          # pushed a manual edit from GitHub Desktop while this job was running). Rebase
-          # onto whatever's newest on the remote right before pushing, retrying a few
-          # times, instead of failing outright on a non-fast-forward rejection.
-          for i in 1 2 3 4 5; do
-            if git push; then
-              echo "Push succeeded."
-              break
-            fi
-            echo "Push rejected (attempt $i) — pulling latest and retrying..."
-            git pull --rebase origin main
-            if [ "$i" -eq 5 ]; then
-              echo "Push still failing after 5 attempts — giving up for this run."
-              exit 1
-            fi
-          done
+          # Commits only these files on top of the latest main (never merges,
+          # so a conflict in a generated file can't leave the job stuck).
+          bash scripts/publish_files.sh "Update bot state and dashboard [skip ci]" \
+            state.json trade_log.csv ai_decisions.csv docs/index.html docs/.nojekyll
