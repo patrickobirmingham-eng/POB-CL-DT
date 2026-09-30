@@ -842,6 +842,13 @@ def main():
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue
 
+        # ORB entries can be switched off (ORB_ENABLED) without affecting the
+        # momentum strategy, position management or the end-of-day flatten above.
+        if not getattr(config, "ORB_ENABLED", True):
+            save_state(args.state_file, day_state)
+            time_module.sleep(config.POLL_INTERVAL_SECONDS)
+            continue
+
         if now_t < or_complete_t:
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue

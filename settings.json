@@ -126,5 +126,6 @@
         "WDC",
         "WDAY",
         "XEL"
-    ]
+    ],
+    "ORB_ENABLED": false
 }
