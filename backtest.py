@@ -7,6 +7,7 @@ Usage:
     python backtest.py --days 90 --equity 100000 --compare-shorts
     python backtest.py --days 90 --equity 100000 --compare-market-filter
     python backtest.py --days 90 --equity 100000 --compare-settings
+    python backtest.py --days 90 --equity 100000 --compare-in-play
 """
 import argparse
 import os
@@ -88,8 +89,37 @@ def market_allows(direction: str, ts, market_ctx: dict, mode: str) -> bool:
     return close < day_open and (mode != "open_vwap" or close < vwap)
 
 
+def opening_relative_volume(bars: pd.DataFrame, lookback: int = 14) -> pd.DataFrame:
+    """Per symbol per day: volume traded during the opening range divided by that
+    symbol's average opening-range volume over the previous `lookback` sessions.
+    Known the moment the opening range ends, so it is usable for selecting the
+    day's stocks without look-ahead. Days without a full lookback are NaN."""
+    rows = []
+    for symbol, g in bars.groupby("symbol"):
+        g = g.set_index("timestamp").sort_index().between_time("09:30", "16:00")
+        for d, day in g.groupby(g.index.date):
+            or_end = day.index[0] + pd.Timedelta(minutes=config.OPENING_RANGE_MINUTES)
+            rows.append((symbol, str(d), float(day[day.index < or_end]["volume"].sum())))
+    df = pd.DataFrame(rows, columns=["symbol", "date", "or_volume"]).sort_values(["symbol", "date"])
+    prior = df.groupby("symbol")["or_volume"].transform(
+        lambda v: v.shift(1).rolling(lookback, min_periods=lookback).mean())
+    df["rel_volume"] = df["or_volume"] / prior.replace(0, float("nan"))
+    return df
+
+
+def in_play_set(rv: pd.DataFrame, top: int = None, min_rv: float = None) -> set:
+    """(symbol, date) pairs selected as 'in play': the `top` highest relative
+    volumes that day and/or everything at or above `min_rv`."""
+    d = rv.dropna(subset=["rel_volume"])
+    if min_rv is not None:
+        d = d[d["rel_volume"] >= min_rv]
+    if top is not None:
+        d = d.sort_values("rel_volume", ascending=False).groupby("date").head(top)
+    return set(zip(d["symbol"], d["date"]))
+
+
 def simulate(bars: pd.DataFrame, starting_equity: float, compound: bool = True,
-             market_ctx: dict = None, market_mode: str = None):
+             market_ctx: dict = None, market_mode: str = None, allowed: set = None):
     """compound=False sizes every trade off starting_equity instead of the running
     equity. Symbols are simulated one after another, so with compounding a
     symbol's position sizes depend on how earlier symbols did; fixed sizing
@@ -105,6 +135,8 @@ def simulate(bars: pd.DataFrame, starting_equity: float, compound: bool = True,
         for session_date, day_bars in sym_bars.groupby("date"):
             day_bars = day_bars.between_time("09:30", "16:00")
             if day_bars.empty:
+                continue
+            if allowed is not None and (symbol, str(session_date)) not in allowed:
                 continue
 
             orange = strategy.compute_opening_range(day_bars, symbol, str(session_date))
@@ -292,6 +324,16 @@ SETTINGS_VARIANTS = [
      {"OPENING_RANGE_MINUTES": 30, "VOLUME_CONFIRMATION_MULT": 2.0, "ENTRY_CUTOFF_TIME": "11:30"}),
 ]
 
+# (label, shorts, market_mode, overrides, in-play selection)
+IN_PLAY_VARIANTS = [
+    ("All watchlist stocks (today's bot)", False, None, {}, None),
+    ("Top 20 by opening volume", False, None, {}, {"top": 20}),
+    ("Top 10 by opening volume", False, None, {}, {"top": 10}),
+    ("Top 5 by opening volume", False, None, {}, {"top": 5}),
+    ("Opening volume >= 2x normal", False, None, {}, {"min_rv": 2.0}),
+    ("Top 10, long + short", True, None, {}, {"top": 10}),
+]
+
 
 def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ",
                    variants=None, title="ORB backtest: long-only vs long + short"):
@@ -309,15 +351,28 @@ def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"
             mkt_dir[str(d)] = "up" if g["close"].iloc[-1] >= g["open"].iloc[0] else "down"
 
     market_ctx = build_market_context(market) if any(v[2] for v in variants) else {}
+    # Stock selection by opening relative volume ("stocks in play"). All variants
+    # are then compared over the same days: those with a full volume lookback.
+    rv = None
+    if any(len(v) > 4 and v[4] for v in variants):
+        print("Computing opening relative volume...")
+        rv = opening_relative_volume(trade_bars)
+    eligible_days = set(rv.dropna(subset=["rel_volume"])["date"]) if rv is not None else None
+
     results = {}
     for label, allow, mode, *rest in variants:
-        overrides = {"ALLOW_SHORTS": allow, **(rest[0] if rest else {})}
+        selection = rest[1] if len(rest) > 1 else None
+        allowed = in_play_set(rv, **selection) if selection else None
+        overrides = {"ALLOW_SHORTS": allow, **(rest[0] if rest and rest[0] else {})}
         saved = {k: getattr(config, k) for k in overrides}
         try:
             for k, v in overrides.items():
                 setattr(config, k, v)
             print(f"Simulating: {label}...")
-            t, _ = simulate(trade_bars, equity, compound=False, market_ctx=market_ctx, market_mode=mode)
+            t, _ = simulate(trade_bars, equity, compound=False, market_ctx=market_ctx,
+                            market_mode=mode, allowed=allowed)
+            if eligible_days is not None and not t.empty:
+                t = t[t["date"].isin(eligible_days)]
             results[label] = _apply_daily_trade_cap(t)
         finally:
             for k, v in saved.items():
@@ -329,6 +384,9 @@ def compare_shorts(bars: pd.DataFrame, equity: float, market_symbol: str = "QQQ"
         lines.append(line)
 
     days = sorted(mkt_dir) or sorted({d for t in results.values() if not t.empty for d in t["date"]})
+    if eligible_days is not None:
+        days = [d for d in days if d in eligible_days] or sorted(eligible_days)
+        mkt_dir = {d: v for d, v in mkt_dir.items() if d in eligible_days}
     out(f"## {title}")
     out()
     out(f"{len(days)} trading days ({days[0] if days else '?'} to {days[-1] if days else '?'}), "
@@ -438,6 +496,8 @@ def main():
     parser.add_argument("--symbols", type=str, default=",".join(config.WATCHLIST))
     parser.add_argument("--compare-shorts", action="store_true",
                         help="Run long-only and long+short on the same data and compare them.")
+    parser.add_argument("--compare-in-play", action="store_true",
+                        help="Compare trading all watchlist stocks with only the day's 'in play' stocks (opening relative volume).")
     parser.add_argument("--compare-settings", action="store_true",
                         help="Compare the current settings with alternative opening-range/volume/target/cutoff settings.")
     parser.add_argument("--compare-market-filter", action="store_true",
@@ -446,11 +506,14 @@ def main():
 
     symbols = args.symbols.split(",")
     client = get_client()
-    if args.compare_shorts or args.compare_market_filter or args.compare_settings:
+    if args.compare_shorts or args.compare_market_filter or args.compare_settings or args.compare_in_play:
         fetch = symbols + (["QQQ"] if "QQQ" not in symbols else [])
         print(f"Fetching {args.days} days of minute bars for {len(fetch)} symbols...")
         bars = fetch_minute_bars(client, fetch, args.days)
-        if args.compare_settings:
+        if args.compare_in_play:
+            compare_shorts(bars, args.equity, variants=IN_PLAY_VARIANTS,
+                           title="ORB backtest: stocks in play (opening relative volume) vs all watchlist stocks")
+        elif args.compare_settings:
             compare_shorts(bars, args.equity, variants=SETTINGS_VARIANTS,
                            title="ORB backtest: current settings vs alternatives (long only)")
         elif args.compare_market_filter:
