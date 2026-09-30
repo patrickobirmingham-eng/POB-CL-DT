@@ -93,7 +93,7 @@ def prepare_days(m: pd.DataFrame):
     return days
 
 
-def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MAX_LEV):
+def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MAX_LEV, every=30):
     trades, daily = [], []
     for i in range(LOOKBACK + 1, len(days)):
         day = days[i]
@@ -124,8 +124,8 @@ def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MA
             pnl_day -= COMMISSION * shares
             n_tr += 1
 
-        for t in ms.CHECK_TIMES:
-            bar = ms.CHECK_BARS[t]
+        for t in (ms.CHECK_TIMES if every == 30 else ms.make_check_times(every)):
+            bar = ms.check_bar(t)
             px = b.at[bar, "close"]
             exit_now, new_side = ms.decide(pos, px, upper[bar], lower[bar], b.at[bar, "vwap"],
                                            allow_shorts=not long_only)
@@ -148,10 +148,49 @@ def summarize(daily: pd.DataFrame):
             "days": len(daily), "traded": int(daily["traded"].sum()), "bh": daily["bh"].sum()}
 
 
+def compare_intervals(client, sym, start, end, intervals, out):
+    """Same rules, different decision frequency, on one symbol."""
+    days = prepare_days(fetch_minutes(client, sym, start, end))
+    out()
+    out(f"### {sym}: decision interval comparison")
+    out()
+    out("| Check every | Trades | Days traded | All: return | All: Sharpe | All: max DD | Out-of-sample return | "
+        "Out-of-sample Sharpe | OOS Sharpe, 2x slippage | Profitable years |")
+    out("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    rows = {}
+    for m in intervals:
+        trades, daily = simulate(days, every=m)
+        _, daily2 = simulate(days, every=m, slip=0.02)
+        daily["year"] = daily["date"].str[:4]
+        a = summarize(daily)
+        o = summarize(daily[daily["date"] >= PUBLISHED])
+        o2 = summarize(daily2[daily2["date"] >= PUBLISHED])
+        yp = sum(1 for _, g in daily.groupby("year") if g["pnl"].sum() > 0)
+        yn = daily["year"].nunique()
+        rows[m] = (a, o, o2, yp, yn)
+        out(f"| {m} min | {len(trades)} | {a['traded']} | {a['ret']:+.1%} | {a['sharpe']:.2f} | {a['dd']:.1%} | "
+            f"{o['ret']:+.1%} | {o['sharpe']:.2f} | {o2['sharpe']:.2f} | {yp}/{yn} |")
+        trades.to_csv(f"research_momentum_{sym.lower()}_{m}min.csv", index=False)
+    base = rows.get(30)
+    out()
+    if base:
+        better = [m for m, (a, o, o2, yp, yn) in rows.items() if m != 30
+                  and o["sharpe"] >= base[1]["sharpe"] + 0.2 and a["sharpe"] >= base[0]["sharpe"] + 0.1
+                  and o2["sharpe"] >= base[2]["sharpe"] and yp >= base[3]]
+        if better:
+            out(f"**Verdict:** {', '.join(f'{m} min' for m in better)} beat the 30-minute schedule clearly and "
+                f"consistently (higher Sharpe overall and after publication, robust to doubled costs, at least as "
+                f"many profitable years).")
+        else:
+            out("**Verdict:** no interval clearly beats the 30-minute schedule on all counts (overall Sharpe, "
+                "after-publication Sharpe, doubled costs, profitable years). Keep 30 minutes.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--start", default="2016-01-01")
     ap.add_argument("--symbols", default="SPY,QQQ")
+    ap.add_argument("--intervals", default="", help="e.g. 10,15,30,60: compare decision frequencies instead")
     args = ap.parse_args()
     key, secret = os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_KEY")
     if not key or not secret:
@@ -164,6 +203,19 @@ def main():
     def out(s=""):
         print(s)
         lines.append(s)
+
+    if args.intervals:
+        out("## Research: intraday momentum — how often should the bot decide?")
+        out()
+        out(f"Same rules, sizing and costs as the main study; only the decision interval changes "
+            f"(10:00 to 15:30 ET). Out-of-sample = on/after {PUBLISHED}.")
+        for sym in [x.strip().upper() for x in args.symbols.split(",") if x.strip()]:
+            compare_intervals(client, sym, start, end, [int(x) for x in args.intervals.split(",")], out)
+        path = os.getenv("GITHUB_STEP_SUMMARY")
+        if path:
+            with open(path, "a") as f:
+                f.write("\n".join(lines) + "\n")
+        return
 
     out("## Research: intraday momentum (noise-area breakout), Zarattini, Aziz & Barbon rules")
     out()
