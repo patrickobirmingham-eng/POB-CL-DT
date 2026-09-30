@@ -32,6 +32,7 @@ import strategy
 import notify
 import dashboard
 import ai_filter
+import momentum_strategy
 
 load_dotenv()
 
@@ -234,6 +235,131 @@ def build_ai_context(data_client, sig, orange, bars, now):
     except Exception as e:
         log(f"AI filter: QQQ context unavailable ({e})")
     return ctx
+
+
+# ---------------------------------------------------------------------------
+# Intraday momentum on QQQ (see momentum_strategy.py for the rules)
+# ---------------------------------------------------------------------------
+_momentum_day = {}  # per-day setup: date, sigma, prev_close, vol, open, shares
+
+
+def momentum_setup(data_client, equity, now):
+    """Once per day, after 09:46 ET: 14-session noise profile and daily vol from
+    full-market (SIP) history, and today's official open from the SIP 09:30 bar
+    (the free data plan serves SIP data older than 15 minutes). Returns the
+    setup dict, or None if it can't be built yet."""
+    today = now.date()
+    if _momentum_day.get("date") == today:
+        return _momentum_day
+    sym = config.MOMENTUM_SYMBOL
+    try:
+        hist = StockBarsRequest(
+            symbol_or_symbols=[sym], timeframe=TimeFrame.Minute, feed="sip",
+            start=datetime.combine(today - timedelta(days=35), dtime(9, 30), tzinfo=ET),
+            end=datetime.combine(today, dtime(0, 0), tzinfo=ET),
+        )
+        df = data_client.get_stock_bars(hist).df
+        if df.empty:
+            return None
+        df = df.reset_index()
+        df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.tz_convert(ET)
+        df = df.set_index("timestamp").sort_index().between_time("09:30", "15:59")
+        days = [momentum_strategy.prepare_day(g)[0] for _, g in df.groupby(df.index.date) if len(g) >= 300]
+        if len(days) < momentum_strategy.LOOKBACK + 1:
+            log(f"Momentum: only {len(days)} prior sessions of {sym} history; need {momentum_strategy.LOOKBACK + 1}.")
+            return None
+        closes = [float(d["close"].iloc[-1]) for d in days]
+        open_req = StockBarsRequest(
+            symbol_or_symbols=[sym], timeframe=TimeFrame.Minute, feed="sip",
+            start=datetime.combine(today, dtime(9, 30), tzinfo=ET),
+            end=datetime.combine(today, dtime(9, 31), tzinfo=ET),
+        )
+        o = data_client.get_stock_bars(open_req).df
+        if o.empty:
+            return None
+        day_open = float(o["open"].iloc[0])
+    except Exception as e:
+        log(f"Momentum setup failed (will retry): {e}")
+        return None
+    vol = momentum_strategy.daily_vol(closes)
+    shares = momentum_strategy.position_size(equity, day_open, vol, float(config.MOMENTUM_TARGET_VOL),
+                                             float(config.MOMENTUM_MAX_LEVERAGE))
+    _momentum_day.clear()
+    _momentum_day.update({
+        "date": today, "sigma": momentum_strategy.sigma_profile(days), "prev_close": closes[-1],
+        "vol": vol, "open": day_open, "shares": shares,
+    })
+    log(f"Momentum setup {sym}: open {day_open:.2f}, prev close {closes[-1]:.2f}, "
+        f"daily vol {vol:.2%}, size {shares} shares.")
+    return _momentum_day
+
+
+def run_momentum(trading_client, data_client, day_state, positions, now, equity):
+    """Acts once per 30-minute check slot (10:00-15:30 ET) within 10 minutes of
+    it. An exit and a reversal in the same slot are split across two polls so the
+    closing order fills before the opposite one is sent."""
+    if not getattr(config, "MOMENTUM_ENABLED", False):
+        return
+    hhmm = now.strftime("%H:%M")
+    slots = [t for t in momentum_strategy.CHECK_TIMES if t <= hhmm]
+    if not slots:
+        return
+    slot = slots[-1]
+    slot_dt = datetime.combine(now.date(), dtime(int(slot[:2]), int(slot[3:])), tzinfo=ET)
+    if now - slot_dt > timedelta(minutes=10):
+        return
+    done = day_state.setdefault("momentum_done", set())
+    if slot in done:
+        return
+    setup = momentum_setup(data_client, equity, now)
+    if setup is None or setup["shares"] <= 0:
+        return
+
+    sym = config.MOMENTUM_SYMBOL
+    bar_label = momentum_strategy.CHECK_BARS[slot]
+    try:
+        today_bars = get_recent_bars(data_client, sym, datetime.combine(now.date(), dtime(9, 30), tzinfo=ET))
+    except Exception as e:
+        log(f"Momentum: could not fetch {sym} bars ({e}); retrying next poll.")
+        return
+    if today_bars.empty or today_bars.index[-1].strftime("%H:%M") < bar_label:
+        return  # the bar that closes at the check time isn't in yet
+    bars, _ = momentum_strategy.prepare_day(today_bars)
+    price, vwap = float(bars.at[bar_label, "close"]), float(bars.at[bar_label, "vwap"])
+    sigma = float(setup["sigma"][bar_label])
+    upper, lower = momentum_strategy.bands(setup["open"], setup["prev_close"], sigma)
+
+    held = next((p for p in positions if p.symbol == sym), None)
+    qty = float(held.qty) if held is not None else 0.0
+    position = 1 if qty > 0 else (-1 if qty < 0 else 0)
+    exit_now, new_side = momentum_strategy.decide(position, price, upper, lower, vwap,
+                                                  bool(config.MOMENTUM_ALLOW_SHORTS))
+    note = f"price {price:.2f}, band {lower:.2f}-{upper:.2f}, VWAP {vwap:.2f}"
+    try:
+        if exit_now:
+            trading_client.close_position(sym)
+            log(f"Momentum {slot}: exit {sym} {'long' if position > 0 else 'short'} ({note}).")
+            notify.send(f"ORB Bot: Momentum exit {sym}", f"{slot} ET — {note}", tags="door")
+            push_dashboard_update(trading_client, reason=f"momentum exit {sym}")
+            if new_side:
+                return  # re-evaluated next poll once the close has filled
+        if new_side:
+            if new_side < 0 and not is_shortable(trading_client, sym, now.date()):
+                done.add(slot)
+                return
+            side = OrderSide.BUY if new_side > 0 else OrderSide.SELL
+            trading_client.submit_order(MarketOrderRequest(
+                symbol=sym, qty=setup["shares"], side=side, time_in_force=TimeInForce.DAY))
+            label = "LONG" if new_side > 0 else "SHORT"
+            log(f"Momentum {slot}: enter {sym} {label} {setup['shares']} shares ({note}).")
+            notify.send(f"ORB Bot: Momentum {label} {sym}", f"{setup['shares']} shares at ~${price:.2f}\n{slot} ET — {note}",
+                        tags="chart_with_upwards_trend" if new_side > 0 else "chart_with_downwards_trend")
+            push_dashboard_update(trading_client, reason=f"momentum {label.lower()} {sym}")
+        done.add(slot)
+    except Exception as e:
+        log(f"Momentum order failed at {slot}: {e}")
+        notify.send(f"ORB Bot: Momentum order failed ({sym})", str(e), priority="high", tags="warning")
+        done.add(slot)
 
 
 def submit_bracket_order(trading_client, symbol, direction, shares, stop_price, target_price):
@@ -550,6 +676,7 @@ def load_state(path: str):
         "breakeven_moved": set(raw.get("breakeven_moved", [])),
         "last_tightened_at": raw.get("last_tightened_at", {}),
         "ai_vetoed": set(raw.get("ai_vetoed", [])),
+        "momentum_done": set(raw.get("momentum_done", [])),
     }
 
 
@@ -572,6 +699,7 @@ def save_state(path: str, day_state: dict):
         "breakeven_moved": sorted(day_state.get("breakeven_moved", set())),
         "last_tightened_at": day_state.get("last_tightened_at", {}),
         "ai_vetoed": sorted(day_state.get("ai_vetoed", set())),
+        "momentum_done": sorted(day_state.get("momentum_done", set())),
     }
     with open(path, "w") as f:
         json.dump(serializable, f, indent=2)
@@ -615,6 +743,7 @@ def main():
             "breakeven_moved": set(),
             "last_tightened_at": {},  # symbol -> ISO timestamp of last take-profit tighten
             "ai_vetoed": set(),       # symbols the AI filter vetoed today (not re-asked)
+            "momentum_done": set(),   # momentum check slots already acted on today
         }
 
     flatten_t = strategy.flatten_time()
@@ -641,7 +770,7 @@ def main():
                 "trade_count": 0, "starting_equity": float(trading_client.get_account().equity),
                 "flattened": False, "notional_deployed_today": 0.0,
                 "trade_meta": {}, "breakeven_moved": set(), "last_tightened_at": {},
-                "ai_vetoed": set(),
+                "ai_vetoed": set(), "momentum_done": set(),
             })
 
         now_t = now.time()
@@ -694,6 +823,8 @@ def main():
             # position's take-profit limit toward the live price so a fade
             # isn't ridden all the way to the forced close.
             apply_closing_tighten(trading_client, day_state, positions_list, now)
+            # Second strategy: intraday momentum on QQQ, every 30 min 10:00-15:30.
+            run_momentum(trading_client, data_client, day_state, positions_list, now, equity)
 
         # Circuit breakers
         if daily_pnl_pct <= -config.MAX_DAILY_LOSS_PCT:
@@ -720,8 +851,10 @@ def main():
             continue
 
         open_positions = {p.symbol for p in positions_list}
+        # The momentum strategy's position doesn't use one of ORB's slots.
+        orb_open = open_positions - {getattr(config, "MOMENTUM_SYMBOL", "")}
 
-        if len(open_positions) >= config.MAX_CONCURRENT_POSITIONS:
+        if len(orb_open) >= config.MAX_CONCURRENT_POSITIONS:
             time_module.sleep(config.POLL_INTERVAL_SECONDS)
             continue
 
@@ -730,6 +863,7 @@ def main():
         # is large (e.g. the Nasdaq-100); see get_recent_bars_bulk().
         candidates = [
             symbol for symbol in config.WATCHLIST
+            if symbol != getattr(config, "MOMENTUM_SYMBOL", "")
             if symbol not in open_positions
             and not (symbol in day_state["traded_today"] and config.ONE_TRADE_PER_SYMBOL_PER_DAY)
             # A veto stands for the rest of the day. Without this, the same
