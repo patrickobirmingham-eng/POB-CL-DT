@@ -26,9 +26,22 @@ import pandas as pd
 LOOKBACK = 14
 
 # "10:00" is decided on the close of the 09:59 minute bar (it closes at 10:00:00).
-CHECK_TIMES = [f"{h:02d}:{m:02d}" for h in range(10, 16) for m in (0, 30)]
-CHECK_BARS = {t: (datetime(2000, 1, 1, int(t[:2]), int(t[3:])) - timedelta(minutes=1)).strftime("%H:%M")
-              for t in CHECK_TIMES}
+def make_check_times(every_minutes: int = 30):
+    """Decision times from 10:00 to 15:30 ET inclusive, every N minutes."""
+    out, t = [], datetime(2000, 1, 1, 10, 0)
+    while t <= datetime(2000, 1, 1, 15, 30):
+        out.append(t.strftime("%H:%M"))
+        t += timedelta(minutes=every_minutes)
+    return out
+
+
+def check_bar(t: str) -> str:
+    """The minute bar whose close is the price 'at' check time t."""
+    return (datetime(2000, 1, 1, int(t[:2]), int(t[3:])) - timedelta(minutes=1)).strftime("%H:%M")
+
+
+CHECK_TIMES = make_check_times(30)   # the backtested / live schedule
+CHECK_BARS = {t: check_bar(t) for t in CHECK_TIMES}
 MINUTE_GRID = pd.date_range("2000-01-01 09:30", "2000-01-01 15:59", freq="1min").strftime("%H:%M")
 
 

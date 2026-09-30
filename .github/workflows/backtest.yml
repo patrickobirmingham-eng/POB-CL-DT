@@ -26,6 +26,7 @@ on:
         options:
           - research-inplay-orb
           - research-intraday-momentum
+          - research-momentum-intervals
           - in-play
           - settings
           - market-filter
@@ -57,6 +58,11 @@ jobs:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
+          if [ "${{ inputs.comparison }}" = "research-momentum-intervals" ]; then
+            # How often should the momentum strategy decide? (days input unused)
+            python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'QQQ' }}" --intervals 10,15,30,60
+            exit 0
+          fi
           if [ "${{ inputs.comparison }}" = "research-intraday-momentum" ]; then
             # Published SPY/QQQ noise-area momentum strategy, 2016 to now (days input unused)
             python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'SPY,QQQ' }}"
