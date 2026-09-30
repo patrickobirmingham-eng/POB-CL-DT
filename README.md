@@ -30,7 +30,7 @@ Backtests run in September 2026 (see the **Run Backtest** workflow and its run s
 |---|---|---|
 | Opening Range Breakout (this bot's original rules) | Negative expectancy in ~20 variants over 90-200 days (-0.04R to -0.08R per trade): settings, shorts, market filter, stocks in play | **Paused** (`ORB_ENABLED = false`) |
 | Intraday momentum on QQQ (`momentum_strategy.py`, Zarattini/Aziz/Barbon 2024) | QQQ 2016-2026: Sharpe ~1.06, profitable 9/11 years; **after publication (Jun 2024 on): Sharpe 1.13, +40%**, robust to doubled costs. Fails on SPY, IWM, DIA, XLK, SMH, so the edge is instrument-specific. | **Live in paper at half size** (1% vol target, 2x cap) |
-| 5-min ORB on "stocks in play" (Zarattini/Barbon/Aziz 2024) | Result depends on the order of prices inside the entry minute (-0.38R to +0.28R); being settled with tick data | Research |
+| 5-min ORB on "stocks in play" (Zarattini/Barbon/Aziz 2024) | 250 days, 3,152 stocks, 4,040 trades. With the entry minute resolved from tick data: -0.13R per trade (Sharpe -2.2); -0.27R with doubled costs. (1-minute bars alone gave anywhere from -0.38R to +0.28R.) | **Rejected** |
 
 Risk per ORB trade was also cut to 0.25% while the strategy is unproven.
 
