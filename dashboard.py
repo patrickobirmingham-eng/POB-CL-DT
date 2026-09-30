@@ -376,6 +376,8 @@ def generate(client=None):
 
 
     generated_at = datetime.now(ET).strftime("%Y-%m-%d %I:%M %p ET")
+    # Build stamp: the page compares it with the published copy to spot a newer version.
+    generated_epoch = int(datetime.now(ET).timestamp())
 
     # Company names aren't on the Position/Order objects — look each one up via
     # the assets endpoint. Cached per-symbol since the same symbol often shows
@@ -879,10 +881,7 @@ def generate(client=None):
     wins = sum(1 for t in closed_trades if t["pl"] > 0)
     win_rate_text = f"{wins / len(closed_trades) * 100:.0f}%" if closed_trades else "—"
 
-    refresh_button_html = (
-        '<button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>'
-        if REFRESH_ENDPOINT else ""
-    )
+    refresh_button_html = '<button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>'
 
     settings_button_html = (
         '<button id="settingsBtn" onclick="openSettingsModal()" '
@@ -898,6 +897,7 @@ def generate(client=None):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generated-at" content="{generated_epoch}">
 <title>Claude.AI Paper Day Trading</title>
 <style>
   :root {{
@@ -1945,12 +1945,47 @@ def generate(client=None):
       return rows;
     }}
 
+    // --- Newer-version check -----------------------------------------------------
+    // The bot republishes this page after every trade, but browsers (and GitHub
+    // Pages' 10-minute cache) can keep showing the old copy even after a
+    // reload. Ask for the published page with a cache-busting URL, and if it
+    // was built after this one, switch to it. Runs every minute, when the tab
+    // comes back into view, and first thing when Refresh is pressed.
+    const PAGE_BUILT = {generated_epoch};
+    async function checkForNewerPage(force) {{
+      try {{
+        const resp = await fetch(location.pathname + '?v=' + Date.now(), {{ cache: 'no-store' }});
+        if (!resp.ok) return false;
+        const m = (await resp.text()).match(/name="generated-at" content="(\\d+)"/);
+        if (!m || Number(m[1]) <= PAGE_BUILT) return false;
+        // Don't yank the page away mid-typing; the next check will catch it.
+        const el = document.activeElement;
+        const typing = el && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+        const modalOpen = document.getElementById('settingsModal').style.display !== 'none';
+        if (!force && (typing || modalOpen)) return false;
+        location.replace(location.pathname + '?v=' + m[1] + location.hash);
+        return true;
+      }} catch (e) {{
+        return false;
+      }}
+    }}
+    setInterval(() => checkForNewerPage(false), 60000);
+    document.addEventListener('visibilitychange', () => {{
+      if (document.visibilityState === 'visible') checkForNewerPage(false);
+    }});
+    checkForNewerPage(false);
+
     async function refreshDashboard() {{
-      if (!REFRESH_ENDPOINT) return;
       const btn = document.getElementById('refreshBtn');
       const statusEl = document.getElementById('refreshStatus');
       btn.disabled = true;
       statusEl.textContent = ' Refreshing…';
+      if (await checkForNewerPage(true)) return;
+      if (!REFRESH_ENDPOINT) {{
+        statusEl.textContent = ' Up to date — this is the latest version the bot has published.';
+        btn.disabled = false;
+        return;
+      }}
       try {{
         const url = REFRESH_ENDPOINT + '?token=' + encodeURIComponent(REFRESH_TOKEN) + '&_=' + Date.now();
         const resp = await fetch(url);
