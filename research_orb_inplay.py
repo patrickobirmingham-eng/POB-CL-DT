@@ -155,9 +155,16 @@ def select_in_play(f5: pd.DataFrame, daily: pd.DataFrame, eligible: pd.DataFrame
 
 
 def simulate_trade(day_bars: pd.DataFrame, orb: dict, atr: float, stop_frac: float,
-                   long_only: bool = False, slip: float = SLIP):
+                   long_only: bool = False, slip: float = SLIP, same_bar: str = "pessimistic"):
     """day_bars: 1-min bars after 9:35 for one symbol. Returns (direction, entry,
-    exit, stop_dist) or None if no trade."""
+    exit, stop_dist) or None if no trade.
+
+    same_bar: what happens when the 1-minute bar that triggers the entry also
+    reaches the stop. Minute bars don't show the order of the high and low, so:
+      "pessimistic" - always counted as stopped out;
+      "close"       - stopped out only if that bar CLOSES beyond the stop
+                      (otherwise the stop is checked from the next bar).
+    The true result lies between the two."""
     if orb["close"] > orb["open"]:
         direction = "long"
     elif orb["close"] < orb["open"] and not long_only:
@@ -173,12 +180,14 @@ def simulate_trade(day_bars: pd.DataFrame, orb: dict, atr: float, stop_frac: flo
             if direction == "long" and bar["high"] >= orb["high"]:
                 entry = max(orb["high"], bar["open"]) + slip
                 stop = entry - stop_dist
-                if bar["low"] <= stop:          # pessimistic: stopped in the entry bar
+                hit = bar["low"] <= stop if same_bar == "pessimistic" else bar["close"] <= stop
+                if hit:
                     return direction, entry, stop - slip, stop_dist
             elif direction == "short" and bar["low"] <= orb["low"]:
                 entry = min(orb["low"], bar["open"]) - slip
                 stop = entry + stop_dist
-                if bar["high"] >= stop:
+                hit = bar["high"] >= stop if same_bar == "pessimistic" else bar["close"] >= stop
+                if hit:
                     return direction, entry, stop + slip, stop_dist
             continue
         if direction == "long":
@@ -196,7 +205,8 @@ def simulate_trade(day_bars: pd.DataFrame, orb: dict, atr: float, stop_frac: flo
     return direction, entry, float(day_bars["close"].iloc[-1]), stop_dist
 
 
-def run_variant(selected, minute_bars, stop_frac=0.10, top=20, long_only=False, slip=SLIP):
+def run_variant(selected, minute_bars, stop_frac=0.10, top=20, long_only=False, slip=SLIP,
+                same_bar="pessimistic"):
     risk_dollars = EQUITY / SLOTS * RISK_PER_SLOT
     notional_cap = EQUITY / SLOTS * LEVERAGE
     trades = []
@@ -206,7 +216,7 @@ def run_variant(selected, minute_bars, stop_frac=0.10, top=20, long_only=False, 
         if bars is None:
             continue
         res = simulate_trade(bars, {"open": r.open, "high": r.high, "low": r.low, "close": r.close},
-                             r.atr14, stop_frac, long_only, slip)
+                             r.atr14, stop_frac, long_only, slip, same_bar)
         if res is None:
             continue
         direction, entry, exit_, stop_dist = res
@@ -246,6 +256,11 @@ VARIANTS = [
     ("Stop 5% ATR", dict(stop_frac=0.05)),
     ("Stop 20% ATR", dict(stop_frac=0.20)),
     ("Paper rules, double slippage ($0.02)", dict(slip=0.02)),
+    # Same rules with the neutral entry-bar convention (see simulate_trade).
+    ("Neutral: paper rules", dict(same_bar="close")),
+    ("Neutral: long only", dict(same_bar="close", long_only=True)),
+    ("Neutral: stop 20% ATR", dict(same_bar="close", stop_frac=0.20)),
+    ("Neutral: paper rules, double slippage", dict(same_bar="close", slip=0.02)),
 ]
 
 
@@ -327,8 +342,9 @@ def main():
             f"{s['pnl'] / EQUITY:+.1%} | {s['dd']:.1%} | {s['sharpe']:.2f} | {s['r1']:+.3f}R | {s['r2']:+.3f}R |")
         t.to_csv(f"research_{label.split(' (')[0].lower().replace(' ', '_').replace(',', '').replace('%', 'pct').replace('$', '')}.csv", index=False)
 
-    base = stats(results[VARIANTS[0][0]], days)
-    dbl = stats(results["Paper rules, double slippage ($0.02)"], days)
+    # Judge on the neutral convention (the pessimistic one understates results).
+    base = stats(results["Neutral: paper rules"], days)
+    dbl = stats(results["Neutral: paper rules, double slippage"], days)
     out()
     if base and base["avg_r"] > 0 and base["r1"] > 0 and base["r2"] > 0 and dbl and dbl["avg_r"] > 0 and base["trades"] >= 100:
         out(f"**Verdict:** the published strategy is profitable on recent data in both halves "
