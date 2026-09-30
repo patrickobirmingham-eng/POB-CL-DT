@@ -39,20 +39,4 @@ jobs:
 
       - name: Commit updated dashboard
         run: |
-          git config user.name "orb-trading-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add docs/index.html docs/.nojekyll
-          git diff --cached --quiet || git commit -m "Refresh dashboard only [skip ci]"
-
-          for i in 1 2 3 4 5; do
-            if git push; then
-              echo "Push succeeded."
-              break
-            fi
-            echo "Push rejected (attempt $i) — pulling latest and retrying..."
-            git pull --rebase origin main
-            if [ "$i" -eq 5 ]; then
-              echo "Push still failing after 5 attempts — giving up for this run."
-              exit 1
-            fi
-          done
+          bash scripts/publish_files.sh "Refresh dashboard only [skip ci]" docs/index.html docs/.nojekyll
