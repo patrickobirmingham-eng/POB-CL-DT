@@ -2008,6 +2008,17 @@ def generate(client=None):
         }});
         document.getElementById('lastUpdated').textContent = now + ' ET (live refresh — Closed Orders/Income by Day still reflect the last full session)';
         statusEl.textContent = '';
+
+        // Redraw the Concretum Bands chart from today's live minute prices
+        // (served by orb-bars.php next to the refresh endpoint).
+        if (window.momLiveRefresh) {{
+          try {{
+            const r = await window.momLiveRefresh(REFRESH_ENDPOINT, REFRESH_TOKEN, data);
+            if (r !== 'ok') statusEl.textContent = ' Chart: ' + r + '.';
+          }} catch (e) {{
+            statusEl.textContent = ' Chart not updated (' + e.message + ').';
+          }}
+        }}
       }} catch (e) {{
         statusEl.textContent = ' Refresh failed: ' + e.message;
       }} finally {{
