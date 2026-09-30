@@ -531,6 +531,27 @@ def apply_closing_tighten(trading_client, day_state, positions, now):
             log(f"{symbol}: failed to tighten take-profit limit: {e}")
 
 
+def wait_for_fresh_fills(trading_client, timeout_s: int = 20):
+    """A market order sent a moment ago usually fills within a second or two.
+    Wait (briefly) for it, so the dashboard snapshot shows the filled trade and
+    the new position instead of 'pending_new'. Resting orders (bracket
+    stop/target legs, limits) are ignored — only market orders from the last
+    two minutes count."""
+    deadline = time_module.time() + timeout_s
+    while True:
+        try:
+            recent = datetime.now(ET) - timedelta(minutes=2)
+            waiting = [
+                o for o in trading_client.get_orders(filter=GetOrdersRequest(status=QueryOrderStatus.OPEN))
+                if o.order_type == OrderType.MARKET and o.submitted_at and o.submitted_at >= recent
+            ]
+        except Exception:
+            return
+        if not waiting or time_module.time() >= deadline:
+            return
+        time_module.sleep(1)
+
+
 def push_dashboard_update(trading_client, reason: str):
     """Regenerates docs/index.html from live account state and commits + pushes
     it immediately, so the dashboard reflects each trade as it happens rather
@@ -539,6 +560,7 @@ def push_dashboard_update(trading_client, reason: str):
     logic and risk controls are unaffected either way.
     """
     try:
+        wait_for_fresh_fills(trading_client)
         dashboard.generate(trading_client)
 
         # Only in a git checkout (e.g. running under GitHub Actions) is there
