@@ -1,13 +1,21 @@
 {
-  "date": null,
+  "date": "2026-09-30",
   "opening_ranges": {},
   "traded_today": [],
   "trade_count": 0,
-  "starting_equity": null,
+  "starting_equity": 1018725.3,
   "flattened": false,
   "notional_deployed_today": 0.0,
   "trade_meta": {},
   "breakeven_moved": [],
   "last_tightened_at": {},
-  "ai_vetoed": []
+  "ai_vetoed": [],
+  "momentum_done": [
+    "10:00",
+    "10:30",
+    "11:00",
+    "11:30",
+    "12:00",
+    "12:30"
+  ]
 }
