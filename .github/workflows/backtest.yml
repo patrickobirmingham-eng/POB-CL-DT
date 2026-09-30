@@ -16,6 +16,10 @@ on:
         description: "Account size used for position sizing ($)"
         default: "100000"
         required: true
+      symbols:
+        description: "Symbols for research-intraday-momentum (comma separated)"
+        default: "SPY,QQQ"
+        required: false
       comparison:
         description: "What to compare"
         type: choice
@@ -55,7 +59,7 @@ jobs:
         run: |
           if [ "${{ inputs.comparison }}" = "research-intraday-momentum" ]; then
             # Published SPY/QQQ noise-area momentum strategy, 2016 to now (days input unused)
-            python research_spy_momentum.py --start 2016-01-01 --symbols SPY,QQQ
+            python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'SPY,QQQ' }}"
             exit 0
           fi
           if [ "${{ inputs.comparison }}" = "research-inplay-orb" ]; then
