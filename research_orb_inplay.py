@@ -33,6 +33,7 @@ Read-only: fetches market data, never places orders.
 """
 import argparse
 import os
+import re
 import time
 from datetime import datetime, timedelta, time as dtime
 from zoneinfo import ZoneInfo
@@ -43,7 +44,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import StockBarsRequest
+from alpaca.data.requests import StockBarsRequest, StockTradesRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.enums import Adjustment
 from alpaca.trading.client import TradingClient
@@ -154,8 +155,51 @@ def select_in_play(f5: pd.DataFrame, daily: pd.DataFrame, eligible: pd.DataFrame
     return f.sort_values("rel_volume", ascending=False).groupby("date").head(top)
 
 
+def _entry_bar_stopped(same_bar, resolver, bar, direction, trigger, stop):
+    touched = bar["low"] <= stop if direction == "long" else bar["high"] >= stop
+    if not touched:
+        return False
+    if same_bar == "pessimistic":
+        return True
+    if same_bar == "close":
+        return bar["close"] <= stop if direction == "long" else bar["close"] >= stop
+    # "ticks": only ambiguous bars reach here
+    res = resolver(bar.name, direction, trigger, stop) if resolver else None
+    return True if res is None else res
+
+
+def make_tick_resolver(client, symbol):
+    """Returns resolver(bar_ts, direction, trigger, stop) for one symbol: loads
+    that minute's SIP trades and checks whether, AFTER the first trade through
+    the trigger, any trade reached the stop. Stop orders trigger on trades, so
+    this is how the order would really have behaved."""
+    cache = {}
+
+    def resolver(bar_ts, direction, trigger, stop):
+        key = bar_ts
+        if key not in cache:
+            req = StockTradesRequest(symbol_or_symbols=[symbol], start=bar_ts,
+                                     end=bar_ts + timedelta(minutes=1), feed="sip")
+            try:
+                df = _retry(lambda: client.get_stock_trades(req).df, tries=4)
+                cache[key] = None if df is None or df.empty else df["price"].astype(float).tolist()
+            except Exception:
+                cache[key] = None
+        prices = cache[key]
+        if not prices:
+            return None
+        if direction == "long":
+            i = next((k for k, p in enumerate(prices) if p >= trigger), None)
+            return None if i is None else any(p <= stop for p in prices[i:])
+        i = next((k for k, p in enumerate(prices) if p <= trigger), None)
+        return None if i is None else any(p >= stop for p in prices[i:])
+
+    return resolver
+
+
 def simulate_trade(day_bars: pd.DataFrame, orb: dict, atr: float, stop_frac: float,
-                   long_only: bool = False, slip: float = SLIP, same_bar: str = "pessimistic"):
+                   long_only: bool = False, slip: float = SLIP, same_bar: str = "pessimistic",
+                   resolver=None):
     """day_bars: 1-min bars after 9:35 for one symbol. Returns (direction, entry,
     exit, stop_dist) or None if no trade.
 
@@ -164,7 +208,11 @@ def simulate_trade(day_bars: pd.DataFrame, orb: dict, atr: float, stop_frac: flo
       "pessimistic" - always counted as stopped out;
       "close"       - stopped out only if that bar CLOSES beyond the stop
                       (otherwise the stop is checked from the next bar).
-    The true result lies between the two."""
+      "ticks"       - replay the actual trades (tick data) of that minute via
+                      `resolver(bar_ts, direction, trigger, stop)`, which returns
+                      True/False, or None when ticks are unavailable (then
+                      counted as stopped, the conservative choice).
+    The true result lies between "pessimistic" and "close"; "ticks" settles it."""
     if orb["close"] > orb["open"]:
         direction = "long"
     elif orb["close"] < orb["open"] and not long_only:
@@ -180,13 +228,13 @@ def simulate_trade(day_bars: pd.DataFrame, orb: dict, atr: float, stop_frac: flo
             if direction == "long" and bar["high"] >= orb["high"]:
                 entry = max(orb["high"], bar["open"]) + slip
                 stop = entry - stop_dist
-                hit = bar["low"] <= stop if same_bar == "pessimistic" else bar["close"] <= stop
+                hit = _entry_bar_stopped(same_bar, resolver, bar, "long", orb["high"], stop)
                 if hit:
                     return direction, entry, stop - slip, stop_dist
             elif direction == "short" and bar["low"] <= orb["low"]:
                 entry = min(orb["low"], bar["open"]) - slip
                 stop = entry + stop_dist
-                hit = bar["high"] >= stop if same_bar == "pessimistic" else bar["close"] >= stop
+                hit = _entry_bar_stopped(same_bar, resolver, bar, "short", orb["low"], stop)
                 if hit:
                     return direction, entry, stop + slip, stop_dist
             continue
@@ -206,7 +254,7 @@ def simulate_trade(day_bars: pd.DataFrame, orb: dict, atr: float, stop_frac: flo
 
 
 def run_variant(selected, minute_bars, stop_frac=0.10, top=20, long_only=False, slip=SLIP,
-                same_bar="pessimistic"):
+                same_bar="pessimistic", resolvers=None):
     risk_dollars = EQUITY / SLOTS * RISK_PER_SLOT
     notional_cap = EQUITY / SLOTS * LEVERAGE
     trades = []
@@ -216,7 +264,8 @@ def run_variant(selected, minute_bars, stop_frac=0.10, top=20, long_only=False, 
         if bars is None:
             continue
         res = simulate_trade(bars, {"open": r.open, "high": r.high, "low": r.low, "close": r.close},
-                             r.atr14, stop_frac, long_only, slip, same_bar)
+                             r.atr14, stop_frac, long_only, slip, same_bar,
+                             resolvers(r.symbol) if resolvers else None)
         if res is None:
             continue
         direction, entry, exit_, stop_dist = res
@@ -261,6 +310,11 @@ VARIANTS = [
     ("Neutral: long only", dict(same_bar="close", long_only=True)),
     ("Neutral: stop 20% ATR", dict(same_bar="close", stop_frac=0.20)),
     ("Neutral: paper rules, double slippage", dict(same_bar="close", slip=0.02)),
+    # Ambiguous entry minutes settled with actual trade-by-trade (tick) data.
+    ("Tick-resolved: paper rules", dict(same_bar="ticks")),
+    ("Tick-resolved: long only", dict(same_bar="ticks", long_only=True)),
+    ("Tick-resolved: stop 20% ATR", dict(same_bar="ticks", stop_frac=0.20)),
+    ("Tick-resolved: paper rules, double slippage", dict(same_bar="ticks", slip=0.02)),
 ]
 
 
@@ -331,7 +385,16 @@ def main():
     out("| Variant | Trades | Win rate | Avg R | Total P&L | Return | Max DD | Sharpe | Avg R 1st half | Avg R 2nd half |")
     out("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
     results = {}
+    resolver_cache = {}
+    def resolvers(symbol):
+        if symbol not in resolver_cache:
+            resolver_cache[symbol] = make_tick_resolver(data, symbol)
+        return resolver_cache[symbol]
+
     for label, kw in VARIANTS:
+        if kw.get("same_bar") == "ticks":
+            print(f"Simulating {label} (fetching tick data for ambiguous entry minutes)...")
+            kw = dict(kw, resolvers=resolvers)
         t = run_variant(selected, minute_bars, **kw)
         results[label] = t
         s = stats(t, days)
@@ -340,11 +403,13 @@ def main():
             continue
         out(f"| {label} | {s['trades']} | {s['win']:.1%} | {s['avg_r']:+.3f}R | ${s['pnl']:,.0f} | "
             f"{s['pnl'] / EQUITY:+.1%} | {s['dd']:.1%} | {s['sharpe']:.2f} | {s['r1']:+.3f}R | {s['r2']:+.3f}R |")
-        t.to_csv(f"research_{label.split(' (')[0].lower().replace(' ', '_').replace(',', '').replace('%', 'pct').replace('$', '')}.csv", index=False)
+        slug = re.sub(r"[^a-z0-9]+", "_", label.split(" (")[0].lower()).strip("_")
+        t.to_csv(f"research_{slug}.csv", index=False)
 
-    # Judge on the neutral convention (the pessimistic one understates results).
-    base = stats(results["Neutral: paper rules"], days)
-    dbl = stats(results["Neutral: paper rules, double slippage"], days)
+    # Judge on the tick-resolved results (the only ones without an assumption
+    # about the order of prices inside the entry minute).
+    base = stats(results["Tick-resolved: paper rules"], days)
+    dbl = stats(results["Tick-resolved: paper rules, double slippage"], days)
     out()
     if base and base["avg_r"] > 0 and base["r1"] > 0 and base["r2"] > 0 and dbl and dbl["avg_r"] > 0 and base["trades"] >= 100:
         out(f"**Verdict:** the published strategy is profitable on recent data in both halves "
