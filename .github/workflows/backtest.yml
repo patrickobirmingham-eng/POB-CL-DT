@@ -20,11 +20,12 @@ on:
         description: "What to compare"
         type: choice
         options:
+          - in-play
           - settings
           - market-filter
           - shorts
           - none
-        default: settings
+        default: in-play
 
 permissions:
   contents: read
@@ -51,6 +52,7 @@ jobs:
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
           case "${{ inputs.comparison }}" in
+            in-play)       FLAG="--compare-in-play" ;;
             settings)      FLAG="--compare-settings" ;;
             market-filter) FLAG="--compare-market-filter" ;;
             shorts)        FLAG="--compare-shorts" ;;
