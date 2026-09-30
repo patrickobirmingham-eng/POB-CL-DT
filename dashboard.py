@@ -131,6 +131,15 @@ SETTINGS_FIELDS = [
     {"key": "AI_MAX_STOP_PCT", "label": "Max stop distance", "group": "AI Trade Filter", "type": "percent", "step": 0.1, "hint": "hard limit, enforced in code",
      "tooltip": "Any breakout whose stop is further than this % from entry is skipped, regardless of what the AI says."},
 
+    {"key": "MOMENTUM_ENABLED", "label": "QQQ momentum strategy on", "group": "QQQ Momentum Strategy", "type": "bool",
+     "tooltip": "Second strategy run alongside ORB: every 30 minutes from 10:00 to 15:30 ET, go long QQQ above its intraday 'noise band' or short below it, with a trailing stop at the band/VWAP, flat by the close. Backtested 2016-2026."},
+    {"key": "MOMENTUM_TARGET_VOL", "label": "Target daily volatility", "group": "QQQ Momentum Strategy", "type": "percent", "step": 0.1, "hint": "published strategy uses 2%; started at 1% (half size)",
+     "tooltip": "Position size is chosen so the position's expected daily move is this % of equity, based on QQQ's recent daily volatility."},
+    {"key": "MOMENTUM_MAX_LEVERAGE", "label": "Max leverage", "group": "QQQ Momentum Strategy", "type": "number", "step": 0.5, "min": 0, "suffix": "x equity",
+     "tooltip": "Cap on the QQQ position's notional as a multiple of account equity (published strategy: 4x; started at 2x)."},
+    {"key": "MOMENTUM_ALLOW_SHORTS", "label": "Allow shorting QQQ", "group": "QQQ Momentum Strategy", "type": "bool",
+     "tooltip": "If off, the momentum strategy only takes long positions (lower returns but smaller drawdowns in the backtest)."},
+
     {"key": "WATCHLIST", "label": "Watchlist (comma-separated symbols)", "group": "Watchlist (Advanced)", "type": "watchlist",
      "tooltip": "The list of symbols the bot scans for opening-range breakouts each trading day."},
 ]
