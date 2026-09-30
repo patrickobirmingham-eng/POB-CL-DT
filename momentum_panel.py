@@ -114,7 +114,19 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
                     f'P&amp;L <span class="{"pos" if float(held.unrealized_pl) >= 0 else "neg"}">{_money(float(held.unrealized_pl))}</span>, '
                     f'exits if price &gt; {_money(stop)}')
     else:
-        pos_html = '<span class="mom-badge">FLAT</span> no position'
+        # A just-sent order is not a position yet — say so instead of "FLAT".
+        open_status = ("new", "pending_new", "accepted", "partially_filled")
+        def _val(v):
+            return str(getattr(v, "value", v) or "").lower()
+        pending = next((o for o in orders or []
+                        if getattr(o, "symbol", None) == sym
+                        and _val(getattr(o, "status", None)) in open_status), None)
+        if pending is not None:
+            side = _val(getattr(pending, "side", None)).upper()
+            pos_html = (f'<span class="mom-badge {"pos" if side == "BUY" else "neg"}">ORDER SENT</span> '
+                        f'{side} {float(pending.qty or 0):,.0f} {sym} — waiting for the fill')
+        else:
+            pos_html = '<span class="mom-badge">FLAT</span> no position'
     zone_html = {
         "above": f'<span class="mom-badge pos">Above the band</span> breakout up (long signal at the next check)',
         "below": f'<span class="mom-badge neg">Below the band</span> breakout down (short signal at the next check)',
