@@ -99,7 +99,11 @@ jobs:
           DASHBOARD_REFRESH_TOKEN: ${{ vars.DASHBOARD_REFRESH_TOKEN }}
           DASHBOARD_SETTINGS_SAVE_URL: ${{ vars.DASHBOARD_SETTINGS_SAVE_URL }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
-        run: python dashboard.py
+        run: |
+          # Use the newest dashboard design from main (changes merged during
+          # the session), not the copy this run started with.
+          git fetch -q origin main && git checkout origin/main -- dashboard.py momentum_panel.py || true
+          python dashboard.py
 
       - name: Commit updated state, logs, and dashboard
         if: always()   # save state even if an earlier step failed
