@@ -22,6 +22,28 @@ a hypothesis until it survives months of paper trading.
 - Nothing here is financial advice. You are the one deciding position sizing, risk limits, and
   whether to ever go live.
 
+## Current status (research log)
+
+Backtests run in September 2026 (see the **Run Backtest** workflow and its run summaries):
+
+| Strategy | Evidence | Status |
+|---|---|---|
+| Opening Range Breakout (this bot's original rules) | Negative expectancy in ~20 variants over 90-200 days (-0.04R to -0.08R per trade): settings, shorts, market filter, stocks in play | **Paused** (`ORB_ENABLED = false`) |
+| Intraday momentum on QQQ (`momentum_strategy.py`, Zarattini/Aziz/Barbon 2024) | QQQ 2016-2026: Sharpe ~1.06, profitable 9/11 years; **after publication (Jun 2024 on): Sharpe 1.13, +40%**, robust to doubled costs. Fails on SPY, IWM, DIA, XLK, SMH, so the edge is instrument-specific. | **Live in paper at half size** (1% vol target, 2x cap) |
+| 5-min ORB on "stocks in play" (Zarattini/Barbon/Aziz 2024) | Result depends on the order of prices inside the entry minute (-0.38R to +0.28R); being settled with tick data | Research |
+
+Risk per ORB trade was also cut to 0.25% while the strategy is unproven.
+
+## Strategy 2: Intraday momentum on QQQ
+
+Every 30 minutes from 10:00 to 15:30 ET the bot compares QQQ's price with its "noise
+area": the open (gap-adjusted) +/- the average size of the move from the open at that
+time of day over the last 14 sessions. Above the band -> long; below -> short; the
+position is exited when price crosses back through the band or VWAP (trailing stop),
+and everything is flat by the close. Size targets a daily volatility (settings
+`MOMENTUM_*`). The same code (`momentum_strategy.py`) drives the backtest
+(`research_spy_momentum.py`) and the live bot.
+
 ## The strategy (Opening Range Breakout)
 
 1. **Opening range**: for each symbol in the watchlist, record the high/low of the first
