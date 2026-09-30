@@ -64,11 +64,18 @@ def load_session(data_client, sym, now):
     closes = [float(p["close"].iloc[-1]) for p in prior]
     sigma = ms.sigma_profile(prior)
     upper, lower = ms.bands(day_open, closes[-1], sigma)
-    return {
+    out = {
         "date": day, "is_today": day == today, "bars": prepared, "last": last_label,
         "open": day_open, "prev_close": closes[-1], "upper": upper, "lower": lower,
         "vol": ms.daily_vol(closes),
     }
+    if day != today and len(prepared) >= 300:
+        # Showing the last session: also send what the NEXT session's bands need
+        # (all but its opening price), so the page's Refresh button can draw
+        # today's chart live once trading starts.
+        out["next_sigma"] = ms.sigma_profile(prior + [prepared])
+        out["next_prev_close"] = float(prepared["close"].iloc[-1])
+    return out
 
 
 def _money(v):
@@ -188,7 +195,7 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
                  else f"{xx:.1f},{yy + 9:.1f} {xx - 7:.1f},{yy - 5:.1f} {xx + 7:.1f},{yy - 5:.1f}")
         svg.append(f'<polygon class="mom-fill {"buy" if side == "buy" else "sell"}" points="{shape}">'
                    f'<title>{side.upper()} {fq:,.0f} @ {_money(fp)} — {ft.strftime("%I:%M %p")}</title></polygon>')
-    # Hover readout: a vertical guide + one dot per line, filled in by MOM_HOVER_JS.
+    # Hover readout: a vertical guide + one dot per line, filled in by MOM_JS.
     svg.append(f'<g class="mom-hover" style="display:none"><line class="mom-guide" x1="0" y1="{T}" x2="0" y2="{H - B}"/>'
                '<circle class="mom-dot price" r="4"/><circle class="mom-dot band up" r="3.5"/>'
                '<circle class="mom-dot band lo" r="3.5"/><circle class="mom-dot vwap" r="3.5"/></g>')
@@ -202,7 +209,14 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
         # Bot fills: [minute index, "buy"/"sell", price, shares, "10:00 am"]
         "f": [[idx[lbl], side, round(fp, 2), fq, ft.strftime("%I:%M %p").lstrip("0").lower()]
               for lbl, side, fp, fq, ft in sorted(fills, key=lambda f: f[4])],
+        # For the Refresh button's live redraw (MOM_JS): session date, symbol,
+        # decision times and — when showing the last session — next day's inputs.
+        "date": s["date"].isoformat(), "sym": sym,
+        "c": [[idx[ms.CHECK_BARS[t]], t] for t in ms.CHECK_TIMES],
     }
+    if "next_sigma" in s:
+        hover["nx"] = {"sig": [round(float(s["next_sigma"][t]), 6) for t in grid],
+                       "pc": round(s["next_prev_close"], 4)}
     hover_json = html.escape(json.dumps(hover, separators=(",", ":")), quote=True)
 
     # ----- check-point table
@@ -227,12 +241,12 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
     <div class="panel" id="momentumPanel">
       <div class="panel-head">
         <h2>{title}</h2>
-        <span class="muted ai-summary">{when} &middot; as of {int(last[:2]) % 12 or 12}:{last[3:]} {"am" if int(last[:2]) < 12 else "pm"} ET{status}</span>
+        <span class="muted ai-summary" id="momAsOf">{when} &middot; as of {int(last[:2]) % 12 or 12}:{last[3:]} {"am" if int(last[:2]) < 12 else "pm"} ET{status}</span>
       </div>
       <div class="mom-status">
-        <div><span class="label">{sym}</span> <strong>{_money(px)}</strong> &middot; band {_money(lb)} – {_money(ub)} &middot; VWAP {_money(vw)}</div>
-        <div>{zone_html}</div>
-        <div><span class="label">Bot</span> {pos_html}</div>
+        <div id="momQuote"><span class="label">{sym}</span> <strong>{_money(px)}</strong> &middot; band {_money(lb)} – {_money(ub)} &middot; VWAP {_money(vw)}</div>
+        <div id="momZone">{zone_html}</div>
+        <div><span class="label">Bot</span> <span id="momPos">{pos_html}</span></div>
         <div class="muted">Size today: {shares_today:,} shares (~{_money(shares_today * s['open'])}) &middot; {sym} daily volatility {s['vol']:.2%}</div>
       </div>
       <div class="table-scroll"><div class="chart-wrap mom-wrap" data-hover="{hover_json}">{"".join(svg)}<div class="mom-tip" style="display:none"></div></div></div>
@@ -244,40 +258,105 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
       <div class="table-scroll">
       <table>
         <thead><tr><th>Check</th><th>Price</th><th>Upper band</th><th>Lower band</th><th>VWAP</th><th>Signal</th></tr></thead>
-        <tbody>{rows}</tbody>
+        <tbody id="momChecks">{rows}</tbody>
       </table>
       </div>
     </div>
-    <script>{MOM_HOVER_JS}</script>"""
+    <script>{MOM_JS}</script>"""
 
 
-# Crosshair readout for the chart: nearest minute to the pointer (mouse or touch).
-MOM_HOVER_JS = """
+# Chart script: draws the Concretum chart from the embedded per-minute data,
+# shows the hover readout, and (window.momLiveRefresh, called by the dashboard's
+# Refresh button) redraws it from today's live minute bars fetched through
+# orb-bars.php on the same server as the refresh endpoint.
+MOM_JS = r"""
 (function () {
-  var wrap = document.querySelector('#momentumPanel .mom-wrap');
-  if (!wrap) return;
+  var panel = document.getElementById('momentumPanel');
+  if (!panel) return;
+  var wrap = panel.querySelector('.mom-wrap');
+  var svg = wrap.querySelector('svg');
+  var tip = wrap.querySelector('.mom-tip');
   var d = JSON.parse(wrap.getAttribute('data-hover'));
-  var W = d.geo[0], H = d.geo[1], L = d.geo[2], R = d.geo[3], T = d.geo[4], B = d.geo[5], lo = d.geo[6], hi = d.geo[7];
-  var n = d.t.length, svg = wrap.querySelector('svg'), g = wrap.querySelector('.mom-hover');
-  var tip = wrap.querySelector('.mom-tip'), guide = g.querySelector('.mom-guide');
-  var dots = { p: g.querySelector('.price'), u: g.querySelector('.up'), l: g.querySelector('.lo'), v: g.querySelector('.vwap') };
+  var W = d.geo[0], H = d.geo[1], L = d.geo[2], R = d.geo[3], T = d.geo[4], B = d.geo[5];
+  var lo = d.geo[6], hi = d.geo[7];
+  var n = d.t.length;
+
   function X(i) { return L + i * (W - L - R) / (n - 1); }
   function Y(v) { return T + (hi - v) / (hi - lo) * (H - T - B); }
-  function money(v) { return v == null ? '—' : '$' + v.toFixed(2); }
-  function label(t) { var h = +t.slice(0, 2); return (h % 12 || 12) + ':' + t.slice(3) + (h < 12 ? ' am' : ' pm'); }
+  function f1(v) { return v.toFixed(1); }
+  function num(v) { return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function money(v) { return v == null ? '—' : (v < 0 ? '-$' : '$') + num(Math.abs(v)); }
+  function hm(t) { var h = +t.slice(0, 2); return (h % 12 || 12) + ':' + t.slice(3) + (h < 12 ? ' am' : ' pm'); }
+  function lastIdx() { for (var i = n - 1; i >= 0; i--) if (d.p[i] != null) return i; return -1; }
+  function path(arr, upto) {
+    var s = '', k = 0;
+    for (var i = 0; i <= upto; i++) {
+      if (arr[i] == null) continue;
+      s += (k++ ? 'L' : 'M') + f1(X(i)) + ',' + f1(Y(arr[i])) + ' ';
+    }
+    return s;
+  }
+
+  function render() {
+    var li = lastIdx(), vals = [];
+    for (var i = 0; i < n; i++) {
+      vals.push(d.u[i], d.l[i]);
+      if (i <= li) { if (d.p[i] != null) vals.push(d.p[i]); if (d.v[i] != null) vals.push(d.v[i]); }
+    }
+    lo = Math.min.apply(null, vals); hi = Math.max.apply(null, vals);
+    var pad = (hi - lo) * 0.06 || 0.5;
+    lo -= pad; hi += pad;
+    var s = '';
+    for (var k = 0; k < 5; k++) {
+      var gv = lo + (hi - lo) * k / 4, gy = f1(Y(gv));
+      s += '<line class="pl-grid" x1="' + L + '" y1="' + gy + '" x2="' + (W - R) + '" y2="' + gy + '"/>' +
+           '<text class="pl-axis" x="' + (L - 8) + '" y="' + f1(Y(gv) + 3) + '" text-anchor="end">' + num(gv) + '</text>';
+    }
+    (d.c || []).forEach(function (c) {
+      var xx = f1(X(c[0])), h = +c[1].slice(0, 2);
+      s += '<line class="mom-check" x1="' + xx + '" y1="' + T + '" x2="' + xx + '" y2="' + (H - B) + '"/>';
+      if (c[1].slice(3) === '00') {
+        s += '<text class="pl-axis" x="' + xx + '" y="' + (H - B + 16) + '" text-anchor="middle">' + (h % 12 || 12) + (h < 12 ? 'am' : 'pm') + '</text>';
+      }
+    });
+    s += '<rect class="mom-hit" x="' + L + '" y="' + T + '" width="' + (W - L - R) + '" height="' + (H - T - B) + '"/>';
+    var band = path(d.u, n - 1);
+    for (var j = n - 1; j >= 0; j--) band += 'L' + f1(X(j)) + ',' + f1(Y(d.l[j])) + ' ';
+    s += '<path class="mom-band" d="' + band + 'Z"/>';
+    s += '<path class="mom-bound" d="' + path(d.u, n - 1) + '"/><path class="mom-bound" d="' + path(d.l, n - 1) + '"/>';
+    if (li >= 0) {
+      s += '<path class="mom-vwap" d="' + path(d.v, li) + '"/>';
+      s += '<path class="mom-price" d="' + path(d.p, li) + '"/>';
+    }
+    (d.f || []).forEach(function (f) {
+      var xx = X(f[0]), yy = Y(f[2]), buy = f[1] === 'buy';
+      var tipY = buy ? yy - 9 : yy + 9, baseY = buy ? yy + 5 : yy - 5;
+      var pts = f1(xx) + ',' + f1(tipY) + ' ' + f1(xx - 7) + ',' + f1(baseY) + ' ' + f1(xx + 7) + ',' + f1(baseY);
+      s += '<polygon class="mom-fill ' + (buy ? 'buy' : 'sell') + '" points="' + pts + '">' +
+           '<title>' + (buy ? 'BUY ' : 'SELL ') + Math.round(f[3]).toLocaleString('en-US') + ' @ ' + money(f[2]) + ' — ' + f[4] + '</title></polygon>';
+    });
+    s += '<g class="mom-hover" style="display:none"><line class="mom-guide" x1="0" y1="' + T + '" x2="0" y2="' + (H - B) + '"/>' +
+         '<circle class="mom-dot price" r="4"/><circle class="mom-dot band up" r="3.5"/>' +
+         '<circle class="mom-dot band lo" r="3.5"/><circle class="mom-dot vwap" r="3.5"/></g>';
+    svg.innerHTML = s;
+  }
+
+  // ----- hover readout (nearest minute to the pointer; mouse or touch)
   function show(ev) {
+    var g = svg.querySelector('.mom-hover');
+    if (!g) return;
     var r = svg.getBoundingClientRect();
     var vx = (ev.clientX - r.left) / r.width * W;
     var i = Math.max(0, Math.min(n - 1, Math.round((vx - L) / (W - L - R) * (n - 1))));
-    var x = X(i);
+    var x = X(i), guide = g.querySelector('.mom-guide');
     g.style.display = '';
     guide.setAttribute('x1', x); guide.setAttribute('x2', x);
-    ['p', 'u', 'l', 'v'].forEach(function (k) {
-      var v = d[k][i];
-      dots[k].style.display = v == null ? 'none' : '';
-      if (v != null) { dots[k].setAttribute('cx', x); dots[k].setAttribute('cy', Y(v)); }
+    [['p', '.price'], ['u', '.up'], ['l', '.lo'], ['v', '.vwap']].forEach(function (kv) {
+      var dot = g.querySelector('.mom-dot' + kv[1]), v = d[kv[0]][i];
+      dot.style.display = v == null ? 'none' : '';
+      if (v != null) { dot.setAttribute('cx', x); dot.setAttribute('cy', Y(v)); }
     });
-    tip.innerHTML = '<div class="mom-tip-time">' + label(d.t[i]) + ' ET</div>' +
+    tip.innerHTML = '<div class="mom-tip-time">' + hm(d.t[i]) + ' ET</div>' +
       '<div><i class="sw price"></i>Price <b>' + money(d.p[i]) + '</b></div>' +
       '<div><i class="sw band"></i>Upper band <b>' + money(d.u[i]) + '</b></div>' +
       '<div><i class="sw band"></i>Lower band <b>' + money(d.l[i]) + '</b></div>' +
@@ -298,10 +377,127 @@ MOM_HOVER_JS = """
     tip.style.left = Math.max(visL, Math.min(left, visR - tw)) + 'px';
     tip.style.top = (T / H * r.height + 4) + 'px';
   }
-  function hide() { g.style.display = 'none'; tip.style.display = 'none'; }
+  function hide() {
+    var g = svg.querySelector('.mom-hover');
+    if (g) g.style.display = 'none';
+    tip.style.display = 'none';
+  }
   svg.addEventListener('pointermove', show);
   svg.addEventListener('pointerdown', show);
   svg.addEventListener('pointerleave', hide);
+
+  // ----- status lines + check table from the current data
+  function updateText(positions, orders) {
+    var li = lastIdx();
+    if (li < 0) return;
+    var px = d.p[li], ub = d.u[li], lb = d.l[li], vw = d.v[li];
+    var today = d.date === new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    var asOf = document.getElementById('momAsOf');
+    if (asOf) asOf.innerHTML = (today ? 'Today' : 'Last session') + ' &middot; as of ' + hm(d.t[li]) + ' ET (live)';
+    var q = document.getElementById('momQuote');
+    if (q) q.innerHTML = '<span class="label">' + d.sym + '</span> <strong>' + money(px) + '</strong> &middot; band ' +
+      money(lb) + ' – ' + money(ub) + ' &middot; VWAP ' + money(vw);
+    var z = document.getElementById('momZone');
+    if (z) z.innerHTML = px > ub ? '<span class="mom-badge pos">Above the band</span> breakout up (long signal at the next check)'
+      : px < lb ? '<span class="mom-badge neg">Below the band</span> breakout down (short signal at the next check)'
+      : '<span class="mom-badge">Inside the band</span> normal noise — no signal';
+    var pe = document.getElementById('momPos');
+    if (pe && positions) {
+      var held = positions.filter(function (p) { return p.symbol === d.sym; })[0];
+      var qty = held ? Number(held.qty) : 0;
+      if (qty) {
+        var pl = Number(held.unrealized_pl), long = qty > 0;
+        pe.innerHTML = '<span class="mom-badge ' + (long ? 'pos' : 'neg') + '">' + (long ? 'LONG ' : 'SHORT ') +
+          Math.abs(qty).toLocaleString('en-US') + ' ' + d.sym + '</span> entry ' + money(Number(held.avg_entry_price)) +
+          ', P&amp;L <span class="' + (pl >= 0 ? 'pos' : 'neg') + '">' + money(pl) + '</span>, exits if price ' +
+          (long ? '&lt; ' + money(Math.max(ub, vw)) : '&gt; ' + money(Math.min(lb, vw)));
+      } else {
+        var open = ['new', 'pending_new', 'accepted', 'partially_filled'];
+        var pend = (orders || []).filter(function (o) { return o.symbol === d.sym && open.indexOf(o.status) >= 0; })[0];
+        pe.innerHTML = pend
+          ? '<span class="mom-badge ' + (pend.side === 'buy' ? 'pos' : 'neg') + '">ORDER SENT</span> ' + String(pend.side).toUpperCase() +
+            ' ' + Number(pend.qty || 0).toLocaleString('en-US') + ' ' + d.sym + ' — waiting for the fill'
+          : '<span class="mom-badge">FLAT</span> no position';
+      }
+    }
+    var tb = document.getElementById('momChecks');
+    if (tb) {
+      var rows = '';
+      (d.c || []).forEach(function (c) {
+        var i = c[0];
+        if (i > li) return;
+        var p = d.p[i], u = d.u[i], l = d.l[i], v = d.v[i];
+        var zt = p > u ? 'Above band' : (p < l ? 'Below band' : 'Inside');
+        var zc = p > u ? 'pos' : (p < l ? 'neg' : 'muted');
+        rows += '<tr><td>' + hm(c[1]) + '</td><td class="num">' + money(p) + '</td><td class="num">' + money(u) +
+          '</td><td class="num">' + money(l) + '</td><td class="num">' + money(v) + '</td><td class="' + zc + '">' + zt + '</td></tr>';
+      });
+      tb.innerHTML = rows || '<tr><td colspan="6" class="muted">First check is at 10:00 am ET.</td></tr>';
+    }
+  }
+
+  // ----- live redraw for the Refresh button
+  // endpoint: the refresh URL (its folder also holds orb-bars.php); data: the
+  // refresh response (positions / orders). Returns a short status string.
+  window.momLiveRefresh = async function (endpoint, token, data) {
+    if (!endpoint) return 'no endpoint';
+    var url = endpoint.replace(/[^\/]*$/, 'orb-bars.php') + '?token=' + encodeURIComponent(token) +
+      '&symbol=' + encodeURIComponent(d.sym) + '&_=' + Date.now();
+    var resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('orb-bars.php HTTP ' + resp.status);
+    var bars = (await resp.json()).bars || [];
+    var todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    var byMin = {};
+    bars.forEach(function (b) {
+      var dt = new Date(b.t);
+      if (dt.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }) !== todayStr) return;
+      var t = dt.toLocaleTimeString('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false });
+      byMin[t] = b;
+    });
+    var have = d.t.filter(function (t) { return byMin[t]; });
+    if (!have.length) return 'no bars yet today';
+    if (d.date !== todayStr) {
+      // Page was built for the last session: build today's bands from the
+      // embedded next-day inputs and today's opening price.
+      if (!d.nx) return 'bands for today not available yet';
+      var first = byMin[have[0]], o = Number(first.o), pc = d.nx.pc;
+      d.u = d.nx.sig.map(function (sg) { return Math.round(Math.max(o, pc) * (1 + sg) * 100) / 100; });
+      d.l = d.nx.sig.map(function (sg) { return Math.round(Math.min(o, pc) * (1 - sg) * 100) / 100; });
+      d.date = todayStr;
+      delete d.nx;
+    }
+    // Same as momentum_strategy.prepare_day: forward-fill missing minutes,
+    // running VWAP of typical price * volume.
+    var last = d.t.indexOf(have[have.length - 1]);
+    var close = Number(byMin[have[0]].c), cumPV = 0, cumV = 0, vwap = null;
+    for (var i = 0; i < n; i++) {
+      if (i > last) { d.p[i] = null; d.v[i] = null; continue; }
+      var b = byMin[d.t[i]], h, l, v = 0;
+      if (b) { close = Number(b.c); h = Number(b.h); l = Number(b.l); v = Number(b.v); } else { h = l = close; }
+      cumPV += (h + l + close) / 3 * v; cumV += v;
+      if (cumV > 0) vwap = cumPV / cumV;
+      d.p[i] = Math.round(close * 100) / 100;
+      d.v[i] = Math.round((vwap == null ? close : vwap) * 100) / 100;
+    }
+    // Today's bot fills from the refresh data.
+    if (data && data.orders) {
+      d.f = data.orders.filter(function (o) {
+        return o.symbol === d.sym && o.filled_at && o.filled_avg_price &&
+          new Date(o.filled_at).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }) === todayStr;
+      }).map(function (o) {
+        var dt = new Date(o.filled_at);
+        var t = dt.toLocaleTimeString('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false });
+        var i = Math.max(0, d.t.indexOf(t < '09:30' ? '09:30' : (t > '15:59' ? '15:59' : t)));
+        return [i, o.side, Math.round(Number(o.filled_avg_price) * 100) / 100, Number(o.filled_qty || o.qty || 0),
+                dt.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }).toLowerCase()];
+      }).sort(function (a, b) { return a[0] - b[0]; });
+    }
+    render();
+    updateText(data && data.positions, data && data.orders);
+    return 'ok';
+  };
+
+  render();
 })();
 """
 
