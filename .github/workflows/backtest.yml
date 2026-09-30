@@ -21,6 +21,7 @@ on:
         type: choice
         options:
           - research-inplay-orb
+          - research-intraday-momentum
           - in-play
           - settings
           - market-filter
@@ -52,6 +53,11 @@ jobs:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
+          if [ "${{ inputs.comparison }}" = "research-intraday-momentum" ]; then
+            # Published SPY/QQQ noise-area momentum strategy, 2016 to now (days input unused)
+            python research_spy_momentum.py --start 2016-01-01 --symbols SPY,QQQ
+            exit 0
+          fi
           if [ "${{ inputs.comparison }}" = "research-inplay-orb" ]; then
             # Published 5-min ORB on stocks in play, full-market (SIP) data
             python research_orb_inplay.py --days "${{ inputs.days }}"
