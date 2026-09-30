@@ -552,6 +552,35 @@ def wait_for_fresh_fills(trading_client, timeout_s: int = 20):
         time_module.sleep(1)
 
 
+# Files that only control how the dashboard LOOKS. Refreshed from main before
+# each live update so a design change merged mid-session shows up right away
+# instead of being overwritten by this run's older copy. Trading code is never
+# refreshed mid-session — the running bot keeps what it started with.
+DASHBOARD_FILES = ["dashboard.py", "momentum_panel.py"]
+
+
+def render_latest_dashboard() -> bool:
+    """Regenerates docs/index.html with the newest dashboard code from main, in
+    a separate Python process. Returns False (caller falls back to the in-process
+    generator) if anything goes wrong."""
+    if not os.path.isdir(".git"):
+        return False
+    try:
+        subprocess.run(["git", "fetch", "-q", "origin", "main"], capture_output=True, timeout=60, check=True)
+        subprocess.run(["git", "checkout", "origin/main", "--", *DASHBOARD_FILES],
+                       capture_output=True, timeout=30, check=True)
+        result = subprocess.run([sys.executable, "-c", "import dashboard; dashboard.generate()"],
+                                capture_output=True, text=True, timeout=240)
+        if result.returncode != 0:
+            tail = (result.stderr or result.stdout or "").strip().splitlines()
+            log(f"Latest dashboard code failed; using this run's copy. {tail[-1] if tail else ''}")
+            return False
+        return True
+    except Exception as e:
+        log(f"Couldn't refresh dashboard code ({e}); using this run's copy.")
+        return False
+
+
 def push_dashboard_update(trading_client, reason: str):
     """Regenerates docs/index.html from live account state and commits + pushes
     it immediately, so the dashboard reflects each trade as it happens rather
@@ -561,7 +590,8 @@ def push_dashboard_update(trading_client, reason: str):
     """
     try:
         wait_for_fresh_fills(trading_client)
-        dashboard.generate(trading_client)
+        if not render_latest_dashboard():
+            dashboard.generate(trading_client)   # fallback: the look this run started with
 
         # Only in a git checkout (e.g. running under GitHub Actions) is there
         # anything to commit/push. A local ad-hoc run has no repo to push to.
