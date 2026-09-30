@@ -199,6 +199,9 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
         "p": [round(float(b.at[t, "close"]), 2) if t in upto_set else None for t in grid],
         "u": [round(float(upper[t]), 2) for t in grid], "l": [round(float(lower[t]), 2) for t in grid],
         "v": [round(float(b.at[t, "vwap"]), 2) if t in upto_set else None for t in grid],
+        # Bot fills: [minute index, "buy"/"sell", price, shares, "10:00 am"]
+        "f": [[idx[lbl], side, round(fp, 2), fq, ft.strftime("%I:%M %p").lstrip("0").lower()]
+              for lbl, side, fp, fq, ft in sorted(fills, key=lambda f: f[4])],
     }
     hover_json = html.escape(json.dumps(hover, separators=(",", ":")), quote=True)
 
@@ -278,7 +281,13 @@ MOM_HOVER_JS = """
       '<div><i class="sw price"></i>Price <b>' + money(d.p[i]) + '</b></div>' +
       '<div><i class="sw band"></i>Upper band <b>' + money(d.u[i]) + '</b></div>' +
       '<div><i class="sw band"></i>Lower band <b>' + money(d.l[i]) + '</b></div>' +
-      '<div><i class="sw vwap"></i>VWAP <b>' + money(d.v[i]) + '</b></div>';
+      '<div><i class="sw vwap"></i>VWAP <b>' + money(d.v[i]) + '</b></div>' +
+      // Bot trades within a few minutes of the pointer (the markers are small targets).
+      (d.f || []).filter(function (f) { return Math.abs(f[0] - i) <= 3; }).map(function (f) {
+        var buy = f[1] === 'buy';
+        return '<div class="mom-tip-fill ' + (buy ? 'pos' : 'neg') + '">' + (buy ? '▲ BUY ' : '▼ SELL ') +
+          Math.round(f[3]).toLocaleString('en-US') + ' @ <b>' + money(f[2]) + '</b> <span class="muted">' + f[4] + '</span></div>';
+      }).join('');
     tip.style.display = '';
     // Keep the box inside what's visible (the chart scrolls sideways on phones).
     var px = x / W * r.width, wr = wrap.getBoundingClientRect();
@@ -310,6 +319,8 @@ PANEL_CSS = """
              border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; font-size: 12px;
              line-height: 1.6; white-space: nowrap; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
   .mom-tip b { font-variant-numeric: tabular-nums; margin-left: 4px; }
+  .mom-tip-fill { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px; font-weight: 600; }
+  .mom-tip-fill b { color: var(--text); }
   .mom-tip-time { color: var(--muted); font-size: 11px; margin-bottom: 2px; }
   .mom-tip .sw { display: inline-block; width: 12px; height: 3px; margin-right: 6px; vertical-align: middle; }
   .mom-tip .sw.price { background: var(--text); }
