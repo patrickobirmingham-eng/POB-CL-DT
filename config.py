@@ -26,6 +26,10 @@ WATCHLIST = [
     "TTWO", "TER", "TSLA", "TXN", "TRI", "VRTX", "WMT", "WBD", "WDC", "WDAY", "XEL",
 ]
 
+# --- Strategy switch --------------------------------------------------------
+# Turns new ORB entries on/off. Open positions are still managed and flattened.
+ORB_ENABLED = True
+
 # --- Opening range -------------------------------------------------------
 OPENING_RANGE_MINUTES = 15          # length of the opening range (9:30-9:45 ET default)
 MIN_OR_RANGE_PCT = 0.001            # skip symbols whose OR is < 0.1% of price (too tight/noisy)
@@ -168,7 +172,7 @@ _OVERRIDABLE_KEYS = {
     "BACKTEST_COMMISSION_PER_TRADE", "NTFY_ENABLED", "NTFY_TOPIC",
     "AI_FILTER_MODE", "AI_MIN_CONFIDENCE", "AI_MAX_STOP_PCT",
     "MOMENTUM_ENABLED", "MOMENTUM_SYMBOL", "MOMENTUM_TARGET_VOL", "MOMENTUM_MAX_LEVERAGE",
-    "MOMENTUM_ALLOW_SHORTS",
+    "MOMENTUM_ALLOW_SHORTS", "ORB_ENABLED",
 }
 
 

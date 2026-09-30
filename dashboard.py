@@ -63,6 +63,8 @@ SETTINGS_SOURCE_URL = (
 # is actually read anywhere in live_bot.py, so exposing them as "changeable"
 # would silently do nothing).
 SETTINGS_FIELDS = [
+    {"key": "ORB_ENABLED", "label": "ORB strategy on (new entries)", "group": "Entry & Opening Range", "type": "bool",
+     "tooltip": "Turns new opening-range-breakout trades on or off. Open positions are still managed and closed by the flatten time; the QQQ momentum strategy is unaffected."},
     {"key": "OPENING_RANGE_MINUTES", "label": "Opening range length", "group": "Entry & Opening Range", "type": "number", "step": 1, "min": 1, "suffix": "min",
      "tooltip": "Length of the opening-range window used to compute breakout levels (e.g. 15 = the first 15 minutes after the open, 9:30–9:45 ET)."},
     {"key": "MIN_OR_RANGE_PCT", "label": "Min opening-range size", "group": "Entry & Opening Range", "type": "percent", "step": 0.01,
