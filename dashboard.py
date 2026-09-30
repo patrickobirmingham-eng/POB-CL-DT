@@ -25,6 +25,7 @@ from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockSnapshotRequest
 
 import config as bot_config
+import momentum_panel
 
 ET = ZoneInfo("America/New_York")
 OUTPUT_DIR = "docs"
@@ -851,6 +852,17 @@ def generate(client=None):
     if not ai_rows:
         ai_rows = "<tr><td colspan='11' class='muted'>No AI decisions yet — they appear here as breakouts are evaluated.</td></tr>"
 
+    # QQQ momentum strategy panel (Concretum Bands), computed with the same
+    # code the live bot trades with.
+    try:
+        momentum_data_client = StockHistoricalDataClient(
+            os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_KEY"))
+        momentum_panel_html = momentum_panel.build_momentum_panel(
+            momentum_data_client, positions or [], all_orders, float(account.equity))
+    except Exception as e:
+        print(f"dashboard: momentum panel failed ({e})")
+        momentum_panel_html = ""
+
     wins = sum(1 for t in closed_trades if t["pl"] > 0)
     win_rate_text = f"{wins / len(closed_trades) * 100:.0f}%" if closed_trades else "—"
 
@@ -880,14 +892,14 @@ def generate(client=None):
     --text: #e8ebf2; --muted: #8791a7; --faint: #5d667b;
     --pos: #22c55e; --neg: #f0504e; --accent: #4f8cff; --accent-soft: rgba(79, 140, 255, 0.14);
     --row-hover: rgba(255, 255, 255, 0.03); --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --grid: rgba(255, 255, 255, 0.06);
+    --grid: rgba(255, 255, 255, 0.06); --vwap: #f5a524;
   }}
   :root[data-theme="light"] {{
     --bg: #f3f5f9; --bg-2: #eaeef5; --panel: #ffffff; --panel-2: #f8f9fc; --border: #e3e8f0; --border-strong: #cfd6e3;
     --text: #131a29; --muted: #5a6479; --faint: #8a93a6;
     --pos: #12833f; --neg: #c62828; --accent: #1f5fe0; --accent-soft: rgba(31, 95, 224, 0.10);
     --row-hover: rgba(15, 30, 60, 0.035); --shadow: 0 1px 2px rgba(20, 30, 60, 0.06);
-    --grid: rgba(15, 30, 60, 0.08);
+    --grid: rgba(15, 30, 60, 0.08); --vwap: #b86e00;
   }}
   * {{ box-sizing: border-box; }}
   html {{ -webkit-text-size-adjust: 100%; }}
@@ -1104,6 +1116,7 @@ def generate(client=None):
     th, td {{ padding: 8px 7px; }}
     .updated {{ gap: 6px; }}
   }}
+{momentum_panel.PANEL_CSS}
 </style>
 </head>
 <body>
@@ -1162,6 +1175,8 @@ def generate(client=None):
       <div class="card"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
       <div class="card"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
     </div>
+
+    {momentum_panel_html}
 
     <div class="panel">
       <h2>Daily Profit / (Loss)</h2>

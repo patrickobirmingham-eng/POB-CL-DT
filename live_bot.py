@@ -356,6 +356,10 @@ def run_momentum(trading_client, data_client, day_state, positions, now, equity)
                         tags="chart_with_upwards_trend" if new_side > 0 else "chart_with_downwards_trend")
             push_dashboard_update(trading_client, reason=f"momentum {label.lower()} {sym}")
         done.add(slot)
+        if not exit_now and not new_side:
+            # No trade at this check: still refresh the dashboard so its
+            # Concretum Bands chart stays current through the day.
+            push_dashboard_update(trading_client, reason=f"momentum check {slot}")
     except Exception as e:
         log(f"Momentum order failed at {slot}: {e}")
         notify.send(f"ORB Bot: Momentum order failed ({sym})", str(e), priority="high", tags="warning")
