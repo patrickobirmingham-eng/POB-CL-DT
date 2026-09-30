@@ -6,6 +6,8 @@ points, the bot's QQQ fills, and its current position/stop.
 Everything is computed with momentum_strategy.py — the same code live_bot.py
 trades with — so the chart always matches what the bot sees. Read-only.
 """
+import html
+import json
 from datetime import datetime, timedelta, time as dtime
 from zoneinfo import ZoneInfo
 
@@ -160,6 +162,8 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
         svg.append(f'<line class="mom-check" x1="{xx:.1f}" y1="{T}" x2="{xx:.1f}" y2="{H - B}"/>')
         if t.endswith(":00"):
             svg.append(f'<text class="pl-axis" x="{xx:.1f}" y="{H - B + 16}" text-anchor="middle">{int(t[:2]) % 12 or 12}{"am" if int(t[:2]) < 12 else "pm"}</text>')
+    # Transparent hit area under the lines so the whole plot responds to the pointer.
+    svg.append(f'<rect class="mom-hit" x="{L}" y="{T}" width="{W - L - R}" height="{H - T - B}"/>')
     svg.append(f'<path class="mom-band" d="{band_area}"/>')
     svg.append(f'<path class="mom-bound" d="{path(upper, grid)}"/><path class="mom-bound" d="{path(lower, grid)}"/>')
     svg.append(f'<path class="mom-vwap" d="{path(vwap, upto)}"/>')
@@ -184,7 +188,19 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
                  else f"{xx:.1f},{yy + 9:.1f} {xx - 7:.1f},{yy - 5:.1f} {xx + 7:.1f},{yy - 5:.1f}")
         svg.append(f'<polygon class="mom-fill {"buy" if side == "buy" else "sell"}" points="{shape}">'
                    f'<title>{side.upper()} {fq:,.0f} @ {_money(fp)} — {ft.strftime("%I:%M %p")}</title></polygon>')
+    # Hover readout: a vertical guide + one dot per line, filled in by MOM_HOVER_JS.
+    svg.append(f'<g class="mom-hover" style="display:none"><line class="mom-guide" x1="0" y1="{T}" x2="0" y2="{H - B}"/>'
+               '<circle class="mom-dot price" r="4"/><circle class="mom-dot band up" r="3.5"/>'
+               '<circle class="mom-dot band lo" r="3.5"/><circle class="mom-dot vwap" r="3.5"/></g>')
     svg.append("</svg>")
+    upto_set = set(upto)
+    hover = {
+        "geo": [W, H, L, R, T, B, lo, hi], "t": grid,
+        "p": [round(float(b.at[t, "close"]), 2) if t in upto_set else None for t in grid],
+        "u": [round(float(upper[t]), 2) for t in grid], "l": [round(float(lower[t]), 2) for t in grid],
+        "v": [round(float(b.at[t, "vwap"]), 2) if t in upto_set else None for t in grid],
+    }
+    hover_json = html.escape(json.dumps(hover, separators=(",", ":")), quote=True)
 
     # ----- check-point table
     rows = ""
@@ -216,7 +232,7 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
         <div><span class="label">Bot</span> {pos_html}</div>
         <div class="muted">Size today: {shares_today:,} shares (~{_money(shares_today * s['open'])}) &middot; {sym} daily volatility {s['vol']:.2%}</div>
       </div>
-      <div class="table-scroll"><div class="chart-wrap mom-wrap">{"".join(svg)}</div></div>
+      <div class="table-scroll"><div class="chart-wrap mom-wrap" data-hover="{hover_json}">{"".join(svg)}<div class="mom-tip" style="display:none"></div></div></div>
       <div class="mom-legend">
         <span><i class="sw price"></i>{sym} price</span><span><i class="sw band"></i>Concretum Bands (noise area)</span>
         <span><i class="sw vwap"></i>VWAP</span><span><i class="sw check"></i>30-min checks</span>
@@ -228,12 +244,77 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
         <tbody>{rows}</tbody>
       </table>
       </div>
-    </div>"""
+    </div>
+    <script>{MOM_HOVER_JS}</script>"""
+
+
+# Crosshair readout for the chart: nearest minute to the pointer (mouse or touch).
+MOM_HOVER_JS = """
+(function () {
+  var wrap = document.querySelector('#momentumPanel .mom-wrap');
+  if (!wrap) return;
+  var d = JSON.parse(wrap.getAttribute('data-hover'));
+  var W = d.geo[0], H = d.geo[1], L = d.geo[2], R = d.geo[3], T = d.geo[4], B = d.geo[5], lo = d.geo[6], hi = d.geo[7];
+  var n = d.t.length, svg = wrap.querySelector('svg'), g = wrap.querySelector('.mom-hover');
+  var tip = wrap.querySelector('.mom-tip'), guide = g.querySelector('.mom-guide');
+  var dots = { p: g.querySelector('.price'), u: g.querySelector('.up'), l: g.querySelector('.lo'), v: g.querySelector('.vwap') };
+  function X(i) { return L + i * (W - L - R) / (n - 1); }
+  function Y(v) { return T + (hi - v) / (hi - lo) * (H - T - B); }
+  function money(v) { return v == null ? '—' : '$' + v.toFixed(2); }
+  function label(t) { var h = +t.slice(0, 2); return (h % 12 || 12) + ':' + t.slice(3) + (h < 12 ? ' am' : ' pm'); }
+  function show(ev) {
+    var r = svg.getBoundingClientRect();
+    var vx = (ev.clientX - r.left) / r.width * W;
+    var i = Math.max(0, Math.min(n - 1, Math.round((vx - L) / (W - L - R) * (n - 1))));
+    var x = X(i);
+    g.style.display = '';
+    guide.setAttribute('x1', x); guide.setAttribute('x2', x);
+    ['p', 'u', 'l', 'v'].forEach(function (k) {
+      var v = d[k][i];
+      dots[k].style.display = v == null ? 'none' : '';
+      if (v != null) { dots[k].setAttribute('cx', x); dots[k].setAttribute('cy', Y(v)); }
+    });
+    tip.innerHTML = '<div class="mom-tip-time">' + label(d.t[i]) + ' ET</div>' +
+      '<div><i class="sw price"></i>Price <b>' + money(d.p[i]) + '</b></div>' +
+      '<div><i class="sw band"></i>Upper band <b>' + money(d.u[i]) + '</b></div>' +
+      '<div><i class="sw band"></i>Lower band <b>' + money(d.l[i]) + '</b></div>' +
+      '<div><i class="sw vwap"></i>VWAP <b>' + money(d.v[i]) + '</b></div>';
+    tip.style.display = '';
+    // Keep the box inside what's visible (the chart scrolls sideways on phones).
+    var px = x / W * r.width, wr = wrap.getBoundingClientRect();
+    var view = (wrap.parentElement || wrap).getBoundingClientRect();
+    var visL = Math.max(0, view.left - wr.left), visR = Math.min(wr.width, view.right - wr.left);
+    var tw = tip.offsetWidth;
+    var left = px + 14 + tw <= visR ? px + 14 : px - 14 - tw;
+    tip.style.left = Math.max(visL, Math.min(left, visR - tw)) + 'px';
+    tip.style.top = (T / H * r.height + 4) + 'px';
+  }
+  function hide() { g.style.display = 'none'; tip.style.display = 'none'; }
+  svg.addEventListener('pointermove', show);
+  svg.addEventListener('pointerdown', show);
+  svg.addEventListener('pointerleave', hide);
+})();
+"""
 
 
 PANEL_CSS = """
   .mom-chart { width: 100%; height: auto; display: block; }
-  .mom-wrap { min-width: 620px; }
+  .mom-wrap { min-width: 620px; position: relative; }
+  .mom-hit { fill: transparent; cursor: crosshair; }
+  .mom-guide { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+  .mom-dot { stroke: var(--panel); stroke-width: 1.5; pointer-events: none; }
+  .mom-dot.price { fill: var(--text); }
+  .mom-dot.band { fill: var(--accent); }
+  .mom-dot.vwap { fill: var(--vwap); }
+  .mom-tip { position: absolute; pointer-events: none; z-index: 2; background: var(--panel-2); color: var(--text);
+             border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; font-size: 12px;
+             line-height: 1.6; white-space: nowrap; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
+  .mom-tip b { font-variant-numeric: tabular-nums; margin-left: 4px; }
+  .mom-tip-time { color: var(--muted); font-size: 11px; margin-bottom: 2px; }
+  .mom-tip .sw { display: inline-block; width: 12px; height: 3px; margin-right: 6px; vertical-align: middle; }
+  .mom-tip .sw.price { background: var(--text); }
+  .mom-tip .sw.band { background: var(--accent); }
+  .mom-tip .sw.vwap { background: var(--vwap); }
   .mom-band { fill: var(--accent-soft); stroke: none; }
   .mom-bound { fill: none; stroke: var(--accent); stroke-width: 1.3; stroke-dasharray: 5 4; }
   .mom-price { fill: none; stroke: var(--text); stroke-width: 1.6; }
