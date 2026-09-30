@@ -96,6 +96,20 @@ AI_FILTER_MODE = "enforce"
 AI_MIN_CONFIDENCE = 0.55     # a CONFIRM below this confidence is treated as a VETO
 AI_MAX_STOP_PCT = 0.03       # hard limit: never take a trade whose stop is > 3% from entry
 
+# --- Intraday momentum on QQQ (momentum_strategy.py) ---------------------------
+# Second strategy, run alongside ORB: the "noise area" breakout from Zarattini,
+# Aziz & Barbon (2024). Backtested on QQQ 2016-2026 (research_spy_momentum.py):
+# Sharpe ~1.1 after the paper was published, robust to doubled trading costs.
+# Checks every 30 min from 10:00 to 15:30 ET; long above the noise band, short
+# below it, trailing stop at the band/VWAP, flat by the close. Sized to a target
+# daily volatility, capped at a max leverage. Started at HALF the published size
+# (1% vol target, 2x cap vs 2% / 4x) until live results match the backtest.
+MOMENTUM_ENABLED = True
+MOMENTUM_SYMBOL = "QQQ"
+MOMENTUM_TARGET_VOL = 0.01
+MOMENTUM_MAX_LEVERAGE = 2.0
+MOMENTUM_ALLOW_SHORTS = True
+
 # --- Time stop -------------------------------------------------------------
 FLATTEN_TIME = "15:45"              # ET — close everything by this time, no exceptions
 MARKET_CLOSE_TIME = "16:00"
@@ -153,6 +167,8 @@ _OVERRIDABLE_KEYS = {
     "POLL_INTERVAL_SECONDS", "DATA_FEED", "BACKTEST_DEFAULT_DAYS", "BACKTEST_SLIPPAGE_PCT",
     "BACKTEST_COMMISSION_PER_TRADE", "NTFY_ENABLED", "NTFY_TOPIC",
     "AI_FILTER_MODE", "AI_MIN_CONFIDENCE", "AI_MAX_STOP_PCT",
+    "MOMENTUM_ENABLED", "MOMENTUM_SYMBOL", "MOMENTUM_TARGET_VOL", "MOMENTUM_MAX_LEVERAGE",
+    "MOMENTUM_ALLOW_SHORTS",
 }
 
 

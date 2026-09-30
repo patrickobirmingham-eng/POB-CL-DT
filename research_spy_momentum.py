@@ -42,6 +42,8 @@ from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
 from alpaca.data.enums import Adjustment
 
+import momentum_strategy as ms
+
 ET = ZoneInfo("America/New_York")
 EQUITY = 100_000.0
 LOOKBACK = 14
@@ -49,10 +51,6 @@ TARGET_VOL = 0.02
 MAX_LEV = 4.0
 COMMISSION = 0.0035
 PUBLISHED = "2024-06-01"   # results from here on are out-of-sample for the paper
-# Price "at 10:00" = close of the 09:59 minute bar (it closes at 10:00:00), so
-# each check reads the bar one minute earlier — no look-ahead.
-CHECK_TIMES = [(datetime(2000, 1, 1, h, m) - timedelta(minutes=1)).strftime("%H:%M")
-               for h in range(10, 16) for m in (0, 30)]
 
 
 def fetch_minutes(client, symbol, start, end):
@@ -81,47 +79,33 @@ def fetch_minutes(client, symbol, start, end):
 
 
 def prepare_days(m: pd.DataFrame):
-    """Returns list of per-day DataFrames indexed by 'HH:MM' with close, vwap,
-    move-from-open, plus per-day open/prev_close/daily return."""
+    """Per-session prepared frames (see momentum_strategy.prepare_day) plus
+    open / close / previous close."""
     days = []
-    grid = pd.date_range("09:30", "15:59", freq="1min").strftime("%H:%M")
     for d, g in m.groupby(m.index.date):
         if len(g) < 300:     # skip half days / broken data
             continue
-        g = g.copy()
-        g["hhmm"] = g.index.strftime("%H:%M")
-        g = g.set_index("hhmm").reindex(grid)
-        g["close"] = g["close"].ffill()
-        g["volume"] = g["volume"].fillna(0)
-        for c in ("open", "high", "low"):
-            g[c] = g[c].fillna(g["close"])
-        typical = (g["high"] + g["low"] + g["close"]) / 3
-        g["vwap"] = (typical * g["volume"]).cumsum() / g["volume"].cumsum().replace(0, np.nan)
-        g["vwap"] = g["vwap"].ffill().fillna(g["close"])
-        day_open = float(g["open"].iloc[0])
-        g["move"] = (g["close"] / day_open - 1).abs()
-        days.append({"date": str(d), "open": day_open, "close": float(g["close"].iloc[-1]), "bars": g})
+        bars, day_open = ms.prepare_day(g)
+        days.append({"date": str(d), "open": day_open, "close": float(bars["close"].iloc[-1]), "bars": bars})
     for i, day in enumerate(days):
         day["prev_close"] = days[i - 1]["close"] if i else np.nan
         day["ret"] = day["close"] / day["prev_close"] - 1 if i else np.nan
     return days
 
 
-def simulate(days, slip=0.01, long_only=False):
+def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MAX_LEV):
     trades, daily = [], []
     for i in range(LOOKBACK + 1, len(days)):
         day = days[i]
         hist = days[i - LOOKBACK:i]
-        sigma = pd.concat([h["bars"]["move"] for h in hist], axis=1).mean(axis=1)
-        rets = pd.Series([h["ret"] for h in hist]).dropna()
-        vol = rets.std()
+        sigma = ms.sigma_profile([h["bars"] for h in hist])
+        vol = ms.daily_vol([h["close"] for h in days[i - LOOKBACK - 1:i]])
         if not np.isfinite(vol) or vol <= 0:
             continue
         b = day["bars"]
         o, pc = day["open"], day["prev_close"]
-        upper = max(o, pc) * (1 + sigma)
-        lower = min(o, pc) * (1 - sigma)
-        shares = int(EQUITY * min(MAX_LEV, TARGET_VOL / vol) / o)
+        upper, lower = ms.bands(o, pc, sigma)
+        shares = ms.position_size(EQUITY, o, vol, target_vol, max_lev)
         pos, entry, pnl_day, n_tr = 0, 0.0, 0.0, 0
 
         def close_pos(price):
@@ -140,17 +124,15 @@ def simulate(days, slip=0.01, long_only=False):
             pnl_day -= COMMISSION * shares
             n_tr += 1
 
-        for t in CHECK_TIMES:
-            px, ub, lb, vw = b.at[t, "close"], upper[t], lower[t], b.at[t, "vwap"]
-            if pos > 0 and px < max(ub, vw):
+        for t in ms.CHECK_TIMES:
+            bar = ms.CHECK_BARS[t]
+            px = b.at[bar, "close"]
+            exit_now, new_side = ms.decide(pos, px, upper[bar], lower[bar], b.at[bar, "vwap"],
+                                           allow_shorts=not long_only)
+            if exit_now:
                 close_pos(px)
-            elif pos < 0 and px > min(lb, vw):
-                close_pos(px)
-            if pos == 0:
-                if px > ub:
-                    open_pos(1, px)
-                elif px < lb and not long_only:
-                    open_pos(-1, px)
+            if new_side:
+                open_pos(new_side, px)
         if pos != 0:
             close_pos(b["close"].iloc[-1])
         daily.append({"date": day["date"], "pnl": pnl_day, "traded": n_tr > 0, "bh": day["ret"]})
