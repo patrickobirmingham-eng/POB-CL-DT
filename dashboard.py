@@ -288,57 +288,60 @@ def fetch_all_orders(client, page_size=500, max_orders=5000):
 
 
 def build_closed_trades(orders):
-    """FIFO-matches filled buy orders against filled sell orders (per symbol, in
-    chronological order) to produce a list of closed round-trip trades, each
-    with its own P&L. A single buy can be closed by multiple partial sells (or
-    vice versa) — each matched chunk becomes its own closed-trade row, sized to
-    whichever side had fewer remaining shares.
+    """FIFO-matches filled orders per symbol (in chronological order) into
+    closed round-trip trades, each with its own P&L. Handles both directions:
+    a long (buy, later sell) and a short (sell first, later buy back to cover,
+    e.g. the QQQ momentum strategy's short side). A fill that's bigger than
+    the open position closes it and opens a new one the other way. Partial
+    matches become their own closed-trade rows.
 
-    Only orders present in the `orders` list are considered. Called with the
-    full paginated order history (see `fetch_all_orders`), not just the most
-    recent 50, so a buy from the very first trading day still gets matched.
+    Every row has buy_price / sell_price, so P&L = shares * (sell - buy) for
+    both directions; "side" says which came first. Called with the full
+    paginated order history (see `fetch_all_orders`), not just the newest 50.
     """
     filled = [o for o in orders if o.status and o.status.value == "filled" and o.side and o.filled_avg_price]
     filled.sort(key=lambda o: o.filled_at or o.submitted_at)
 
-    buy_queues = defaultdict(deque)  # symbol -> deque[[qty, price, filled_at]]
+    lots = defaultdict(deque)  # symbol -> deque[[signed qty, price]]  (+ long, - short)
     closed = []
 
     for o in filled:
-        qty = float(o.qty)
+        side = o.side.value
+        if side not in ("buy", "sell"):
+            continue
+        qty = float(getattr(o, "filled_qty", None) or o.qty or 0)
         price = float(o.filled_avg_price)
         filled_at = o.filled_at or o.submitted_at
-        side = o.side.value
-
-        if side == "buy":
-            buy_queues[o.symbol].append([qty, price, filled_at])
-            continue
-
-        if side != "sell":
-            continue
-
+        sign = 1 if side == "buy" else -1
+        queue = lots[o.symbol]
         remaining = qty
-        queue = buy_queues[o.symbol]
-        while remaining > 1e-9 and queue:
+        # Close open lots on the other side first (FIFO).
+        while remaining > 1e-9 and queue and (queue[0][0] > 0) != (sign > 0):
             lot = queue[0]
-            matched = min(remaining, lot[0])
-            pl = matched * (price - lot[1])
-            gain_pct = (price - lot[1]) / lot[1] * 100 if lot[1] else 0.0
+            matched = min(remaining, abs(lot[0]))
+            if lot[0] > 0:   # closing a long: bought at lot price, selling now
+                buy_price, sell_price, trade_side = lot[1], price, "long"
+                gain_pct = (sell_price - buy_price) / buy_price * 100 if buy_price else 0.0
+            else:            # covering a short: sold at lot price, buying back now
+                buy_price, sell_price, trade_side = price, lot[1], "short"
+                gain_pct = (sell_price - buy_price) / sell_price * 100 if sell_price else 0.0
             closed.append({
                 "symbol": o.symbol,
+                "side": trade_side,
                 "shares": matched,
-                "buy_price": lot[1],
-                "sell_price": price,
-                "pl": pl,
+                "buy_price": buy_price,
+                "sell_price": sell_price,
+                "pl": matched * (sell_price - buy_price),
                 "gain_pct": gain_pct,
                 "transaction_date": filled_at,
             })
-            lot[0] -= matched
+            lot[0] -= matched * (1 if lot[0] > 0 else -1)
             remaining -= matched
-            if lot[0] <= 1e-9:
+            if abs(lot[0]) <= 1e-9:
                 queue.popleft()
-        # A sell with no matching buy in this order window is skipped rather
-        # than shown with a fabricated entry price.
+        # Whatever is left opens (or adds to) a position in this order's direction.
+        if remaining > 1e-9:
+            queue.append([sign * remaining, price])
 
     closed.sort(key=lambda t: t["transaction_date"], reverse=True)
     return closed
@@ -712,7 +715,7 @@ def generate(client=None):
             closed_rows += f"""
             <tr>
               <td data-value="{tx_dt.isoformat()}">{tx_dt.strftime("%Y-%m-%d %I:%M %p")}</td>
-              <td data-value="{t['symbol']}">{t['symbol']}</td>
+              <td data-value="{t['symbol']}">{t['symbol']}{' <span class="muted">(short)</span>' if t.get('side') == 'short' else ''}</td>
               <td data-value="{company_name(t['symbol'])}">{company_name(t['symbol'])}</td>
               <td class="num" data-value="{raw_num(t['shares'])}">{t['shares']:g}</td>
               <td class="num" data-value="{raw_num(t['buy_price'])}">{fmt_money(t['buy_price'])}</td>
