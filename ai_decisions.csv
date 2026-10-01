@@ -1,2 +1,3 @@
 timestamp,mode,symbol,direction,entry_price,stop_price,action,source,confidence,size_mult,take_profit_r,stop_pct,take_profit_pct,latency_ms,reasoning
 2026-10-01T09:41:11-04:00,enforce,AMD,long,616.59,606.84,CONFIRM,fail_open,0.0,1.0,2.0,1.581,3.163,0,ANTHROPIC_API_KEY not set; trading as plain ORB.
+2026-10-01T09:41:17-04:00,enforce,KDP,long,30.73,30.375,CONFIRM,fail_open,0.0,1.0,2.0,1.155,2.31,0,ANTHROPIC_API_KEY not set; trading as plain ORB.
