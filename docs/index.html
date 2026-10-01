@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generated-at" content="1790858174">
+<meta name="generated-at" content="1790858357">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -323,7 +323,7 @@
 
   <div class="wrap">
     <div class="updated">
-      <span>Last updated</span> <span id="lastUpdated">2026-10-01 08:36 AM ET</span>
+      <span>Last updated</span> <span id="lastUpdated">2026-10-01 08:39 AM ET</span>
       <button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>
       <span id="refreshStatus" class="muted"></span>
     </div>
@@ -2696,7 +2696,7 @@
     // reload. Ask for the published page with a cache-busting URL, and if it
     // was built after this one, switch to it. Runs every minute, when the tab
     // comes back into view, and first thing when Refresh is pressed.
-    const PAGE_BUILT = 1790858174;
+    const PAGE_BUILT = 1790858357;
     async function checkForNewerPage(force) {
       try {
         const resp = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
