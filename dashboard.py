@@ -379,6 +379,10 @@ def generate(client=None):
 
 
     generated_at = datetime.now(ET).strftime("%Y-%m-%d %I:%M %p ET")
+    # Compact form for the header ("Oct 1, 3:49 PM ET"); full stamp in its tooltip.
+    _now = datetime.now(ET)
+    generated_at_html = (f'<span class="upd-date">{_now:%b} {_now.day}, </span>'
+                         f'<span class="upd-time">{_now.hour % 12 or 12}:{_now:%M %p} ET</span>')
     # Build stamp: the page compares it with the published copy to spot a newer version.
     generated_epoch = int(datetime.now(ET).timestamp())
 
@@ -950,14 +954,15 @@ def generate(client=None):
     display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700;
   }}
   .brand h1 {{ font-size: 16px; font-weight: 650; letter-spacing: -0.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-  .brand .sub {{ color: var(--muted); font-size: 12px; margin-top: 1px; }}
+  .brand .sub {{ color: var(--muted); font-size: 12px; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+  .brand > div {{ min-width: 0; }}
   .badge {{
     display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600;
     letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px;
     color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   }}
   .badge::before {{ content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }}
-  #topActions {{ display: flex; gap: 8px; align-items: center; }}
+  #topActions {{ display: flex; gap: 8px; align-items: center; flex-shrink: 0; }}
   #topActions button, #refreshBtn {{
     background: var(--panel); color: var(--text); border: 1px solid var(--border-strong);
     border-radius: 8px; padding: 7px 13px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
@@ -966,10 +971,20 @@ def generate(client=None):
   #topActions button:hover, #refreshBtn:hover {{ border-color: var(--accent); background: var(--panel-2); }}
 
   .updated {{
-    color: var(--muted); font-size: 12.5px; margin-bottom: 22px;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    color: var(--muted); font-size: 12.5px; margin-right: 4px;
+    display: flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 0;
   }}
   .updated #lastUpdated {{ color: var(--text); font-weight: 500; }}
+  .updated {{ position: relative; }}
+  /* Refresh messages float just under the header so they never squeeze it. */
+  #refreshStatus {{
+    position: absolute; top: calc(100% + 12px); right: 0; z-index: 5;
+    width: max-content; max-width: 280px; white-space: normal;
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border-strong);
+    border-radius: 8px; padding: 6px 10px; font-size: 12px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }}
+  #refreshStatus:empty {{ display: none; }}
+  @media (max-width: 1000px) {{ .updated .upd-label {{ display: none; }} }}
 
   .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 22px; }}
   .card {{
@@ -1128,7 +1143,6 @@ def generate(client=None):
     #topActions button {{ padding: 6px 10px; font-size: 12px; }}
     #topActions {{ gap: 6px; flex-shrink: 0; }}
     #refreshBtn .btn-label {{ display: none; }}
-    .brand, .brand > div {{ min-width: 0; }}
     .modal-overlay {{ padding: 20px 10px 0 10px; }}
     .settings-row {{ flex-wrap: wrap; }}
     .cards {{ grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }}
@@ -1138,7 +1152,9 @@ def generate(client=None):
     .symbol-search {{ width: 100%; margin-left: 0; }}
     table {{ font-size: 12px; }}
     th, td {{ padding: 8px 7px; }}
-    .updated {{ gap: 6px; }}
+    .updated {{ gap: 4px; font-size: 11px; margin-right: 0; }}
+    .updated .upd-date, .updated .upd-live {{ display: none; }}
+    #refreshStatus {{ right: auto; left: -40px; max-width: 240px; }}
   }}
 {momentum_panel.PANEL_CSS}
 </style>
@@ -1153,6 +1169,10 @@ def generate(client=None):
       </div>
     </div>
     <div id="topActions">
+      <div class="updated" id="updatedInfo" title="Last updated {generated_at}">
+        <span class="upd-label">Last updated</span> <span id="lastUpdated">{generated_at_html}</span>
+        <span id="refreshStatus" class="muted"></span>
+      </div>
       {refresh_button_html}
       <span class="badge">Paper</span>
       {settings_button_html}
@@ -1185,10 +1205,6 @@ def generate(client=None):
   </div>
 
   <div class="wrap">
-    <div class="updated">
-      <span>Last updated</span> <span id="lastUpdated">{generated_at}</span>
-      <span id="refreshStatus" class="muted"></span>
-    </div>
 
     <div class="cards">
       <div class="card primary"><div class="label">Equity</div><div class="value">{fmt_money(account.equity)}</div></div>
@@ -1986,14 +2002,26 @@ def generate(client=None):
     }});
     checkForNewerPage(false);
 
+    // Status text can be cut off in the header (phones); show it in full on hover.
+    (function () {{
+      const st = document.getElementById('refreshStatus');
+      if (!st) return;
+      let timer = null;
+      new MutationObserver(() => {{
+        clearTimeout(timer);
+        // Messages fade after a few seconds ("Refreshing…" stays until done).
+        if (st.textContent && st.textContent !== 'Refreshing…') timer = setTimeout(() => {{ st.textContent = ''; }}, 8000);
+      }}).observe(st, {{ childList: true, characterData: true, subtree: true }});
+    }})();
+
     async function refreshDashboard() {{
       const btn = document.getElementById('refreshBtn');
       const statusEl = document.getElementById('refreshStatus');
       btn.disabled = true;
-      statusEl.textContent = ' Refreshing…';
+      statusEl.textContent = 'Refreshing…';
       if (await checkForNewerPage(true)) return;
       if (!REFRESH_ENDPOINT) {{
-        statusEl.textContent = ' Up to date — this is the latest version the bot has published.';
+        statusEl.textContent = 'Up to date';
         btn.disabled = false;
         return;
       }}
@@ -2013,11 +2041,16 @@ def generate(client=None):
         document.querySelector('#ordersTable tbody').innerHTML = buildOrdersRows(data.orders, data.names, data.snapshots);
         filterOrders();
 
-        const now = new Date().toLocaleString('en-US', {{
-          timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
-          hour: '2-digit', minute: '2-digit',
+        const nowD = new Date();
+        const now = nowD.toLocaleString('en-US', {{
+          timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
         }});
-        document.getElementById('lastUpdated').textContent = now + ' ET (live refresh — Closed Orders/Income by Day still reflect the last full session)';
+        const day = nowD.toLocaleDateString('en-US', {{ timeZone: 'America/New_York', month: 'short', day: 'numeric' }});
+        const time = nowD.toLocaleTimeString('en-US', {{ timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }});
+        document.getElementById('lastUpdated').innerHTML = '<span class="upd-date">' + day + ', </span>' +
+          '<span class="upd-time">' + time + ' ET</span><span class="upd-live"> (live)</span>';
+        document.getElementById('updatedInfo').title =
+          'Live refresh at ' + now + ' ET. Closed Orders and Income by Day still reflect the last published update.';
         statusEl.textContent = '';
 
         // Redraw the Concretum Bands chart from today's live minute prices
@@ -2025,13 +2058,13 @@ def generate(client=None):
         if (window.momLiveRefresh) {{
           try {{
             const r = await window.momLiveRefresh(REFRESH_ENDPOINT, REFRESH_TOKEN, data);
-            if (r !== 'ok') statusEl.textContent = ' Chart: ' + r + '.';
+            if (r !== 'ok') statusEl.textContent = 'Chart: ' + r;
           }} catch (e) {{
-            statusEl.textContent = ' Chart not updated (' + e.message + ').';
+            statusEl.textContent = 'Chart not updated (' + e.message + ')';
           }}
         }}
       }} catch (e) {{
-        statusEl.textContent = ' Refresh failed: ' + e.message;
+        statusEl.textContent = 'Refresh failed: ' + e.message;
       }} finally {{
         btn.disabled = false;
       }}
