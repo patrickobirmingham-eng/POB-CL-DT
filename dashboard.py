@@ -884,7 +884,8 @@ def generate(client=None):
     wins = sum(1 for t in closed_trades if t["pl"] > 0)
     win_rate_text = f"{wins / len(closed_trades) * 100:.0f}%" if closed_trades else "—"
 
-    refresh_button_html = '<button id="refreshBtn" onclick="refreshDashboard()">&#8635; Refresh</button>'
+    refresh_button_html = ('<button id="refreshBtn" onclick="refreshDashboard()" title="Refresh" aria-label="Refresh">'
+                           '&#8635;<span class="btn-label"> Refresh</span></button>')
 
     settings_button_html = (
         '<button id="settingsBtn" onclick="openSettingsModal()" '
@@ -960,7 +961,7 @@ def generate(client=None):
   #topActions button, #refreshBtn {{
     background: var(--panel); color: var(--text); border: 1px solid var(--border-strong);
     border-radius: 8px; padding: 7px 13px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;
-    transition: border-color 0.12s ease, background 0.12s ease;
+    transition: border-color 0.12s ease, background 0.12s ease; white-space: nowrap;
   }}
   #topActions button:hover, #refreshBtn:hover {{ border-color: var(--accent); background: var(--panel-2); }}
 
@@ -1125,6 +1126,9 @@ def generate(client=None):
     .brand-mark {{ width: 28px; height: 28px; font-size: 14px; }}
     .brand h1 {{ font-size: 14px; }}
     #topActions button {{ padding: 6px 10px; font-size: 12px; }}
+    #topActions {{ gap: 6px; flex-shrink: 0; }}
+    #refreshBtn .btn-label {{ display: none; }}
+    .brand, .brand > div {{ min-width: 0; }}
     .modal-overlay {{ padding: 20px 10px 0 10px; }}
     .settings-row {{ flex-wrap: wrap; }}
     .cards {{ grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }}
@@ -1149,6 +1153,7 @@ def generate(client=None):
       </div>
     </div>
     <div id="topActions">
+      {refresh_button_html}
       <span class="badge">Paper</span>
       {settings_button_html}
       <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle dark/light theme">&#9728; Light</button>
@@ -1182,7 +1187,6 @@ def generate(client=None):
   <div class="wrap">
     <div class="updated">
       <span>Last updated</span> <span id="lastUpdated">{generated_at}</span>
-      {refresh_button_html}
       <span id="refreshStatus" class="muted"></span>
     </div>
 
