@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generated-at" content="1790890815">
+<meta name="generated-at" content="1790898037">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -99,6 +99,16 @@
   .panel {
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 20px 22px 22px 22px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  /* QQQ momentum chart (left half) beside Daily P&L (right half) on wide
+     screens; stacked, momentum first, on narrower ones. */
+  .chart-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 20px; }
+  .chart-row.single { grid-template-columns: minmax(0, 1fr); }
+  .chart-row > .panel { margin-bottom: 0; min-width: 0; }
+  .chart-row .mom-wrap { min-width: 0; }
+  @media (max-width: 1100px) {
+    .chart-row { grid-template-columns: minmax(0, 1fr); }
+    .chart-row .mom-wrap { min-width: 620px; }
   }
   .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .panel-head h2 { margin: 0; }
@@ -306,8 +316,8 @@
       </div>
     </div>
     <div id="topActions">
-      <div class="updated" id="updatedInfo" title="Last updated 2026-10-01 05:40 PM ET">
-        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Oct 1, </span><span class="upd-time">5:40 PM ET</span></span>
+      <div class="updated" id="updatedInfo" title="Last updated 2026-10-01 07:40 PM ET">
+        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Oct 1, </span><span class="upd-time">7:40 PM ET</span></span>
         <span id="refreshStatus" class="muted"></span>
       </div>
       <button id="refreshBtn" onclick="refreshDashboard()" title="Refresh" aria-label="Refresh">&#8635;<span class="btn-label"> Refresh</span></button>
@@ -353,6 +363,7 @@
       <div class="card"><div class="label">Closed Trades</div><div class="value">47</div></div>
     </div>
 
+    <div class="chart-row">
     
     <div class="panel" id="momentumPanel">
       <div class="panel-head">
@@ -614,15 +625,16 @@
       <h2>Daily Profit / (Loss)</h2>
       <div class="chart-wrap">
         
-    <svg viewBox="0 0 900 240" class="pl-chart">
-      <line class="pl-grid" x1="72" y1="185.1" x2="884" y2="185.1" /><text class="pl-axis" x="64" y="188.1" text-anchor="end">$0</text><line class="pl-grid" x1="72" y1="121.7" x2="884" y2="121.7" /><text class="pl-axis" x="64" y="124.7" text-anchor="end">$5,000</text><line class="pl-grid" x1="72" y1="58.3" x2="884" y2="58.3" /><text class="pl-axis" x="64" y="61.3" text-anchor="end">$10,000</text>
-      <line class="pl-zero" x1="72" y1="185.1" x2="884" y2="185.1" />
-      <rect class="pl-bar up" x="87.2" y="16.0" width="71.0" height="169.1" rx="2" data-date="2026-09-22" data-pl="$13,335.69"><title>2026-09-22: $13,335.69</title></rect><rect class="pl-bar up" x="188.7" y="178.5" width="71.0" height="6.6" rx="2" data-date="2026-09-23" data-pl="$518.55"><title>2026-09-23: $518.55</title></rect><rect class="pl-bar up" x="290.2" y="162.7" width="71.0" height="22.4" rx="2" data-date="2026-09-24" data-pl="$1,768.92"><title>2026-09-24: $1,768.92</title></rect><rect class="pl-bar down" x="391.7" y="185.1" width="71.0" height="18.9" rx="2" data-date="2026-09-25" data-pl="-$1,489.87"><title>2026-09-25: -$1,489.87</title></rect><rect class="pl-bar up" x="493.2" y="158.9" width="71.0" height="26.2" rx="2" data-date="2026-09-28" data-pl="$2,063.74"><title>2026-09-28: $2,063.74</title></rect><rect class="pl-bar up" x="594.7" y="152.7" width="71.0" height="32.4" rx="2" data-date="2026-09-29" data-pl="$2,552.07"><title>2026-09-29: $2,552.07</title></rect><rect class="pl-bar down" x="696.2" y="185.1" width="71.0" height="12.3" rx="2" data-date="2026-09-30" data-pl="-$967.03"><title>2026-09-30: -$967.03</title></rect><rect class="pl-bar up" x="797.7" y="142.0" width="71.0" height="43.1" rx="2" data-date="2026-10-01" data-pl="$3,401.72"><title>2026-10-01: $3,401.72</title></rect>
-      <text class="pl-axis" x="122.8" y="222" text-anchor="middle">2026-09-22</text><text class="pl-axis" x="224.2" y="222" text-anchor="middle">2026-09-23</text><text class="pl-axis" x="325.8" y="222" text-anchor="middle">2026-09-24</text><text class="pl-axis" x="427.2" y="222" text-anchor="middle">2026-09-25</text><text class="pl-axis" x="528.8" y="222" text-anchor="middle">2026-09-28</text><text class="pl-axis" x="630.2" y="222" text-anchor="middle">2026-09-29</text><text class="pl-axis" x="731.8" y="222" text-anchor="middle">2026-09-30</text><text class="pl-axis" x="833.2" y="222" text-anchor="middle">2026-10-01</text>
+    <svg viewBox="0 0 900 300" class="pl-chart">
+      <line class="pl-grid" x1="72" y1="239.1" x2="884" y2="239.1" /><text class="pl-axis" x="64" y="242.1" text-anchor="end">$0</text><line class="pl-grid" x1="72" y1="155.4" x2="884" y2="155.4" /><text class="pl-axis" x="64" y="158.4" text-anchor="end">$5,000</text><line class="pl-grid" x1="72" y1="71.8" x2="884" y2="71.8" /><text class="pl-axis" x="64" y="74.8" text-anchor="end">$10,000</text>
+      <line class="pl-zero" x1="72" y1="239.1" x2="884" y2="239.1" />
+      <rect class="pl-bar up" x="87.2" y="16.0" width="71.0" height="223.1" rx="2" data-date="2026-09-22" data-pl="$13,335.69"><title>2026-09-22: $13,335.69</title></rect><rect class="pl-bar up" x="188.7" y="230.4" width="71.0" height="8.7" rx="2" data-date="2026-09-23" data-pl="$518.55"><title>2026-09-23: $518.55</title></rect><rect class="pl-bar up" x="290.2" y="209.5" width="71.0" height="29.6" rx="2" data-date="2026-09-24" data-pl="$1,768.92"><title>2026-09-24: $1,768.92</title></rect><rect class="pl-bar down" x="391.7" y="239.1" width="71.0" height="24.9" rx="2" data-date="2026-09-25" data-pl="-$1,489.87"><title>2026-09-25: -$1,489.87</title></rect><rect class="pl-bar up" x="493.2" y="204.6" width="71.0" height="34.5" rx="2" data-date="2026-09-28" data-pl="$2,063.74"><title>2026-09-28: $2,063.74</title></rect><rect class="pl-bar up" x="594.7" y="196.4" width="71.0" height="42.7" rx="2" data-date="2026-09-29" data-pl="$2,552.07"><title>2026-09-29: $2,552.07</title></rect><rect class="pl-bar down" x="696.2" y="239.1" width="71.0" height="16.2" rx="2" data-date="2026-09-30" data-pl="-$967.03"><title>2026-09-30: -$967.03</title></rect><rect class="pl-bar up" x="797.7" y="182.2" width="71.0" height="56.9" rx="2" data-date="2026-10-01" data-pl="$3,401.72"><title>2026-10-01: $3,401.72</title></rect>
+      <text class="pl-axis" x="122.8" y="282" text-anchor="middle">2026-09-22</text><text class="pl-axis" x="224.2" y="282" text-anchor="middle">2026-09-23</text><text class="pl-axis" x="325.8" y="282" text-anchor="middle">2026-09-24</text><text class="pl-axis" x="427.2" y="282" text-anchor="middle">2026-09-25</text><text class="pl-axis" x="528.8" y="282" text-anchor="middle">2026-09-28</text><text class="pl-axis" x="630.2" y="282" text-anchor="middle">2026-09-29</text><text class="pl-axis" x="731.8" y="282" text-anchor="middle">2026-09-30</text><text class="pl-axis" x="833.2" y="282" text-anchor="middle">2026-10-01</text>
     </svg>
     
         <div id="plTooltip" class="pl-tooltip"></div>
       </div>
+    </div>
     </div>
 
     <div class="panel">
@@ -2483,7 +2495,8 @@
 
     (function() {
       const tooltip = document.getElementById('plTooltip');
-      const chartWrap = document.querySelector('.chart-wrap');
+      // The P&L chart's own wrapper (the QQQ chart above also uses .chart-wrap).
+      const chartWrap = tooltip && tooltip.parentElement;
       if (!tooltip || !chartWrap) return;
       chartWrap.querySelectorAll('.pl-bar').forEach(bar => {
         bar.addEventListener('mousemove', e => {
@@ -2896,7 +2909,7 @@
     // reload. Ask for the published page with a cache-busting URL, and if it
     // was built after this one, switch to it. Runs every minute, when the tab
     // comes back into view, and first thing when Refresh is pressed.
-    const PAGE_BUILT = 1790890815;
+    const PAGE_BUILT = 1790898037;
     async function checkForNewerPage(force) {
       try {
         const resp = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
