@@ -219,22 +219,6 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
                        "pc": round(s["next_prev_close"], 4)}
     hover_json = html.escape(json.dumps(hover, separators=(",", ":")), quote=True)
 
-    # ----- check-point table
-    rows = ""
-    for t in ms.CHECK_TIMES:
-        bar = ms.CHECK_BARS[t]
-        if bar > last:
-            break
-        p, u, l_, v = float(b.at[bar, "close"]), float(upper[bar]), float(lower[bar]), float(b.at[bar, "vwap"])
-        z = "Above band" if p > u else ("Below band" if p < l_ else "Inside")
-        zc = "pos" if p > u else ("neg" if p < l_ else "muted")
-        hh = int(t[:2]) % 12 or 12
-        rows += (f'<tr><td>{hh}:{t[3:]} {"am" if int(t[:2]) < 12 else "pm"}</td><td class="num">{_money(p)}</td>'
-                 f'<td class="num">{_money(u)}</td><td class="num">{_money(l_)}</td><td class="num">{_money(v)}</td>'
-                 f'<td class="{zc}">{z}</td></tr>')
-    if not rows:
-        rows = '<tr><td colspan="6" class="muted">First check is at 10:00 am ET.</td></tr>'
-
     when = "Today" if s["is_today"] else f"Last session ({s['date'].strftime('%a %b %d')})"
     status = "" if enabled else ' <span class="mom-badge neg">strategy OFF in Settings</span>'
     return f"""
@@ -254,12 +238,6 @@ def build_momentum_panel(data_client, positions, orders, equity, now=None):
         <span><i class="sw price"></i>{sym} price</span><span><i class="sw band"></i>Concretum Bands (noise area)</span>
         <span><i class="sw vwap"></i>VWAP</span><span><i class="sw check"></i>30-min checks</span>
         <span class="pos">▲ buy</span><span class="neg">▼ sell</span>
-      </div>
-      <div class="table-scroll">
-      <table>
-        <thead><tr><th>Check</th><th>Price</th><th>Upper band</th><th>Lower band</th><th>VWAP</th><th>Signal</th></tr></thead>
-        <tbody id="momChecks">{rows}</tbody>
-      </table>
       </div>
     </div>
     <script>{MOM_JS}</script>"""
@@ -419,20 +397,6 @@ MOM_JS = r"""
             ' ' + Number(pend.qty || 0).toLocaleString('en-US') + ' ' + d.sym + ' — waiting for the fill'
           : '<span class="mom-badge">FLAT</span> no position';
       }
-    }
-    var tb = document.getElementById('momChecks');
-    if (tb) {
-      var rows = '';
-      (d.c || []).forEach(function (c) {
-        var i = c[0];
-        if (i > li) return;
-        var p = d.p[i], u = d.u[i], l = d.l[i], v = d.v[i];
-        var zt = p > u ? 'Above band' : (p < l ? 'Below band' : 'Inside');
-        var zc = p > u ? 'pos' : (p < l ? 'neg' : 'muted');
-        rows += '<tr><td>' + hm(c[1]) + '</td><td class="num">' + money(p) + '</td><td class="num">' + money(u) +
-          '</td><td class="num">' + money(l) + '</td><td class="num">' + money(v) + '</td><td class="' + zc + '">' + zt + '</td></tr>';
-      });
-      tb.innerHTML = rows || '<tr><td colspan="6" class="muted">First check is at 10:00 am ET.</td></tr>';
     }
   }
 

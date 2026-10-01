@@ -816,7 +816,7 @@ def generate(client=None):
     # Chart data mirrors the Income by Day table exactly (same `daily` dict,
     # same per-day P&L), just sorted oldest-first for left-to-right plotting.
     daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
-    daily_pl_chart_html = build_daily_pl_chart(daily_pl_points, height=300)  # same height as the QQQ chart beside it
+    daily_pl_chart_html = build_daily_pl_chart(daily_pl_points, height=400)  # taller, to fill a panel as tall as the QQQ one beside it
 
     # AI filter decisions (ai_decisions.csv, written by ai_filter.py), newest
     # first. Confirmed trades are matched to that symbol's realized P&L for the
@@ -1004,9 +1004,12 @@ def generate(client=None):
   }}
   /* QQQ momentum chart (left half) beside Daily P&L (right half) on wide
      screens; stacked, momentum first, on narrower ones. */
-  .chart-row {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 20px; }}
+  .chart-row {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; margin-bottom: 20px; }}
   .chart-row.single {{ grid-template-columns: minmax(0, 1fr); }}
-  .chart-row > .panel {{ margin-bottom: 0; min-width: 0; }}
+  .chart-row > .panel {{ margin-bottom: 0; min-width: 0; display: flex; flex-direction: column; }}
+  /* Side by side, both panels are the same height; the P&L chart fills its panel. */
+  .chart-row .pl-panel .chart-wrap {{ flex: 1; display: flex; align-items: center; }}
+  .chart-row .pl-panel .chart-wrap > svg {{ width: 100%; }}
   .chart-row .mom-wrap {{ min-width: 0; }}
   @media (max-width: 1100px) {{
     .chart-row {{ grid-template-columns: minmax(0, 1fr); }}
@@ -1229,7 +1232,7 @@ def generate(client=None):
     <div class="chart-row{'' if momentum_panel_html else ' single'}">
     {momentum_panel_html}
 
-    <div class="panel">
+    <div class="panel pl-panel">
       <h2>Daily Profit / (Loss)</h2>
       <div class="chart-wrap">
         {daily_pl_chart_html}
