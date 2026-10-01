@@ -712,7 +712,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1017720.42,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 590240.675,
   "trade_meta": {
     "AMD": {
@@ -753,7 +753,11 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "CRWD": "2026-10-01T15:41:20.749408-04:00",
+    "KDP": "2026-10-01T15:41:20.749408-04:00",
+    "MNST": "2026-10-01T15:36:08.829839-04:00"
+  },
   "ai_vetoed": [
     "CEG",
     "MSTR",
@@ -765,6 +769,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
