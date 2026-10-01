@@ -816,7 +816,7 @@ def generate(client=None):
     # Chart data mirrors the Income by Day table exactly (same `daily` dict,
     # same per-day P&L), just sorted oldest-first for left-to-right plotting.
     daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
-    daily_pl_chart_html = build_daily_pl_chart(daily_pl_points)
+    daily_pl_chart_html = build_daily_pl_chart(daily_pl_points, height=300)  # same height as the QQQ chart beside it
 
     # AI filter decisions (ai_decisions.csv, written by ai_filter.py), newest
     # first. Confirmed trades are matched to that symbol's realized P&L for the
@@ -1001,6 +1001,16 @@ def generate(client=None):
   .panel {{
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 20px 22px 22px 22px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }}
+  /* QQQ momentum chart (left half) beside Daily P&L (right half) on wide
+     screens; stacked, momentum first, on narrower ones. */
+  .chart-row {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 20px; }}
+  .chart-row.single {{ grid-template-columns: minmax(0, 1fr); }}
+  .chart-row > .panel {{ margin-bottom: 0; min-width: 0; }}
+  .chart-row .mom-wrap {{ min-width: 0; }}
+  @media (max-width: 1100px) {{
+    .chart-row {{ grid-template-columns: minmax(0, 1fr); }}
+    .chart-row .mom-wrap {{ min-width: 620px; }}
   }}
   .panel-head {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }}
   .panel-head h2 {{ margin: 0; }}
@@ -1216,6 +1226,7 @@ def generate(client=None):
       <div class="card"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
     </div>
 
+    <div class="chart-row{'' if momentum_panel_html else ' single'}">
     {momentum_panel_html}
 
     <div class="panel">
@@ -1224,6 +1235,7 @@ def generate(client=None):
         {daily_pl_chart_html}
         <div id="plTooltip" class="pl-tooltip"></div>
       </div>
+    </div>
     </div>
 
     <div class="panel">
@@ -1565,7 +1577,8 @@ def generate(client=None):
 
     (function() {{
       const tooltip = document.getElementById('plTooltip');
-      const chartWrap = document.querySelector('.chart-wrap');
+      // The P&L chart's own wrapper (the QQQ chart above also uses .chart-wrap).
+      const chartWrap = tooltip && tooltip.parentElement;
       if (!tooltip || !chartWrap) return;
       chartWrap.querySelectorAll('.pl-bar').forEach(bar => {{
         bar.addEventListener('mousemove', e => {{
