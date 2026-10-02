@@ -16,6 +16,10 @@ on:
         description: "Account size used for position sizing ($)"
         default: "100000"
         required: true
+      date:
+        description: "Date for research-veto-replay (YYYY-MM-DD; blank = today)"
+        default: ""
+        required: false
       symbols:
         description: "Symbols for research-intraday-momentum (comma separated)"
         default: "SPY,QQQ"
@@ -24,6 +28,7 @@ on:
         description: "What to compare"
         type: choice
         options:
+          - research-veto-replay
           - research-inplay-orb
           - research-intraday-momentum
           - research-momentum-intervals
@@ -59,6 +64,11 @@ jobs:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
+          if [ "${{ inputs.comparison }}" = "research-veto-replay" ]; then
+            # Replay the AI filter's vetoed ORB trades on real minute bars (days input unused)
+            python research_veto_replay.py ${{ inputs.date && format('--date {0}', inputs.date) || '' }} --equity "${{ inputs.equity }}"
+            exit 0
+          fi
           if [ "${{ inputs.comparison }}" = "research-momentum-take-profit" ]; then
             # Would a fixed profit target beat the trailing exit? (days input unused)
             python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'QQQ' }}" --take-profit 0.5,1,1.5,2
