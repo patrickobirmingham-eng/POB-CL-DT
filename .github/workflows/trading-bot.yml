@@ -86,6 +86,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DASHBOARD_REFRESH_URL: ${{ vars.DASHBOARD_REFRESH_URL }}
           DASHBOARD_REFRESH_TOKEN: ${{ vars.DASHBOARD_REFRESH_TOKEN }}
+          # Without this, the dashboard the bot republishes during the session
+          # has no Settings button (only the end-of-session render had it).
+          DASHBOARD_SETTINGS_SAVE_URL: ${{ vars.DASHBOARD_SETTINGS_SAVE_URL }}
         run: |
           python live_bot.py \
             --session-start "${{ steps.window.outputs.start }}" \
