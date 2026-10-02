@@ -700,6 +700,12 @@ def _parse_hhmm(s: str) -> dtime:
     return dtime(h, m)
 
 
+# Bump when the AI filter's input data changes in a way that invalidates
+# earlier decisions; saved vetoes from an older version are dropped on load.
+# v2: prior-day stats no longer (wrongly) include today's bar.
+AI_CONTEXT_VERSION = 2
+
+
 def load_state(path: str):
     if not path or not os.path.exists(path):
         return None
@@ -729,7 +735,8 @@ def load_state(path: str):
         "trade_meta": raw.get("trade_meta", {}),
         "breakeven_moved": set(raw.get("breakeven_moved", [])),
         "last_tightened_at": raw.get("last_tightened_at", {}),
-        "ai_vetoed": set(raw.get("ai_vetoed", [])),
+        "ai_vetoed": (set(raw.get("ai_vetoed", []))
+                      if raw.get("ai_context_version") == AI_CONTEXT_VERSION else set()),
         "momentum_done": set(raw.get("momentum_done", [])),
     }
 
@@ -753,6 +760,7 @@ def save_state(path: str, day_state: dict):
         "breakeven_moved": sorted(day_state.get("breakeven_moved", set())),
         "last_tightened_at": day_state.get("last_tightened_at", {}),
         "ai_vetoed": sorted(day_state.get("ai_vetoed", set())),
+        "ai_context_version": AI_CONTEXT_VERSION,
         "momentum_done": sorted(day_state.get("momentum_done", set())),
     }
     with open(path, "w") as f:
