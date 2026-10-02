@@ -159,6 +159,12 @@ def get_prior_day_stats(data_client, symbols, today):
             df = data_client.get_stock_bars(req).df
             if not df.empty:
                 df = df.reset_index()
+                # Daily bars are stamped at midnight ET at the START of their
+                # day, so today's still-forming bar falls inside `end` — drop
+                # it, or "prior day" would actually be today.
+                bar_day = pd.to_datetime(df["timestamp"]).dt.tz_convert(ET).dt.date
+                df = df[bar_day < today]
+            if not df.empty:
                 for sym, g in df.groupby("symbol"):
                     last = g.sort_values("timestamp").iloc[-1]
                     _daily_cache[(today, sym)] = {
