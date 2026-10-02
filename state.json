@@ -705,7 +705,7 @@
   "traded_today": [],
   "trade_count": 0,
   "starting_equity": 1020595.13,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 0.0,
   "trade_meta": {},
   "breakeven_moved": [],
@@ -751,6 +751,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
