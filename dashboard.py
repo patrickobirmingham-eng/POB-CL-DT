@@ -1716,6 +1716,21 @@ def generate(client=None):
       return out;
     }}
 
+    // settings.json as committed on main: {{ values, fromApi }}. values is null
+    // if neither source answered.
+    async function fetchRepoSettings() {{
+      for (const [url, headers, fromApi] of [
+        [SETTINGS_API_URL + '?ref=main&_=' + Date.now(), {{ 'Accept': 'application/vnd.github.raw+json' }}, true],
+        [SETTINGS_SOURCE_URL + '?_=' + Date.now(), {{}}, false],
+      ]) {{
+        try {{
+          const resp = await fetch(url, {{ headers: headers, cache: 'no-store' }});
+          if (resp.ok) return {{ values: await resp.json(), fromApi: fromApi }};
+        }} catch (e) {{ /* try next source */ }}
+      }}
+      return {{ values: null, fromApi: false }};
+    }}
+
     async function openSettingsModal() {{
       document.getElementById('settingsModal').style.display = 'flex';
       const statusEl = document.getElementById('settingsStatus');
@@ -1726,20 +1741,13 @@ def generate(client=None):
       // raw.githubusercontent.com is CDN-cached for a few minutes, so right
       // after a save it can still return the OLD file. The GitHub contents
       // API is much fresher; try it first, then the raw URL as a fallback.
-      let fresh = null;
-      for (const [url, headers] of [
-        [SETTINGS_API_URL + '?ref=main&_=' + Date.now(), {{ 'Accept': 'application/vnd.github.raw+json' }}],
-        [SETTINGS_SOURCE_URL + '?_=' + Date.now(), {{}}],
-      ]) {{
-        try {{
-          const resp = await fetch(url, {{ headers: headers, cache: 'no-store' }});
-          if (resp.ok) {{ fresh = await resp.json(); break; }}
-        }} catch (e) {{ /* try next source */ }}
-      }}
-      if (fresh) values = Object.assign({{}}, INITIAL_SETTINGS, fresh);
+      const repo = await fetchRepoSettings();
+      if (repo.values) values = Object.assign({{}}, INITIAL_SETTINGS, repo.values);
       // If this browser saved within the last 10 minutes, those values win
-      // over anything fetched (which may still be a stale cached copy).
-      values = Object.assign({{}}, values, recentlySavedSettings());
+      // only over a possibly stale copy (the CDN fallback or the page
+      // snapshot). The contents API is authoritative: overriding it is how a
+      // save that never reached the repo once showed as applied.
+      if (!repo.fromApi) values = Object.assign({{}}, values, recentlySavedSettings());
       renderSettingsForm(values);
     }}
 
@@ -1769,10 +1777,27 @@ def generate(client=None):
         }});
         const data = await resp.json().catch(() => ({{}}));
         if (!resp.ok || !data.ok) throw new Error(data.error || ('HTTP ' + resp.status));
-        rememberSavedSettings(values);
-        statusEl.textContent = 'Saved. The bot will pick this up on its next run/poll.';
-        statusEl.className = 'settings-status ok';
         tokenEl.value = '';
+        // The proxy can answer ok without changing the file (it once
+        // committed an empty change), so check what main actually holds.
+        statusEl.textContent = 'Saved; checking the repo…';
+        await new Promise(r => setTimeout(r, 2000));
+        const repo = await fetchRepoSettings();
+        if (repo.fromApi) {{
+          const same = (a, b) => (typeof a === 'number' && typeof b === 'number')
+            ? Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a)) : JSON.stringify(a) === JSON.stringify(b);
+          const missed = SETTINGS_FIELDS.map(f => f.key).filter(k => k in values && !same(repo.values[k], values[k]));
+          if (missed.length) {{
+            renderSettingsForm(Object.assign({{}}, INITIAL_SETTINGS, repo.values));
+            throw new Error('the proxy reported success, but settings.json on main still has the old '
+              + 'value for ' + missed.join(', ') + '. The form now shows what the bot will use.');
+          }}
+          statusEl.textContent = 'Saved and confirmed in the repo. The bot picks this up when its next session starts.';
+        }} else {{
+          rememberSavedSettings(values);
+          statusEl.textContent = 'Saved, but the repo could not be checked. The bot picks this up when its next session starts.';
+        }}
+        statusEl.className = 'settings-status ok';
       }} catch (e) {{
         statusEl.textContent = 'Save failed: ' + e.message;
         statusEl.className = 'settings-status err';
