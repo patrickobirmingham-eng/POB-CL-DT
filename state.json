@@ -707,7 +707,7 @@
   ],
   "trade_count": 1,
   "starting_equity": 1020595.13,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 99781.0,
   "trade_meta": {
     "MSFT": {
@@ -718,13 +718,17 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "MSFT": "2026-10-05T15:42:05.848791-04:00"
+  },
   "ai_vetoed": [
     "ABNB",
     "ADP",
     "AEP",
     "ALAB",
+    "AMZN",
     "APP",
+    "ASML",
     "AVGO",
     "AXON",
     "BKR",
@@ -735,6 +739,7 @@
     "CPRT",
     "CRWD",
     "CSCO",
+    "CSX",
     "DASH",
     "DDOG",
     "DXCM",
@@ -750,11 +755,13 @@
     "ISRG",
     "KDP",
     "LIN",
+    "MDLZ",
     "MELI",
     "META",
     "MNST",
     "MPWR",
     "MSTR",
+    "NFLX",
     "PANW",
     "PCAR",
     "PDD",
@@ -762,6 +769,7 @@
     "ROP",
     "SNPS",
     "TSLA",
+    "TXN",
     "WDAY",
     "WMT",
     "XEL"
@@ -773,6 +781,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
