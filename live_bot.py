@@ -943,6 +943,12 @@ def main():
         bars_by_symbol = get_recent_bars_bulk(data_client, candidates, since)
 
         for symbol in candidates:
+            # Re-check the caps on every candidate, not just once per poll: a
+            # single pass can see several breakouts at once (and each AI call
+            # takes seconds), which let 7 trades through a 6-trade cap.
+            if (day_state["trade_count"] >= config.MAX_TRADES_PER_DAY
+                    or len(orb_open) >= config.MAX_CONCURRENT_POSITIONS):
+                break
             bars = bars_by_symbol.get(symbol)
             if bars is None or bars.empty:
                 continue
@@ -1038,6 +1044,7 @@ def main():
                 )
                 day_state["traded_today"].add(symbol)
                 day_state["trade_count"] += 1
+                orb_open.add(symbol)
                 day_state["notional_deployed_today"] += shares * sig.entry_price
                 day_state.setdefault("trade_meta", {})[symbol] = {
                     "direction": sig.direction,
