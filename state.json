@@ -706,7 +706,7 @@
   ],
   "trade_count": 7,
   "starting_equity": 1026203.95,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 669448.39,
   "trade_meta": {
     "FAST": {
@@ -753,7 +753,11 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "AXON": "2026-10-06T15:36:04.655910-04:00",
+    "FAST": "2026-10-06T15:41:18.909962-04:00",
+    "PANW": "2026-10-06T15:41:18.909962-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -762,6 +766,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
