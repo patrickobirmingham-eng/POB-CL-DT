@@ -20,7 +20,7 @@
       "date": "2026-10-08",
       "high": 163.245,
       "low": 161.715,
-      "avg_volume": 1703.2222222222222
+      "avg_volume": 1589.4
     },
     "ALNY": {
       "symbol": "ALNY",
@@ -61,8 +61,8 @@
       "symbol": "AMGN",
       "date": "2026-10-08",
       "high": 411.84,
-      "low": 407.535,
-      "avg_volume": 98.25
+      "low": 407.51,
+      "avg_volume": 165.0
     },
     "ADI": {
       "symbol": "ADI",
@@ -125,7 +125,7 @@
       "date": "2026-10-08",
       "high": 267.085,
       "low": 266.19,
-      "avg_volume": 318.5
+      "avg_volume": 344.6666666666667
     },
     "AXON": {
       "symbol": "AXON",
@@ -165,9 +165,9 @@
     "CTAS": {
       "symbol": "CTAS",
       "date": "2026-10-08",
-      "high": 197.47,
+      "high": 197.88,
       "low": 197.38,
-      "avg_volume": 144.0
+      "avg_volume": 219.33333333333334
     },
     "CSCO": {
       "symbol": "CSCO",
@@ -298,9 +298,9 @@
     "GILD": {
       "symbol": "GILD",
       "date": "2026-10-08",
-      "high": 146.31,
+      "high": 146.48,
       "low": 145.98,
-      "avg_volume": 377.2857142857143
+      "avg_volume": 518.2
     },
     "HON": {
       "symbol": "HON",
@@ -314,7 +314,7 @@
       "date": "2026-10-08",
       "high": 509.065,
       "low": 506.99,
-      "avg_volume": 77.8
+      "avg_volume": 73.5
     },
     "INTC": {
       "symbol": "INTC",
@@ -336,13 +336,6 @@
       "high": 412.935,
       "low": 410.08,
       "avg_volume": 546.375
-    },
-    "KDP": {
-      "symbol": "KDP",
-      "date": "2026-10-08",
-      "high": 30.86,
-      "low": 30.64,
-      "avg_volume": 847.8888888888889
     },
     "KLAC": {
       "symbol": "KLAC",
@@ -382,9 +375,9 @@
     "MAR": {
       "symbol": "MAR",
       "date": "2026-10-08",
-      "high": 355.11,
+      "high": 356.15,
       "low": 355.09,
-      "avg_volume": 176.5
+      "avg_volume": 337.6
     },
     "MRVL": {
       "symbol": "MRVL",
@@ -487,9 +480,9 @@
     "ORLY": {
       "symbol": "ORLY",
       "date": "2026-10-08",
-      "high": 84.855,
+      "high": 84.995,
       "low": 84.705,
-      "avg_volume": 547.5
+      "avg_volume": 510.3333333333333
     },
     "ODFL": {
       "symbol": "ODFL",
@@ -579,8 +572,8 @@
       "symbol": "ROST",
       "date": "2026-10-08",
       "high": 224.31,
-      "low": 223.62,
-      "avg_volume": 481.75
+      "low": 223.45,
+      "avg_volume": 511.14285714285717
     },
     "SNDK": {
       "symbol": "SNDK",
@@ -620,9 +613,9 @@
     "TMUS": {
       "symbol": "TMUS",
       "date": "2026-10-08",
-      "high": 168.4,
+      "high": 169.4,
       "low": 168.26,
-      "avg_volume": 288.5
+      "avg_volume": 291.5
     },
     "TTWO": {
       "symbol": "TTWO",
@@ -655,9 +648,9 @@
     "TRI": {
       "symbol": "TRI",
       "date": "2026-10-08",
-      "high": 100.59,
+      "high": 100.625,
       "low": 100.06,
-      "avg_volume": 176.5
+      "avg_volume": 157.66666666666666
     },
     "VRTX": {
       "symbol": "VRTX",
@@ -696,65 +689,64 @@
     }
   },
   "traded_today": [
-    "CEG",
-    "GILD",
-    "KDP",
+    "AXON",
+    "KHC",
     "MNST",
-    "TTWO",
-    "WMT"
+    "NFLX",
+    "ODFL"
   ],
-  "trade_count": 6,
-  "starting_equity": 1026801.73,
-  "flattened": false,
-  "notional_deployed_today": 599419.98,
+  "trade_count": 5,
+  "starting_equity": 1028259.22,
+  "flattened": true,
+  "notional_deployed_today": 499720.17000000004,
   "trade_meta": {
-    "KDP": {
+    "KHC": {
       "direction": "long",
-      "entry_price": 30.94,
-      "stop_price": 30.64,
-      "target_price": 31.540000000000003
+      "entry_price": 22.28,
+      "stop_price": 22.03,
+      "target_price": 22.78
     },
     "MNST": {
       "direction": "long",
-      "entry_price": 43.24,
+      "entry_price": 43.99,
       "stop_price": 42.9,
-      "target_price": 43.92000000000001
+      "target_price": 46.17000000000001
     },
-    "GILD": {
+    "NFLX": {
       "direction": "long",
-      "entry_price": 146.47,
-      "stop_price": 145.98,
-      "target_price": 147.45000000000002
+      "entry_price": 71.2,
+      "stop_price": 69.74,
+      "target_price": 74.12000000000002
     },
-    "WMT": {
+    "ODFL": {
       "direction": "long",
-      "entry_price": 109.42,
-      "stop_price": 108.605,
-      "target_price": 111.05
+      "entry_price": 179.82,
+      "stop_price": 176.34,
+      "target_price": 186.77999999999997
     },
-    "CEG": {
+    "AXON": {
       "direction": "long",
-      "entry_price": 301.33,
-      "stop_price": 294.0,
-      "target_price": 315.98999999999995
-    },
-    "TTWO": {
-      "direction": "long",
-      "entry_price": 205.17,
-      "stop_price": 203.72,
-      "target_price": 208.06999999999996
+      "entry_price": 412.37,
+      "stop_price": 402.33,
+      "target_price": 432.45000000000005
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "AXON": "2026-10-08T15:41:13.922530-04:00",
+    "KHC": "2026-10-08T15:30:56.441369-04:00",
+    "MNST": "2026-10-08T15:41:13.922530-04:00",
+    "NFLX": "2026-10-08T15:41:13.922530-04:00",
+    "ODFL": "2026-10-08T15:41:13.922530-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30"
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
