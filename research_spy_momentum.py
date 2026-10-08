@@ -94,11 +94,18 @@ def prepare_days(m: pd.DataFrame):
 
 
 def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MAX_LEV, every=30,
-             take_profit=None, tp_reenter=False):
+             take_profit=None, tp_reenter=False, stop_loss=None, lock=None):
     """take_profit: optional fraction (0.01 = +1%). A resting limit order sells
     (or covers) as soon as any minute bar reaches entry * (1 +/- take_profit),
     filled at the target price. tp_reenter: after a take-profit, keep taking
-    new signals at later checks (False = done for the day)."""
+    new signals at later checks (False = done for the day).
+    stop_loss: optional fraction. A resting catastrophe stop at entry * (1 -/+ stop_loss).
+    lock: optional (activate, keep) fractions, e.g. (0.015, 0.5). Once the best
+    move in our favour reaches `activate`, a resting stop locks in `keep` of that
+    best move and ratchets up with each new high (down with each new low for shorts).
+    Stops are checked on every minute bar and fill at the stop, or at the bar's
+    open if it already gapped through. After a stop or lock exit, no new position
+    in the same direction that day (opposite-side signals still trade)."""
     trades, daily = [], []
     for i in range(LOOKBACK + 1, len(days)):
         day = days[i]
@@ -112,25 +119,40 @@ def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MA
         upper, lower = ms.bands(o, pc, sigma)
         shares = ms.position_size(EQUITY, o, vol, target_vol, max_lev)
         pos, entry, pnl_day, n_tr = 0, 0.0, 0.0, 0
+        best = 0.0          # best move in our favour since entry, as a fraction
+        blocked = set()     # sides not to re-enter today after a stop / lock exit
 
-        def close_pos(price):
+        def close_pos(price, reason="rule"):
             nonlocal pos, pnl_day
             fill = price - slip if pos > 0 else price + slip
             pnl = (fill - entry) * shares * pos - COMMISSION * shares
             pnl_day += pnl
             trades.append({"date": day["date"], "side": "long" if pos > 0 else "short", "entry": entry,
-                           "exit": fill, "shares": shares, "pnl": pnl})
+                           "exit": fill, "shares": shares, "pnl": pnl, "reason": reason})
             pos = 0
 
         def open_pos(side, price):
-            nonlocal pos, entry, pnl_day, n_tr
+            nonlocal pos, entry, pnl_day, n_tr, best
             pos = side
             entry = price + slip if side > 0 else price - slip
+            best = 0.0
             pnl_day -= COMMISSION * shares
             n_tr += 1
 
+        def stop_level():
+            """The resting stop price right now (None if there isn't one)."""
+            levels = []
+            if stop_loss is not None:
+                levels.append(entry * (1 - pos * stop_loss))
+            if lock is not None and best >= lock[0]:
+                levels.append(entry * (1 + pos * lock[1] * best))
+            if not levels:
+                return None
+            return max(levels) if pos > 0 else min(levels)
+
         check_bars = [ms.check_bar(t) for t in (ms.CHECK_TIMES if every == 30 else ms.make_check_times(every))]
-        if take_profit is None:
+        intrabar = take_profit is not None or stop_loss is not None or lock is not None
+        if not intrabar:
             minutes = check_bars
         else:
             grid = list(b.index)
@@ -138,6 +160,20 @@ def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MA
             check_set = set(check_bars)
         tp_done = False
         for bar in minutes:
+            if pos != 0 and (stop_loss is not None or lock is not None):
+                # Resting stop, at the level set by bars before this one.
+                stop = stop_level()
+                if stop is not None:
+                    bo = b.at[bar, "open"]
+                    if pos > 0 and b.at[bar, "low"] <= stop:
+                        blocked.add(1)
+                        close_pos(min(bo, stop), "stop")
+                    elif pos < 0 and b.at[bar, "high"] >= stop:
+                        blocked.add(-1)
+                        close_pos(max(bo, stop), "stop")
+                if pos != 0:
+                    fav = b.at[bar, "high"] / entry - 1 if pos > 0 else 1 - b.at[bar, "low"] / entry
+                    best = max(best, fav)
             if take_profit is not None and pos != 0:
                 # Resting take-profit limit, checked on every minute after entry.
                 target = entry * (1 + take_profit) if pos > 0 else entry * (1 - take_profit)
@@ -145,19 +181,19 @@ def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MA
                 hit = b.at[bar, "high"] >= target + 0.01 if pos > 0 else b.at[bar, "low"] <= target - 0.01
                 if hit:
                     # Limit fill at exactly the target (close_pos subtracts slippage, so add it back).
-                    close_pos(target + slip if pos > 0 else target - slip)
+                    close_pos(target + slip if pos > 0 else target - slip, "target")
                     tp_done = not tp_reenter
-            if take_profit is not None and bar not in check_set:
+            if intrabar and bar not in check_set:
                 continue
             px = b.at[bar, "close"]
             exit_now, new_side = ms.decide(pos, px, upper[bar], lower[bar], b.at[bar, "vwap"],
                                            allow_shorts=not long_only)
             if exit_now:
                 close_pos(px)
-            if new_side and not tp_done:
+            if new_side and not tp_done and new_side not in blocked:
                 open_pos(new_side, px)
         if pos != 0:
-            close_pos(b["close"].iloc[-1])
+            close_pos(b["close"].iloc[-1], "close")
         daily.append({"date": day["date"], "pnl": pnl_day, "traded": n_tr > 0, "bh": day["ret"]})
     return pd.DataFrame(trades), pd.DataFrame(daily)
 
@@ -250,12 +286,80 @@ def compare_take_profit(client, sym, start, end, levels, out):
             "(overall Sharpe, after-publication Sharpe, doubled costs, profitable years). Keep the current exit.")
 
 
+# Exit variants for --compare-exits, fixed in advance (not tuned to the results):
+# label, kind, simulate() kwargs.
+EXIT_VARIANTS = [
+    ("Current (trailing line, 30-min checks)", "base", {}),
+    ("+ catastrophe stop 1.5%", "protect", {"stop_loss": 0.015}),
+    ("+ catastrophe stop 2%", "protect", {"stop_loss": 0.02}),
+    ("+ take-profit 1%, then done for the day", "target", {"take_profit": 0.01}),
+    ("+ take-profit 2%, then done for the day", "target", {"take_profit": 0.02}),
+    ("+ profit lock: from +1%, keep 50% of best", "protect", {"lock": (0.01, 0.5)}),
+    ("+ profit lock: from +1.5%, keep 50% of best", "protect", {"lock": (0.015, 0.5)}),
+]
+
+
+def compare_exits(client, sym, start, end, out):
+    """Current exit vs catastrophe stop, fixed take-profit and profit-lock stop."""
+    days = prepare_days(fetch_minutes(client, sym, start, end))
+    out()
+    out(f"### {sym}: exit rules compared")
+    out()
+    out("| Exit rule | Trades | Stop/target exits | All: return | All: Sharpe | All: max DD | Worst day | "
+        "Best day | Out-of-sample return | Out-of-sample Sharpe | OOS Sharpe, 2x slippage | Profitable years |")
+    out("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    rows = {}
+    for label, kind, kw in EXIT_VARIANTS:
+        trades, daily = simulate(days, **kw)
+        _, daily2 = simulate(days, slip=0.02, **kw)
+        daily["year"] = daily["date"].str[:4]
+        a = summarize(daily)
+        o = summarize(daily[daily["date"] >= PUBLISHED])
+        o2 = summarize(daily2[daily2["date"] >= PUBLISHED])
+        yp = sum(1 for _, g in daily.groupby("year") if g["pnl"].sum() > 0)
+        yn = daily["year"].nunique()
+        worst, top = daily["pnl"].min() / EQUITY, daily["pnl"].max() / EQUITY
+        hits = int(trades["reason"].isin(["stop", "target"]).sum()) if not trades.empty else 0
+        rows[label] = (kind, a, o, o2, yp, worst)
+        out(f"| {label} | {len(trades)} | {hits} | {a['ret']:+.1%} | {a['sharpe']:.2f} | {a['dd']:.1%} | "
+            f"{worst:+.2%} | {top:+.2%} | {o['ret']:+.1%} | {o['sharpe']:.2f} | {o2['sharpe']:.2f} | {yp}/{yn} |")
+        slug = label.lower().translate(str.maketrans({c: "_" for c in " +%,:()."}))
+        trades.to_csv(f"research_momentum_{sym.lower()}_exit_{'_'.join(x for x in slug.split('_') if x)}.csv",
+                      index=False)
+    _, ba, bo, bo2, byp, bworst = rows[EXIT_VARIANTS[0][0]]
+    out()
+    for label, (kind, a, o, o2, yp, worst) in rows.items():
+        if kind == "base":
+            continue
+        if kind == "protect":
+            # Insurance: must not cost meaningful edge, and must actually cut the bad tail.
+            ok = (a["sharpe"] >= ba["sharpe"] - 0.1 and o["sharpe"] >= bo["sharpe"] - 0.1
+                  and o2["sharpe"] >= bo2["sharpe"] - 0.1 and yp >= byp
+                  and (worst > bworst + 0.001 or a["dd"] < ba["dd"] - 0.01))
+            why = ("costs little edge (Sharpe within 0.1 overall, after publication and with doubled costs, "
+                   "as many profitable years) and cuts the worst day or max drawdown" if ok else
+                   "either costs too much edge or doesn't reduce the worst day / max drawdown")
+        else:
+            # A target changes the payoff, so it has to clearly beat the current exit.
+            ok = (o["sharpe"] >= bo["sharpe"] + 0.2 and a["sharpe"] >= ba["sharpe"] + 0.1
+                  and o2["sharpe"] >= bo2["sharpe"] and yp >= byp)
+            why = ("clearly beats the current exit" if ok else "doesn't clearly beat the current exit")
+        out(f"- **{label}:** {'PASSES' if ok else 'does not pass'} — {why}.")
+    out()
+    out("Protective rules (catastrophe stop, profit lock) pass if they keep Sharpe within 0.1 of the current exit "
+        "(overall, after publication, doubled costs), keep at least as many profitable years, and improve the worst "
+        "day by 0.1%+ or max drawdown by 1%+. Take-profit targets must beat it clearly (Sharpe +0.2 after "
+        "publication, +0.1 overall, no worse with doubled costs).")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--start", default="2016-01-01")
     ap.add_argument("--symbols", default="SPY,QQQ")
     ap.add_argument("--intervals", default="", help="e.g. 10,15,30,60: compare decision frequencies instead")
     ap.add_argument("--take-profit", default="", help="e.g. 0.5,1,1.5,2 (percent): compare take-profit targets instead")
+    ap.add_argument("--compare-exits", action="store_true",
+                    help="compare the current exit with catastrophe stops, take-profits and a profit-lock stop")
     args = ap.parse_args()
     key, secret = os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_KEY")
     if not key or not secret:
@@ -268,6 +372,21 @@ def main():
     def out(s=""):
         print(s)
         lines.append(s)
+
+    if args.compare_exits:
+        out("## Research: intraday momentum — catastrophe stop, take-profit or profit lock?")
+        out()
+        out(f"Same rules, sizing and costs as the main study, plus resting orders checked on every minute bar: "
+            f"stops fill at the stop (or the bar's open if it gapped through), targets only if price trades a cent "
+            f"beyond. After a stop or lock exit there is no same-direction re-entry that day. Variants were fixed "
+            f"before running. Out-of-sample = on/after {PUBLISHED}.")
+        for sym in [x.strip().upper() for x in args.symbols.split(",") if x.strip()]:
+            compare_exits(client, sym, start, end, out)
+        path = os.getenv("GITHUB_STEP_SUMMARY")
+        if path:
+            with open(path, "a") as f:
+                f.write("\n".join(lines) + "\n")
+        return
 
     if args.take_profit:
         out("## Research: intraday momentum — does a fixed take-profit target help?")

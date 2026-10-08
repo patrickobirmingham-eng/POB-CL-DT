@@ -33,6 +33,7 @@ on:
           - research-intraday-momentum
           - research-momentum-intervals
           - research-momentum-take-profit
+          - research-momentum-exits
           - in-play
           - settings
           - market-filter
@@ -67,6 +68,11 @@ jobs:
           if [ "${{ inputs.comparison }}" = "research-veto-replay" ]; then
             # Replay the AI filter's vetoed ORB trades on real minute bars (days input unused)
             python research_veto_replay.py ${{ inputs.date && format('--date {0}', inputs.date) || '' }} --equity "${{ inputs.equity }}"
+            exit 0
+          fi
+          if [ "${{ inputs.comparison }}" = "research-momentum-exits" ]; then
+            # Catastrophe stop / take-profit / profit-lock vs the current exit (days input unused)
+            python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'QQQ' }}" --compare-exits
             exit 0
           fi
           if [ "${{ inputs.comparison }}" = "research-momentum-take-profit" ]; then
