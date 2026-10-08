@@ -45,6 +45,12 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
         with:
+          # Check out the CURRENT tip of main, not the commit the run was
+          # dispatched at. The afternoon run is often dispatched seconds after
+          # the morning run saves state.json; with the dispatch commit it got
+          # the previous day's state and reset the trade count (2026-10-08:
+          # 4 extra ORB trades, one repeat symbol).
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
