@@ -644,7 +644,21 @@ def flatten_all(trading_client, reason: str = "Flatten time reached"):
         still_open = trading_client.get_all_positions()
         if not still_open:
             break
+        # A close order that hasn't filled yet still shows as an open
+        # position. Sending another one on top of it doubles the sale and
+        # flips the position (2026-10-09: CEG went short 295 shares), so
+        # skip any symbol that still has a working order and re-check it on
+        # the next pass.
+        try:
+            pending = {o.symbol for o in trading_client.get_orders(
+                filter=GetOrdersRequest(status=QueryOrderStatus.OPEN))}
+        except Exception as e:
+            log(f"Flatten verify: couldn't list open orders ({e}); assuming none.")
+            pending = set()
         for p in still_open:
+            if p.symbol in pending:
+                log(f"Flatten verify (attempt {attempt}): {p.symbol} has a close order working — waiting.")
+                continue
             qty = abs(float(p.qty))
             side = OrderSide.SELL if float(p.qty) > 0 else OrderSide.BUY
             try:
