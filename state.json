@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1031992.52,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 587433.765,
   "trade_meta": {
     "CEG": {
@@ -746,7 +746,12 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "AMGN": "2026-10-09T15:41:09.725725-04:00",
+    "BKR": "2026-10-09T15:41:09.725725-04:00",
+    "CEG": "2026-10-09T15:41:09.725725-04:00",
+    "GEHC": "2026-10-09T15:30:58.108429-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -755,6 +760,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
