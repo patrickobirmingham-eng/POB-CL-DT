@@ -962,6 +962,10 @@ def generate(client=None):
     color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   }}
   .badge::before {{ content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }}
+  .pagetabs {{ display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 3px; flex-shrink: 0; }}
+  .pagetabs a {{ padding: 5px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-weight: 550; font-size: 13px; white-space: nowrap; }}
+  .pagetabs a.on {{ background: var(--accent-soft); color: var(--accent); }}
+  .pagetabs a:not(.on):hover {{ color: var(--text); }}
   #topActions {{ display: flex; gap: 8px; align-items: center; flex-shrink: 0; }}
   #topActions button, #refreshBtn {{
     background: var(--panel); color: var(--text); border: 1px solid var(--border-strong);
@@ -1148,7 +1152,9 @@ def generate(client=None):
 
   @media (max-width: 720px) {{
     .wrap {{ padding: 16px 12px 28px 12px; }}
-    .topbar-inner {{ padding: 10px 12px; }}
+    .topbar-inner {{ padding: 10px 12px; flex-wrap: wrap; row-gap: 8px; }}
+    .pagetabs {{ order: 3; width: 100%; }}
+    .pagetabs a {{ flex: 1; text-align: center; }}
     .brand .sub, #topActions .badge {{ display: none; }}
     .cards .card:last-child:nth-child(odd) {{ grid-column: span 2; }}
     .brand-mark {{ width: 28px; height: 28px; font-size: 14px; }}
@@ -1181,6 +1187,7 @@ def generate(client=None):
         <div class="sub">Opening Range Breakout &middot; Alpaca paper account</div>
       </div>
     </div>
+    <nav class="pagetabs" aria-label="Dashboards"><a class="on" href="index.html">Day Trading</a><a href="spreads.html">Credit Spreads</a></nav>
     <div id="topActions">
       <div class="updated" id="updatedInfo" title="Last updated {generated_at}">
         <span class="upd-label">Last updated</span> <span id="lastUpdated">{generated_at_html}</span>
