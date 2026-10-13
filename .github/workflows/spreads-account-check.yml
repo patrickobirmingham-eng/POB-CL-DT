@@ -1,0 +1,70 @@
+name: Spreads Account Check
+
+# One-off sanity check for the credit-spreads paper account: confirms the
+# SPREADS_* secrets exist, log in to Alpaca PAPER, have options trading
+# enabled, and belong to a different account than the day-trading bot.
+# Prints no keys and only the last 4 characters of account numbers.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check spreads account
+        env:
+          S_KEY: ${{ secrets.SPREADS_APCA_API_KEY_ID }}
+          S_SECRET: ${{ secrets.SPREADS_APCA_API_SECRET_KEY }}
+          D_KEY: ${{ secrets.APCA_API_KEY_ID }}
+          D_SECRET: ${{ secrets.APCA_API_SECRET_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, urllib.request, urllib.error
+
+          def account(key, secret):
+              req = urllib.request.Request(
+                  "https://paper-api.alpaca.markets/v2/account",
+                  headers={"APCA-API-KEY-ID": key, "APCA-API-SECRET-KEY": secret})
+              try:
+                  with urllib.request.urlopen(req, timeout=20) as r:
+                      return json.load(r), None
+              except urllib.error.HTTPError as e:
+                  return None, f"HTTP {e.code}"
+              except Exception as e:
+                  return None, str(e)
+
+          ok = True
+          if not os.environ.get("S_KEY") or not os.environ.get("S_SECRET"):
+              print("FAIL: SPREADS_APCA_API_KEY_ID and/or SPREADS_APCA_API_SECRET_KEY secret is missing or empty.")
+              sys.exit(1)
+
+          s, err = account(os.environ["S_KEY"], os.environ["S_SECRET"])
+          if s is None:
+              print(f"FAIL: spreads keys did not log in to Alpaca PAPER ({err}). "
+                    "Check they were generated on the new PAPER account and copied fully.")
+              sys.exit(1)
+          print(f"OK: spreads keys log in to Alpaca PAPER, account ...{str(s.get('account_number',''))[-4:]}")
+          print(f"   status={s.get('status')}  equity=${float(s.get('equity', 0)):,.2f}  "
+                f"cash=${float(s.get('cash', 0)):,.2f}")
+          lvl = s.get("options_trading_level")
+          appr = s.get("options_approved_level")
+          print(f"   options_approved_level={appr}  options_trading_level={lvl}  "
+                f"options_buying_power=${float(s.get('options_buying_power') or 0):,.2f}")
+          if lvl is None or int(lvl) < 3:
+              print("WARN: options trading level is below 3 - credit spreads need Level 3.")
+              ok = False
+
+          if os.environ.get("D_KEY"):
+              d, _ = account(os.environ["D_KEY"], os.environ["D_SECRET"])
+              if d and d.get("id") == s.get("id"):
+                  print("FAIL: spreads keys point at the SAME account as the day-trading bot.")
+                  sys.exit(1)
+              if d:
+                  print(f"OK: different from the day-bot account ...{str(d.get('account_number',''))[-4:]}")
+          print("RESULT: ALL GOOD" if ok else "RESULT: NEEDS ATTENTION")
+          PY
