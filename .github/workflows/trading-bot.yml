@@ -40,7 +40,10 @@ concurrency:
 jobs:
   run-session:
     runs-on: ubuntu-latest
-    timeout-minutes: 210   # safety cap per job (3.5h) — well under GitHub's 6h hard limit
+    # Safety cap per job, well under GitHub's 6h hard limit. The morning leg
+    # runs 9:30-13:00 ET (exactly 210 min) plus setup and the save step, so a
+    # 210-min cap cut it off 3 s after the save on 2026-10-13. Leave headroom.
+    timeout-minutes: 240
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
