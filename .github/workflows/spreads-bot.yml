@@ -1,0 +1,73 @@
+name: Credit Spreads Bot
+
+# Bull put credit-spread bot on its OWN Alpaca paper account (SPREADS_* secrets).
+# Each run is short: check open spreads (take profit / stop / roll), open new
+# ones within the limits, rebuild docs/spreads.html, save state, exit.
+#
+# Schedule: every 15 minutes, 9:07 AM - 3:52 PM ET on weekdays (EDT, UTC-4).
+# Times are UTC; in EST (early Nov - mid Mar) runs land an hour earlier in ET,
+# which only means the first runs see a closed market and do nothing. New
+# spreads are only opened between OPEN_START_ET and OPEN_END_ET
+# (spreads_settings.json) whatever the cron says. Minutes are off :00/:30
+# because GitHub drops scheduled runs most often at those peak times.
+
+on:
+  schedule:
+    - cron: "7,22,37,52 13-19 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: scan and log what it would trade, place no orders, save nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write   # commit spreads_state.json / spreads_trades.csv / docs/spreads.html
+
+concurrency:
+  group: spreads-bot
+  cancel-in-progress: false   # never cut a run off between placing an order and saving state
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      SPREADS_APCA_API_KEY_ID: ${{ secrets.SPREADS_APCA_API_KEY_ID }}
+      SPREADS_APCA_API_SECRET_KEY: ${{ secrets.SPREADS_APCA_API_SECRET_KEY }}
+      # Only used to refuse to run if the spreads keys are the day bot's keys.
+      APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
+      DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          ref: main          # latest state, not the commit the run was queued at
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run spreads bot
+        run: |
+          if [ "$DRY" = "true" ]; then
+            python spreads_bot.py --dry-run
+          else
+            python spreads_bot.py
+          fi
+
+      - name: Build dashboard
+        if: always()
+        run: python spreads_dashboard.py
+
+      - name: Save state, trades and dashboard
+        if: always() && env.DRY != 'true'
+        run: |
+          bash scripts/publish_files.sh "Update spreads bot state and dashboard [skip ci]" \
+            spreads_state.json spreads_trades.csv spreads_earnings.json docs/spreads.html
