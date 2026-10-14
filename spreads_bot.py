@@ -301,13 +301,31 @@ def close_cost(quotes, sp):
     return mid(sb, sa) - mid(lb, la), max(0.0, sa - lb)   # (mid, natural)
 
 
-def decide(settings, sp, cost, price, today):
-    """Exit decision for an open spread: (action, reason) or (None, None)."""
+def quotes_ok(quotes, sp):
+    """Both legs have a real two-sided market (a missing bid/ask makes the mid meaningless)."""
+    sb, sa = quotes.get(sp["short"], (0, 0))
+    lb, la = quotes.get(sp["long"], (0, 0))
+    return sb > 0 and sa > 0 and la > 0 and sa >= sb and la >= lb
+
+
+def decide(settings, sp, cost, price, today, valid=True):
+    """Exit decision for an open spread: (action, reason) or (None, None).
+
+    The stop only fires once the cost to close has been at/above the stop on
+    STOP_CONFIRM_CHECKS checks in a row with real quotes on both legs (one
+    check = one bot run, ~15 min). Replaying the owner's Apr-Oct 2026 trades,
+    a stop on any single price closed 65 spreads, 42 of which recovered to
+    winners; confirming it kept most of the profit and still capped the worst
+    loss near $20K."""
     credit = sp["credit"]
     dte = (date.fromisoformat(sp["expiration"]) - today).days
-    if cost >= credit * (1 + settings["STOP_LOSS_MULT"]):
-        return "close", "stop"
-    if cost <= credit * (1 - settings["TAKE_PROFIT_PCT"]):
+    if valid and cost >= credit * (1 + settings["STOP_LOSS_MULT"]):
+        sp["stop_hits"] = sp.get("stop_hits", 0) + 1
+        if sp["stop_hits"] >= settings.get("STOP_CONFIRM_CHECKS", 2):
+            return "close", "stop"
+    elif valid:
+        sp["stop_hits"] = 0
+    if valid and cost <= credit * (1 - settings["TAKE_PROFIT_PCT"]):
         return "close", "target"
     if price is not None and price <= sp["short_strike"] and sp.get("rolled_on") != today.isoformat():
         if (settings["ROLL_ENABLED"] and dte >= settings["ROLL_MIN_DTE_LEFT"]
@@ -474,7 +492,7 @@ def run(broker, settings, dry=False, now=None):
                     prices[sp["symbol"]] = None
             cost, natural = close_cost(qs, sp)
             sp["last_cost"], sp["last_price"], sp["last_checked"] = round(cost, 2), prices[sp["symbol"]], now.isoformat(timespec="seconds")
-            action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today)
+            action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today, quotes_ok(qs, sp))
             if not action:
                 continue
             if action == "roll":

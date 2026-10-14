@@ -52,6 +52,7 @@ $FIELDS = [
     'MIN_NATURAL_PCT_OF_MID'  => ['num', 0, 1],
     'TAKE_PROFIT_PCT'         => ['num', 0.05, 0.95],
     'STOP_LOSS_MULT'          => ['num', 0.25, 10],
+    'STOP_CONFIRM_CHECKS'     => ['int', 1, 8],
     'MAX_LOSS_PER_SPREAD'     => ['num', 100, 200000],
     'MAX_OPEN_SPREADS'        => ['int', 0, 100],
     'MAX_PER_SYMBOL'          => ['int', 0, 20],
