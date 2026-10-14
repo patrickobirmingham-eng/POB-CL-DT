@@ -253,6 +253,8 @@ th:hover{color:var(--text)}
 th .arr{font-size:10px;margin-left:3px;color:var(--accent)}
 td{padding:11px 8px;font-size:14.5px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
 th.l,td.l{text-align:left}
+tr.total td{font-weight:700;border-top:2px solid var(--border-strong);border-bottom:none}
+tr.total:hover td{background:none}
 tr:hover td{background:var(--row-hover)}
 .sym{font-weight:650}
 .bar{position:relative;width:150px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(240,80,78,.35) 0,rgba(240,80,78,.35) 80%,rgba(34,197,94,.35) 80%,rgba(34,197,94,.35) 100%);display:inline-block;vertical-align:middle}
@@ -422,17 +424,20 @@ function setRange(v){
   $('from').value=iso(f);$('to').value=iso(t);
 }
 const sortState={tx:{k:0,dir:-1}};
-function sortable(id,cols,rows,render,q){
+function sortable(id,cols,rows,render,q,foot){
   const st=sortState[id]||{};
   const term=($(q).value||'').toLowerCase();
   let r=rows.filter(x=>!term||cols.some(c=>String(c.key?x[c.key]:'').toLowerCase().includes(term)||(c.search&&c.search(x).toLowerCase().includes(term))));
   if(st.k!=null){const c=cols[st.k];r=[...r].sort((a,b)=>{const va=c.sort?c.sort(a):a[c.key],vb=c.sort?c.sort(b):b[c.key];return (va>vb?1:va<vb?-1:0)*st.dir})}
   const head='<tr>'+cols.map((c,i)=>`<th class="${c.l?'l':''}" data-i="${i}">${c.t}${st.k===i?`<span class="arr">${st.dir>0?'▲':'▼'}</span>`:''}</th>`).join('')+'</tr>';
   const t=$(id);
-  t.innerHTML=head+(r.length?r.map(render).join(''):`<tr><td colspan="${cols.length}" class="empty">${rows.length?'No matches':'Nothing yet'}</td></tr>`);
+  t.innerHTML=head+(r.length?r.map(render).join(''):`<tr><td colspan="${cols.length}" class="empty">${rows.length?'No matches':'Nothing yet'}</td></tr>`)
+    +(foot&&r.length?foot(r):'');
   t.querySelectorAll('th').forEach(th=>th.onclick=()=>{const i=+th.dataset.i;sortState[id]={k:i,dir:st.k===i?-st.dir:1};draw()});
   return r;
 }
+// totals row: {column index: html}; first column says how many rows are added up
+const totalRow=(cols,r,cells)=>'<tr class="total">'+cols.map((c,i)=>i===0?`<td class="l">Total (${r.length})</td>`:`<td>${cells[i]??''}</td>`).join('')+'</tr>';
 // position of the spread between its stop (left) and profit target (right)
 const prog=s=>(s.cr-s.px)/s.cr;
 function bar(s){const lo=-SL,hi=TP,x=Math.max(0,Math.min(100,(prog(s)-lo)/(hi-lo)*100)),z=(0-lo)/(hi-lo)*100;return `<span class="bar" style="background:linear-gradient(90deg,rgba(240,80,78,.35) 0,rgba(240,80,78,.35) ${z}%,rgba(34,197,94,.35) ${z}%,rgba(34,197,94,.35) 100%)"><b style="left:${z}%"></b><i style="left:calc(${x}% - 1px)"></i></span><div class="lbl"><span>stop</span><span>open</span><span>target</span></div>`}
@@ -466,11 +471,14 @@ function draw(){
    group('PROFIT &amp; LOSS',[tile('Realized Profit / Loss',tm(realized),cls(realized)),tile('Open Premium',tm(openPrem),'warn'),tile('Assigned Premium',tm(assigned),'warn')])+
    group('PERFORMANCE',[tile('Avg Premium per Trade',tm(avgPrem),'pos'),tile('% Premium Captured',closedR.length?captured.toFixed(1)+'%':'—',captured>=50?'pos':closedR.length?'neg':'muted'),tile('Commission Drag',tm(fees),'warn')])+
    group('ACTIVITY',[tile('Open / Closed Positions',`${openSp.length} / ${closedR.length}`,'warn'),tile('Open / Closed Contracts',`${sum(openSp,s=>s.q)} / ${sum(closedR,s=>s.q)}`,'warn'),tile('Avg Days Held',closedR.length?days.toFixed(1)+'d':'—','warn')]);
-  sortable('open',openCols,openSp,s=>`<tr><td class="l">${sym(s)}${s.rolls?` <span class="tag rolled" title="rolled ${s.rolls}×">rolled</span>`:''}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.e))} <span class="muted">(${s.dte}d)</span></td><td>${s.q}</td><td>${s.d.toFixed(2)}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td>${bar(s)}</td><td>${m0(s.ml)}</td></tr>`,'qOpen');
+  sortable('open',openCols,openSp,s=>`<tr><td class="l">${sym(s)}${s.rolls?` <span class="tag rolled" title="rolled ${s.rolls}×">rolled</span>`:''}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.e))} <span class="muted">(${s.dte}d)</span></td><td>${s.q}</td><td>${s.d.toFixed(2)}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td>${bar(s)}</td><td>${m0(s.ml)}</td></tr>`,'qOpen',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),pl=S(s=>s.pl);
+    return totalRow(openCols,r,{[openCols.findIndex(c=>c.key==='credit')]:m0(S(s=>s.credit)),[openCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
+      [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`})});
   $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
   sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span></td></tr>`,'qClosed');
   $('closedsub').textContent=`${closedR.length} in range · ${closedR.filter(s=>s.pl>0).length} winners`;
-  sortable('tx',txCols,ftx,x=>`<tr><td>${fmt(D(x.dt))}</td><td>${esc(x.act)}</td><td class="l sym">${esc(x.sym)}</td><td>${esc(x.leg)}</td><td>${fmt(D(x.exp))}</td><td>${x.q}</td><td>${x.px?money(Math.abs(x.px)):'—'}</td><td>${money(x.fee)}</td><td class="${cls(x.amt)}">${money(x.amt,true)}</td></tr>`,'qTx');
+  sortable('tx',txCols,ftx,x=>`<tr><td>${fmt(D(x.dt))}</td><td>${esc(x.act)}</td><td class="l sym">${esc(x.sym)}</td><td>${esc(x.leg)}</td><td>${fmt(D(x.exp))}</td><td>${x.q}</td><td>${x.px?money(Math.abs(x.px)):'—'}</td><td>${money(x.fee)}</td><td class="${cls(x.amt)}">${money(x.amt,true)}</td></tr>`,'qTx',r=>{const a=r.reduce((x,y)=>x+y.amt,0);
+    return totalRow(txCols,r,{[txCols.findIndex(c=>c.key==='amt')]:`<span class="${cls(a)}">${money(a,true)}</span>`})});
   $('txsub').textContent=`${ftx.length} in range`;
   const risk=sum(openSp,s=>s.ml), by={};openSp.forEach(s=>{const k=s.sec.replace(' ETF','');by[k]=(by[k]||0)+1});
   $('risk').innerHTML=`<div style="font-size:22px;font-weight:650">${m0(risk)}</div><div class="muted" style="font-size:12px;margin-bottom:10px">of ${m0(MAXN*MAXL)} allowed (${MAXN} × ${m0(MAXL)})</div>`+(Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<div class="sector"><span>${esc(s)}</span><div class="track"><div class="fill ${n>=MAXSEC?'full':''}" style="width:${Math.min(100,n/MAXSEC*100)}%"></div></div><span class="muted">${n}/${MAXSEC}</span></div>`).join(''):'<div class="empty">No open spreads</div>');
