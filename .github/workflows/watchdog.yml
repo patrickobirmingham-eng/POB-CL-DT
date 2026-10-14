@@ -136,3 +136,37 @@ jobs:
             "https://api.github.com/repos/$REPO/actions/workflows/trading-bot.yml/dispatches" \
             -d '{"ref":"main"}'
           echo "Triggered. It will show up on the Actions tab as a workflow_dispatch run."
+
+      # The credit-spreads bot (spreads-bot.yml) runs short jobs every 15 min
+      # from its own schedule, which GitHub also drops (2026-10-14: the 9:07
+      # and 9:22 runs never fired). This watchdog is dispatched every 15 min
+      # by cron-job.org, so it doubles as the spreads bot's backstop: during
+      # market hours, if no spreads run started in the last 12 minutes and
+      # none is waiting/running, start one (a real run, not a dry run).
+      - name: Keep the credit-spreads bot running
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          OPEN=$(python3 -c "
+          from datetime import datetime, time
+          from zoneinfo import ZoneInfo
+          now = datetime.now(ZoneInfo('America/New_York'))
+          print('yes' if now.weekday() < 5 and time(9, 35) <= now.time() <= time(15, 55) else 'no')
+          ")
+          if [ "$OPEN" != "yes" ]; then echo "Market closed - nothing to do."; exit 0; fi
+          NEED=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/actions/workflows/spreads-bot.yml/runs?per_page=10" | python3 -c "
+          import json, sys
+          from datetime import datetime, timezone, timedelta
+          runs = json.load(sys.stdin).get('workflow_runs', [])
+          now = datetime.now(timezone.utc)
+          busy = any(r['status'] in ('queued', 'in_progress', 'waiting', 'pending') for r in runs)
+          recent = any(now - datetime.fromisoformat(r['created_at'].replace('Z', '+00:00')) < timedelta(minutes=12) for r in runs)
+          print('no' if busy or recent else 'yes')
+          ")
+          if [ "$NEED" != "yes" ]; then echo "Spreads bot ran recently or is running - nothing to do."; exit 0; fi
+          echo "No spreads run in the last 12 minutes - starting spreads-bot.yml."
+          curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/actions/workflows/spreads-bot.yml/dispatches" \
+            -d '{"ref":"main","inputs":{"dry_run":"false"}}'
