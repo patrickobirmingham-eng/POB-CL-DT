@@ -189,8 +189,9 @@ def build():
 
 
 TEMPLATE = r"""<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+<script>try{if(localStorage.getItem("orb-dashboard-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Credit Spreads</title>
@@ -199,55 +200,56 @@ TEMPLATE = r"""<!doctype html>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{--bg:#0a0d14;--panel:#111621;--border:#1f2637;--border-strong:#2b344a;--text:#e8ebf2;--muted:#8791a7;--faint:#5d667b;--pos:#22c55e;--neg:#f0504e;--accent:#4f8cff;--accent-soft:rgba(79,140,255,.14);--row-hover:rgba(255,255,255,.03);--grid:rgba(255,255,255,.06);--warn:#f5a524}
-@media (prefers-color-scheme: light){:root{--bg:#f3f5f9;--panel:#fff;--border:#e3e8f0;--border-strong:#cfd6e3;--text:#131a29;--muted:#5a6479;--faint:#8a93a6;--pos:#12833f;--neg:#c62828;--accent:#1f5fe0;--accent-soft:rgba(31,95,224,.10);--row-hover:rgba(15,30,60,.035);--grid:rgba(15,30,60,.08);--warn:#c46a00}}
+[data-theme="light"]{--bg:#f3f5f9;--panel:#fff;--border:#e3e8f0;--border-strong:#cfd6e3;--text:#131a29;--muted:#5a6479;--faint:#8a93a6;--pos:#12833f;--neg:#c62828;--accent:#1f5fe0;--accent-soft:rgba(31,95,224,.10);--row-hover:rgba(15,30,60,.035);--grid:rgba(15,30,60,.08);--warn:#c46a00}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px}
-header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-header h1{font-size:16px;margin:0;font-weight:650}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.45}
+header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border);padding:14px max(32px,calc((100% - 1736px)/2));display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;font-weight:650}
 .tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px}
-.tabs a{padding:5px 12px;border-radius:6px;color:var(--muted);text-decoration:none;font-weight:550;font-size:13px}
+.tabs a{padding:6px 14px;border-radius:6px;color:var(--muted);text-decoration:none;font-weight:550;font-size:14px}
 .tabs a.on{background:var(--accent-soft);color:var(--accent)}
 .tabs a:not(.on):hover{color:var(--text)}
-.right{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap}
+.right{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px;flex-wrap:wrap}
 .pill{border:1px solid var(--border-strong);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600}
 .pill.paper{color:var(--warn);border-color:var(--warn)}
-.btn{background:var(--panel);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit}
+.btn{background:var(--panel);color:var(--text);border:1px solid var(--border-strong);border-radius:8px;padding:7px 13px;font-size:14px;cursor:pointer;font-weight:600;font-family:inherit}
 .btn:hover{border-color:var(--accent)}
 .banner{background:rgba(240,80,78,.12);color:var(--neg);text-align:center;padding:6px 16px;font-size:12px;font-weight:600}
-main{max-width:1320px;margin:0 auto;padding:16px}
-.acct{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:center;margin-bottom:12px;color:var(--muted);font-size:13px}
+main{max-width:1800px;margin:0 auto;padding:28px 32px 40px}
+.acct{display:flex;flex-wrap:wrap;gap:8px 28px;justify-content:center;margin-bottom:16px;color:var(--muted);font-size:16px}
 .acct b{color:var(--text);font-variant-numeric:tabular-nums}
 .filters{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:center}
 .fgroup{display:flex;flex-direction:column;align-items:center;gap:6px;max-width:100%}
-.fgroup>label,.fgroup>.flabel{font-size:13px;font-weight:600}
+.fgroup>label,.fgroup>.flabel{font-size:14px;font-weight:600}
 .checks{display:flex;flex-wrap:wrap;gap:4px 14px;border:1px solid var(--border-strong);border-radius:8px;padding:7px 12px;justify-content:center}
-.checks label{display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer;white-space:nowrap}
+.checks label{display:flex;gap:6px;align-items:center;font-size:14px;cursor:pointer;white-space:nowrap}
 .checks input{accent-color:var(--accent);width:15px;height:15px}
-select,input[type=date],input[type=search]{background:var(--panel);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit}
-input[type=search]{width:240px;max-width:100%}
-.groups{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
-@media (max-width:1100px){.groups{grid-template-columns:repeat(2,1fr)}}
+select,input[type=date],input[type=search]{background:var(--panel);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:7px 11px;font-size:14px;font-family:inherit}
+input[type=search]{width:260px;max-width:100%}
+.groups{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:20px}
+@media (min-width:1700px){.groups{grid-template-columns:repeat(4,1fr)}}
 @media (max-width:640px){.groups{grid-template-columns:1fr}}
-.gtitle{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.gtitle{font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .gtitle:after{content:"";flex:1;height:1px;background:var(--border)}
-.gtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.tile{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
-.tile .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.02em;line-height:1.3}
-.tile .v{font-size:16px;font-weight:700;margin-top:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.gtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.tile .k{color:var(--muted);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;line-height:1.3}
+.tile .v{font-size:24px;font-weight:650;letter-spacing:-.02em;margin-top:8px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pos{color:var(--pos)} .neg{color:var(--neg)} .warn{color:var(--warn)} .muted{color:var(--muted)}
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;min-width:0}
-.phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.phead h2{font-size:14px;margin:0;font-weight:650}
-.phead .sub{color:var(--muted);font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:20px;min-width:0}
+.phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.phead h2{font-size:14px;margin:0;font-weight:650;text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:10px}
+.phead h2:before{content:"";width:3px;height:15px;border-radius:2px;background:var(--accent)}
+.phead .sub{color:var(--muted);font-size:13px}
 .phead input{margin-left:auto}
-.row2{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.row2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
 @media (max-width:1000px){.row2{grid-template-columns:1fr}}
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-th{color:var(--muted);font-weight:550;font-size:12px;text-align:center;padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;text-align:center;padding:10px 8px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{color:var(--text)}
 th .arr{font-size:10px;margin-left:3px;color:var(--accent)}
-td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
+td{padding:11px 8px;font-size:14.5px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
 th.l,td.l{text-align:left}
 tr:hover td{background:var(--row-hover)}
 .sym{font-weight:650}
@@ -264,18 +266,18 @@ tr:hover td{background:var(--row-hover)}
 .sector .track{height:10px;background:var(--grid);border-radius:5px;overflow:hidden}
 .sector .fill{height:100%;background:var(--accent);border-radius:5px}
 .sector .fill.full{background:var(--warn)}
-.note{color:var(--faint);font-size:12px;margin-top:8px}
+.note{color:var(--faint);font-size:13px;margin-top:8px}
 .empty{color:var(--faint);text-align:center;padding:14px}
-.log{list-style:none;margin:0;padding:0;max-height:320px;overflow-y:auto;font-size:13px}
+.log{list-style:none;margin:0;padding:0;max-height:360px;overflow-y:auto;font-size:14px}
 .log li{padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:10px}
 .log li span:first-child{color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums}
-svg text{fill:var(--muted);font-size:10px}
+svg text{fill:var(--muted);font-size:11px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:20}
 .modal.on{display:flex}
 .modal .box{background:var(--panel);border:1px solid var(--border-strong);border-radius:12px;padding:18px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto}
 .modal h2{margin:0 0 10px;font-size:16px}
 .modal table td{text-align:left;white-space:normal}
-@media (max-width:640px){main{padding:12px 16px}header{padding:10px 16px}.right{margin-left:0;width:100%}.phead input{margin-left:0;width:100%}.tabs{order:3;width:100%}.tabs a{flex:1;text-align:center}}
+@media (max-width:720px){body{font-size:14px}main{padding:16px}header{padding:10px 16px}.panel{padding:14px 12px}.tile .v{font-size:19px}td{font-size:13px}.right{margin-left:0;width:100%}.phead input{margin-left:0;width:100%}.tabs{order:3;width:100%}.tabs a{flex:1;text-align:center}}
 </style>
 </head>
 <body>
@@ -288,6 +290,7 @@ svg text{fill:var(--muted);font-size:10px}
     <button class="btn" onclick="location.reload()">&#8635; Refresh</button>
     <span class="pill paper">PAPER</span>
     <button class="btn" onclick="document.getElementById('rules').classList.add('on')">&#9881; Rules</button>
+    <button class="btn" id="themeBtn" onclick="toggleTheme()"></button>
   </div>
 </header>
 <main>
@@ -355,10 +358,14 @@ svg text{fill:var(--muted);font-size:10px}
 </div></div>
 <script>
 const DATA=__DATA__;
+function themeLabel(){const l=document.documentElement.getAttribute('data-theme')==='light';document.getElementById('themeBtn').innerHTML=l?'&#9790; Dark':'&#9728; Light'}
+function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('orb-dashboard-theme',t)}catch(e){}themeLabel()}
+themeLabel();
 const R=DATA.rules, TP=R.TAKE_PROFIT_PCT||.5, SL=R.STOP_LOSS_MULT||2, MAXN=R.MAX_OPEN_SPREADS||20, MAXL=R.MAX_LOSS_PER_SPREAD||30000, MAXSEC=R.MAX_PER_SECTOR||5;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const money=(v,s=false,c=2)=>(v<0?'−':(s&&v>0?'+':''))+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:c,maximumFractionDigits:c});
+const tm=v=>Math.abs(v)>=1e4?money(v,false,0):money(v);
 const m0=v=>money(v,false,0), cls=v=>v>0?'pos':v<0?'neg':'muted';
 const D=s=>new Date(s+'T12:00:00'), fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 const today=D(DATA.today), iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -428,9 +435,9 @@ function draw(){
   const tile=(k,v,c)=>`<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`;
   const group=(t,ts)=>`<div><div class="gtitle">${t}</div><div class="gtiles">${ts.join('')}</div></div>`;
   $('groups').innerHTML=
-   group('CASH FLOW',[tile('Sell to Open + Buy to Open',money(opens),cls(opens)),tile('Buy to Close + Sell to Close',money(closes),cls(closes)),tile('Cash Flow',money(opens+closes),cls(opens+closes))])+
-   group('PROFIT &amp; LOSS',[tile('Realized Profit / Loss',money(realized),cls(realized)),tile('Open Premium',money(openPrem),'warn'),tile('Assigned Premium',money(assigned),'warn')])+
-   group('PERFORMANCE',[tile('Avg Premium per Trade',money(avgPrem),'pos'),tile('% Premium Captured',closedR.length?captured.toFixed(1)+'%':'—',captured>=50?'pos':closedR.length?'neg':'muted'),tile('Commission Drag',money(fees),'warn')])+
+   group('CASH FLOW',[tile('Sell to Open + Buy to Open',tm(opens),cls(opens)),tile('Buy to Close + Sell to Close',tm(closes),cls(closes)),tile('Cash Flow',tm(opens+closes),cls(opens+closes))])+
+   group('PROFIT &amp; LOSS',[tile('Realized Profit / Loss',tm(realized),cls(realized)),tile('Open Premium',tm(openPrem),'warn'),tile('Assigned Premium',tm(assigned),'warn')])+
+   group('PERFORMANCE',[tile('Avg Premium per Trade',tm(avgPrem),'pos'),tile('% Premium Captured',closedR.length?captured.toFixed(1)+'%':'—',captured>=50?'pos':closedR.length?'neg':'muted'),tile('Commission Drag',tm(fees),'warn')])+
    group('ACTIVITY',[tile('Open / Closed Positions',`${openSp.length} / ${closedR.length}`,'warn'),tile('Open / Closed Contracts',`${sum(openSp,s=>s.q)} / ${sum(closedR,s=>s.q)}`,'warn'),tile('Avg Days Held',closedR.length?days.toFixed(1)+'d':'—','warn')]);
   sortable('open',openCols,openSp,s=>`<tr><td class="l">${sym(s)}${s.rolls?` <span class="tag rolled" title="rolled ${s.rolls}×">rolled</span>`:''}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.e))} <span class="muted">(${s.dte}d)</span></td><td>${s.q}</td><td>${s.d.toFixed(2)}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td>${bar(s)}</td><td>${m0(s.ml)}</td></tr>`,'qOpen');
   $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
@@ -453,9 +460,9 @@ $('range').value='month';setRange('month');draw();
 (function(){
   const pts=DATA.daily;
   if(!pts.length){$('chart').innerHTML='<div class="empty">No trading days yet</div>';return}
-  const vals=pts.map(p=>p.v), W=640,H=220,pad=34,mx=Math.max(1,...vals.map(Math.abs)),bw=(W-pad*2)/vals.length,y=v=>H/2-v/mx*(H/2-20);
-  const every=Math.ceil(vals.length/12);
-  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Daily profit and loss bars"><line x1="${pad}" x2="${W-pad}" y1="${H/2}" y2="${H/2}" stroke="var(--border-strong)"/>`;
+  const vals=pts.map(p=>p.v), W=Math.max(300,$('chart').clientWidth||640),H=260,pad=50,mx=Math.max(1,...vals.map(Math.abs)),bw=(W-pad*2)/vals.length,y=v=>H/2-v/mx*(H/2-20);
+  const every=Math.ceil(vals.length/Math.max(4,Math.floor(W/70)));
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Daily profit and loss bars"><line x1="${pad}" x2="${W-pad}" y1="${H/2}" y2="${H/2}" stroke="var(--border-strong)"/>`;
   vals.forEach((v,i)=>{const x=pad+i*bw+bw*.18,h=Math.max(1,Math.abs(y(v)-H/2)),lab=fmt(D(pts[i].d));svg+=`<rect x="${x}" y="${v>0?y(v):H/2}" width="${bw*.64}" height="${h}" rx="2" fill="${v>=0?'var(--pos)':'var(--neg)'}"><title>${lab}: ${money(v,true,0)}</title></rect>`+(i%every===0?`<text x="${x+bw*.32}" y="${H-4}" text-anchor="middle">${lab}</text>`:'')});
   $('chart').innerHTML=svg+`<text x="4" y="14">+${m0(mx)}</text><text x="4" y="${H-22}">−${m0(mx)}</text></svg>`;
 })();
