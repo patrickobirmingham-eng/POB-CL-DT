@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generated-at" content="1791927988">
+<meta name="generated-at" content="1791936196">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -60,6 +60,10 @@
     color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   }
   .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .pagetabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 3px; flex-shrink: 0; }
+  .pagetabs a { padding: 5px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-weight: 550; font-size: 13px; white-space: nowrap; }
+  .pagetabs a.on { background: var(--accent-soft); color: var(--accent); }
+  .pagetabs a:not(.on):hover { color: var(--text); }
   #topActions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
   #topActions button, #refreshBtn {
     background: var(--panel); color: var(--text); border: 1px solid var(--border-strong);
@@ -246,7 +250,9 @@
 
   @media (max-width: 720px) {
     .wrap { padding: 16px 12px 28px 12px; }
-    .topbar-inner { padding: 10px 12px; }
+    .topbar-inner { padding: 10px 12px; flex-wrap: wrap; row-gap: 8px; }
+    .pagetabs { order: 3; width: 100%; }
+    .pagetabs a { flex: 1; text-align: center; }
     .brand .sub, #topActions .badge { display: none; }
     .cards .card:last-child:nth-child(odd) { grid-column: span 2; }
     .brand-mark { width: 28px; height: 28px; font-size: 14px; }
@@ -318,9 +324,10 @@
         <div class="sub">Opening Range Breakout &middot; Alpaca paper account</div>
       </div>
     </div>
+    <nav class="pagetabs" aria-label="Dashboards"><a class="on" href="index.html">Day Trading</a><a href="spreads.html">Credit Spreads</a></nav>
     <div id="topActions">
-      <div class="updated" id="updatedInfo" title="Last updated 2026-10-13 05:46 PM ET">
-        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Oct 13, </span><span class="upd-time">5:46 PM ET</span></span>
+      <div class="updated" id="updatedInfo" title="Last updated 2026-10-13 08:03 PM ET">
+        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Oct 13, </span><span class="upd-time">8:03 PM ET</span></span>
         <span id="refreshStatus" class="muted"></span>
       </div>
       <button id="refreshBtn" onclick="refreshDashboard()" title="Refresh" aria-label="Refresh">&#8635;<span class="btn-label"> Refresh</span></button>
@@ -4646,7 +4653,7 @@
     // reload. Ask for the published page with a cache-busting URL, and if it
     // was built after this one, switch to it. Runs every minute, when the tab
     // comes back into view, and first thing when Refresh is pressed.
-    const PAGE_BUILT = 1791927988;
+    const PAGE_BUILT = 1791936196;
     async function checkForNewerPage(force) {
       try {
         const resp = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
