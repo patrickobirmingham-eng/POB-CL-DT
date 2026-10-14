@@ -204,6 +204,9 @@ TEMPLATE = r"""<!doctype html>
 body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.45}
 header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border);padding:14px max(32px,calc((100% - 1736px)/2));display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 header h1{font-size:18px;margin:0;font-weight:650}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{width:32px;height:32px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--accent),#7c5cff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700}
+@media (max-width:720px){.brand-mark{width:28px;height:28px;font-size:14px}}
 .tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px}
 .tabs a{padding:6px 14px;border-radius:6px;color:var(--muted);text-decoration:none;font-weight:550;font-size:14px}
 .tabs a.on{background:var(--accent-soft);color:var(--accent)}
@@ -299,7 +302,7 @@ svg text{fill:var(--muted);font-size:11px}
 <body>
 <div class="banner" id="errbanner" style="display:none"></div>
 <header>
-  <h1>Claude.AI Paper Trading</h1>
+  <div class="brand"><div class="brand-mark">&#9650;</div><h1>Claude.AI Paper Trading</h1></div>
   <nav class="tabs" aria-label="Dashboards"><a href="index.html">Day Trading</a><a href="spreads.html" class="on">Credit Spreads</a></nav>
   <div class="right">
     <span id="updated"></span>
