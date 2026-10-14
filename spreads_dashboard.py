@@ -5,7 +5,7 @@ day-trading dashboard in docs/index.html).
 Data:
   - spreads_state.json   open spreads, the bot's recent decisions, today's skips
   - spreads_trades.csv   every closed spread
-  - spreads_settings.json the rules (shown in the Rules box)
+  - spreads_settings.json the rules (shown, and editable, in the Rules box)
   - Alpaca (SPREADS_* keys): account, fills/expirations/assignments, daily P&L
 
 Everything is embedded in the page as JSON; filters, tiles and sorting run in the
@@ -26,6 +26,10 @@ ET = ZoneInfo("America/New_York")
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "docs", "spreads.html")
 PAPER_URL = "https://paper-api.alpaca.markets"
+# The Rules box saves through server/spreads-settings-save.php on the owner's web
+# server (next to orb-settings-save.php, which does the same for the day bot).
+# The passcode is typed on every save and never stored in this page.
+SAVE_URL = os.getenv("SPREADS_SETTINGS_SAVE_URL", "https://stunster.com/spreads-settings-save.php")
 
 
 def read_json(name, default):
@@ -169,17 +173,12 @@ def build():
             daily = daily_pl(api)
         except Exception as e:
             errors.append(f"portfolio history: {e}")
-    rules = {k: settings.get(k) for k in ("MIN_DTE", "MAX_DTE", "MIN_DELTA", "MAX_DELTA", "TAKE_PROFIT_PCT",
-                                         "STOP_LOSS_MULT", "MAX_LOSS_PER_SPREAD", "MAX_OPEN_SPREADS",
-                                         "MAX_PER_SYMBOL", "MAX_PER_SECTOR", "MAX_NEW_PER_DAY", "ROLL_ENABLED",
-                                         "ROLL_MIN_DTE_LEFT", "ROLL_TARGET_DTE", "MAX_ROLLS", "AVOID_EARNINGS",
-                                         "WIDTH_TABLE", "ENABLED")}
-    rules["WATCHLIST"] = list(settings.get("WATCHLIST", {}))
+    rules = {k: v for k, v in settings.items() if not k.startswith("_")}
     now = datetime.now(ET)
     data = {"generated": now.isoformat(timespec="seconds"), "today": now.date().isoformat(),
             "account": acct, "spreads": spread_rows(state, trades, settings), "tx": tx, "fees": fees,
             "daily": daily, "events": state.get("events", [])[-40:][::-1], "skipped": state.get("skipped", []),
-            "skipped_day": state.get("day", ""), "rules": rules, "errors": errors}
+            "skipped_day": state.get("day", ""), "rules": rules, "errors": errors, "save_url": SAVE_URL}
     html = TEMPLATE.replace("__DATA__", json.dumps(data, default=str).replace("</", "<\\/"))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
@@ -274,9 +273,26 @@ tr:hover td{background:var(--row-hover)}
 svg text{fill:var(--muted);font-size:11px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:20}
 .modal.on{display:flex}
-.modal .box{background:var(--panel);border:1px solid var(--border-strong);border-radius:12px;padding:18px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto}
-.modal h2{margin:0 0 10px;font-size:16px}
-.modal table td{text-align:left;white-space:normal}
+.modal .box{background:var(--panel);border:1px solid var(--border-strong);border-radius:12px;padding:20px;max-width:720px;width:100%;max-height:88vh;overflow-y:auto}
+.modal h2{margin:0;font-size:18px}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mhead .x{background:none;border:none;color:var(--muted);font-size:26px;cursor:pointer;line-height:1}
+.rgroup{border-top:1px solid var(--border);padding:12px 0 6px}
+.rgroup h3{margin:0 0 8px;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.rrow{display:flex;align-items:center;gap:10px;margin:7px 0;flex-wrap:wrap}
+.rrow label{flex:1;min-width:200px;font-size:14px}
+.rrow label small{display:block;color:var(--faint);font-size:12px}
+.rrow input[type=number],.rrow input[type=time],.wt input{width:110px;background:var(--bg);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:6px 8px;font-size:14px;font-family:inherit}
+.rrow .suf{color:var(--muted);font-size:13px;min-width:44px}
+.rrow input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.wt{width:auto}.wt td{padding:4px;border:none}.wt input{width:90px}.wt th{cursor:default;border:none}
+#wlText{width:100%;min-height:220px;background:var(--bg);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:8px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+.savebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;position:sticky;bottom:-20px;background:var(--panel);padding-bottom:6px}
+.savebar input{background:var(--bg);color:var(--text);border:1px solid var(--border-strong);border-radius:6px;padding:7px 10px;font-size:14px;width:180px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.savestatus{font-size:14px;margin-top:8px;min-height:20px}
+.savestatus.ok{color:var(--pos)}.savestatus.err{color:var(--neg)}.savestatus.info{color:var(--muted)}
 @media (max-width:720px){body{font-size:14px}main{padding:16px}header{padding:10px 16px}.panel{padding:14px 12px}.tile .v{font-size:19px}td{font-size:13px}.right{margin-left:0;width:100%}.phead input{margin-left:0;width:100%}.tabs{order:3;width:100%}.tabs a{flex:1;text-align:center}}
 </style>
 </head>
@@ -352,9 +368,15 @@ svg text{fill:var(--muted);font-size:11px}
   </div>
 </main>
 <div class="modal" id="rules" onclick="if(event.target===this)this.classList.remove('on')"><div class="box">
-  <h2>Bot rules</h2><div id="rulesbody"></div>
-  <div class="note">To change a rule, ask Claude (it edits spreads_settings.json in the repo).</div>
-  <p style="text-align:right;margin:12px 0 0"><button class="btn" onclick="document.getElementById('rules').classList.remove('on')">Close</button></p>
+  <div class="mhead"><h2>Bot rules</h2><button class="x" onclick="document.getElementById('rules').classList.remove('on')" aria-label="Close">&times;</button></div>
+  <div class="note" style="margin:0 0 12px">Change any rule and press Save. The bot uses the new rules from its next check (every 15 minutes). Spreads already open keep running under the new exit rules.</div>
+  <div id="rulesform"></div>
+  <div class="savebar">
+    <input type="password" id="passcode" placeholder="Passcode" autocomplete="current-password">
+    <button class="btn primary" id="saveBtn" onclick="saveRules()">Save</button>
+    <button class="btn" onclick="renderRules(CURRENT)">Undo changes</button>
+  </div>
+  <div id="saveStatus" class="savestatus"></div>
 </div></div>
 <script>
 const DATA=__DATA__;
@@ -471,19 +493,84 @@ const t2=s=>new Date(s).toLocaleString('en-US',{month:'numeric',day:'numeric',ho
 $('events').innerHTML=DATA.events.length?DATA.events.map(e=>`<li><span>${t2(e.at)}</span><span><span class="tag ${esc(e.kind.split(' ')[0])}">${esc(e.kind)}</span> ${esc(e.text)}</span></li>`).join(''):'<li class="empty">Nothing yet — the bot checks every 15 minutes while the market is open.</li>';
 const sk=DATA.skipped_day===DATA.today?DATA.skipped:[];
 $('skipped').innerHTML=sk.length?sk.map(s=>`<li><span>${esc(s.at)}</span><span><b>${esc(s.symbol)}</b> — ${esc(s.reason)}</span></li>`).join(''):'<li class="empty">Nothing skipped today</li>';
-// rules box
-const W=R.WIDTH_TABLE||[];
-$('rulesbody').innerHTML=`<table>
-<tr><td>Trade</td><td>Bull put credit spreads only, paper account</td></tr>
-<tr><td>Expiration</td><td>${R.MIN_DTE}–${R.MAX_DTE} days out</td></tr>
-<tr><td>Short strike</td><td>delta ${R.MIN_DELTA}–${R.MAX_DELTA}, below the stock price</td></tr>
-<tr><td>Width</td><td>${W.map(r=>`$${r[0]}${r[1]>=1e5?'+':'–'+r[1]}: ${r[2]}–${r[3]}`).join('<br>')}</td></tr>
-<tr><td>Take profit</td><td>when ${Math.round(TP*100)}% of the credit is kept</td></tr>
-<tr><td>Stop</td><td>when the loss reaches ${SL}× the credit</td></tr>
-<tr><td>Roll</td><td>${R.ROLL_ENABLED?`if the stock touches the short strike with ${R.ROLL_MIN_DTE_LEFT}+ days left: roll down and out ~${R.ROLL_TARGET_DTE} days, only for a net credit (max ${R.MAX_ROLLS||2} rolls); otherwise close`:'off'}</td></tr>
-<tr><td>Size</td><td>${m0(MAXL)} max loss per spread · up to ${MAXN} spreads · ${MAXSEC} per sector · ${R.MAX_PER_SYMBOL} per stock · ${R.MAX_NEW_PER_DAY} new per day</td></tr>
-<tr><td>Earnings</td><td>${R.AVOID_EARNINGS?'skip stocks with earnings before expiration':'not checked'}</td></tr>
-<tr><td>Watchlist</td><td>${esc(R.WATCHLIST.join(', '))}</td></tr></table>`;
+// ---- Rules box: edit and save spreads_settings.json
+// [key, label, help, kind, suffix]; kind: int | num | pct (stored as a fraction) | bool | time
+const RULE_GROUPS=[
+ ['On / off',[['ENABLED','Bot on','Off = no new spreads and no exits. Open spreads stay as they are.','bool']]],
+ ['Expiration',[['MIN_DTE','Shortest expiration','','int','days'],['TARGET_DTE','Preferred expiration','picks the date closest to this','int','days'],['MAX_DTE','Longest expiration','','int','days']]],
+ ['Short strike',[['MIN_DELTA','Lowest delta','','num'],['TARGET_DELTA','Preferred delta','','num'],['MAX_DELTA','Highest delta','','num']]],
+ ['Credit',[['MIN_CREDIT_PCT_OF_WIDTH','Minimum credit','as % of the spread width','pct','%'],['MIN_NATURAL_PCT_OF_MID','Liquidity check','bid/ask price must give at least this % of the mid credit','pct','%']]],
+ ['Exits',[['TAKE_PROFIT_PCT','Take profit','close when this % of the credit is kept','pct','%'],['STOP_LOSS_MULT','Stop','close when the loss reaches this many × the credit','num','×'],['CLOSE_BEFORE_EXPIRY_DTE','Close before expiration','days before','int','days']]],
+ ['Rolling',[['ROLL_ENABLED','Roll when the short strike is touched','otherwise close','bool'],['ROLL_MIN_DTE_LEFT','Only roll with at least','days left','int','days'],['ROLL_TARGET_DTE','Roll out to about','','int','days'],['MAX_ROLLS','Most rolls per spread','','int']]],
+ ['Size and limits',[['MAX_LOSS_PER_SPREAD','Max loss per spread','','num','$'],['MAX_OPEN_SPREADS','Most spreads open','','int'],['MAX_NEW_PER_DAY','New spreads per day','','int'],['MAX_PER_SECTOR','Per category','','int'],['MAX_PER_SYMBOL','Per stock','','int']]],
+ ['Timing and earnings',[['OPEN_START_ET','Open new spreads from','ET','time'],['OPEN_END_ET','until','ET','time'],['AVOID_EARNINGS','Skip stocks with earnings before expiration','ETFs are never skipped','bool']]],
+];
+let CURRENT=JSON.parse(JSON.stringify(R));
+function wlToText(wl){const by={};Object.entries(wl||{}).forEach(([s,c])=>{(by[c]=by[c]||[]).push(s)});return Object.entries(by).map(([c,l])=>`${c}: ${l.join(', ')}`).join('\n')}
+function textToWl(t){const wl={};const bad=[];t.split('\n').map(x=>x.trim()).filter(Boolean).forEach((line,i)=>{const m=line.match(/^([^:]+):(.*)$/);if(!m){bad.push(`line ${i+1} needs "Category: SYM, SYM"`);return}const c=m[1].trim();m[2].split(/[,\s]+/).map(x=>x.trim().toUpperCase().replace(/^\$/,'')).filter(Boolean).forEach(sym=>{if(!/^[A-Z][A-Z.]{0,5}$/.test(sym))bad.push(`"${sym}" is not a ticker`);else if(!(sym in wl))wl[sym]=c})});return {wl,bad}}
+function renderRules(v){
+  let h='';
+  RULE_GROUPS.forEach(([g,fields])=>{h+=`<div class="rgroup"><h3>${g}</h3>`;fields.forEach(([k,lab,help,kind,suf])=>{
+    const val=v[k];let inp;
+    if(kind==='bool')inp=`<input type="checkbox" data-k="${k}" data-kind="bool" ${val?'checked':''}>`;
+    else if(kind==='time')inp=`<input type="time" data-k="${k}" data-kind="time" value="${esc(val||'')}">`;
+    else{const shown=kind==='pct'?+(val*100).toFixed(2):val;inp=`<input type="number" step="any" data-k="${k}" data-kind="${kind}" value="${shown??''}">`}
+    h+=`<div class="rrow"><label>${lab}${help?`<small>${help}</small>`:''}</label>${inp}<span class="suf">${suf||''}</span></div>`})
+    h+='</div>'});
+  const W=v.WIDTH_TABLE||[];
+  h+=`<div class="rgroup"><h3>Spread width by stock price</h3><table class="wt"><tr><th>Price from $</th><th>to $</th><th>Width min $</th><th>max $</th></tr>`+
+    W.map((r,i)=>`<tr>${r.map((n,j)=>`<td><input type="number" step="any" data-w="${i},${j}" value="${n}"></td>`).join('')}</tr>`).join('')+`</table></div>`;
+  h+=`<div class="rgroup"><h3>Watchlist (${Object.keys(v.WATCHLIST||{}).length} stocks)</h3><div class="note" style="margin:0 0 6px">One category per line: <b>Category: SYM, SYM, …</b> Each category counts toward the per-category limit. Put "ETF" in the name of ETF categories (they skip the earnings check).</div><textarea id="wlText" spellcheck="false">${esc(wlToText(v.WATCHLIST))}</textarea></div>`;
+  $('rulesform').innerHTML=h;
+}
+function collectRules(){
+  const out={},errs=[];
+  document.querySelectorAll('#rulesform [data-k]').forEach(el=>{const k=el.dataset.k,kind=el.dataset.kind;
+    if(kind==='bool')out[k]=el.checked;
+    else if(kind==='time')out[k]=el.value;
+    else{if(el.value===''){errs.push(`${k} is empty`);return}let n=Number(el.value);if(!isFinite(n)){errs.push(`${k} is not a number`);return}if(kind==='pct')n=+(n/100).toFixed(4);if(kind==='int')n=Math.round(n);out[k]=n}});
+  const W=(CURRENT.WIDTH_TABLE||[]).map(r=>r.slice());
+  document.querySelectorAll('#rulesform [data-w]').forEach(el=>{const [i,j]=el.dataset.w.split(',').map(Number);W[i][j]=Number(el.value)});
+  out.WIDTH_TABLE=W;
+  const {wl,bad}=textToWl($('wlText').value);errs.push(...bad);
+  if(!Object.keys(wl).length)errs.push('the watchlist is empty');
+  out.WATCHLIST=wl;
+  if(!(out.MIN_DTE<=out.TARGET_DTE&&out.TARGET_DTE<=out.MAX_DTE))errs.push('expirations must be shortest ≤ preferred ≤ longest');
+  if(!(out.MIN_DELTA<=out.TARGET_DELTA&&out.TARGET_DELTA<=out.MAX_DELTA))errs.push('deltas must be lowest ≤ preferred ≤ highest');
+  return {out,errs};
+}
+async function repoRules(){
+  const r=await fetch('https://api.github.com/repos/patrickobirmingham-eng/POB-CL-DT/contents/spreads_settings.json?ref=main&_='+Date.now(),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+}
+function setStatus(t,c){$('saveStatus').textContent=t;$('saveStatus').className='savestatus '+c}
+async function saveRules(){
+  const {out,errs}=collectRules();
+  if(errs.length){setStatus('Not saved: '+errs.join('; '),'err');return}
+  const pass=$('passcode').value;
+  if(!pass){setStatus('Enter the passcode to save.','err');return}
+  if(!DATA.save_url){setStatus('Saving is not set up on this page.','err');return}
+  $('saveBtn').disabled=true;setStatus('Saving…','info');
+  try{
+    const resp=await fetch(DATA.save_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:pass,settings:out})});
+    const d=await resp.json().catch(()=>({}));
+    if(!resp.ok||!d.ok)throw new Error(d.error||('HTTP '+resp.status));
+    $('passcode').value='';
+    if(d.unchanged){setStatus('Nothing changed.','info');return}
+    setStatus('Saved; checking the repo…','info');
+    await new Promise(r=>setTimeout(r,2000));
+    try{const repo=await repoRules();const same=JSON.stringify(Object.keys(out).map(k=>repo[k]))===JSON.stringify(Object.keys(out).map(k=>out[k]));
+      CURRENT=Object.assign({},CURRENT,repo);renderRules(CURRENT);
+      setStatus(same?'Saved and confirmed. The bot uses these rules from its next check.':'Saved, but the repo shows different values; the form now shows what the bot will use.',same?'ok':'err');
+    }catch(e){CURRENT=Object.assign({},CURRENT,out);setStatus('Saved. (Could not re-check the repo just now.) The bot uses these rules from its next check.','ok')}
+  }catch(e){
+    const hint=/Failed to fetch|NetworkError|Load failed/.test(e.message)?' — the save helper (spreads-settings-save.php) may not be uploaded to the website yet.':'';
+    setStatus('Save failed: '+e.message+hint,'err');
+  }finally{$('saveBtn').disabled=false}
+}
+renderRules(CURRENT);
+// show the newest saved rules (this page may be up to 15 minutes old)
+repoRules().then(v=>{CURRENT=Object.assign({},CURRENT,v);renderRules(CURRENT)}).catch(()=>{});
 </script>
 </body>
 </html>
