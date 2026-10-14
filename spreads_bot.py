@@ -120,11 +120,31 @@ class Broker:
         t = self.stk.get_stock_latest_trade(StockLatestTradeRequest(symbol_or_symbols=sym, feed=DataFeed.IEX))
         return float(t[sym].price)
 
+    def stock_prices(self, syms):
+        """{symbol: last price} in batches; symbols Alpaca doesn't know are simply missing."""
+        from alpaca.data.requests import StockLatestTradeRequest
+        from alpaca.data.enums import DataFeed
+        out, syms = {}, list(syms)
+        for i in range(0, len(syms), 50):
+            batch = syms[i:i + 50]
+            try:
+                t = self.stk.get_stock_latest_trade(StockLatestTradeRequest(symbol_or_symbols=batch, feed=DataFeed.IEX))
+                out.update({s: float(v.price) for s, v in t.items()})
+            except Exception as e:      # one bad symbol can fail a batch: fall back to one by one
+                log(f"batch prices: {e}")
+                for s in batch:
+                    try:
+                        out[s] = self.stock_price(s)
+                    except Exception:
+                        pass
+        return out
+
     def put_chain(self, sym, exp_gte, exp_lte):
         """{symbol: {strike, expiration, bid, ask, delta}} for puts in the date window."""
         from alpaca.data.requests import OptionChainRequest
         from alpaca.data.enums import OptionsFeed
         from alpaca.trading.enums import ContractType
+        time.sleep(0.35)                # ~150 stocks per scan: stay under Alpaca's 200 data calls/minute
         snaps = self.opt.get_option_chain(OptionChainRequest(
             underlying_symbol=sym, type=ContractType.PUT, feed=OptionsFeed.INDICATIVE,
             expiration_date_gte=exp_gte, expiration_date_lte=exp_lte))
@@ -543,88 +563,124 @@ def new_spread(settings, sym, pick, qty, today):
 
 
 def open_new(broker, settings, st, today, now, dry):
+    """Scan the whole watchlist, then open the best candidates within the limits.
+
+    Best = most credit per dollar of width (the most premium for the risk at the
+    same 0.12-0.20 delta), preferring stocks with no spread open yet."""
     open_sp = list(st["spreads"].values()) + [p["spread"] for p in st["pending"].values() if p["kind"] in ("open", "roll")]
+    dry_opened = [0]
+
     def day_full():                     # unfilled entry orders still count toward the daily cap
         working = sum(1 for p in st["pending"].values() if p["kind"] == "open")
-        return st["opened_today"] + working >= settings["MAX_NEW_PER_DAY"]
+        return st["opened_today"] + working + dry_opened[0] >= settings["MAX_NEW_PER_DAY"]
 
     if len(open_sp) >= settings["MAX_OPEN_SPREADS"] or day_full():
         return
     earnings, earn_ok = load_earnings(today, settings) if settings["AVOID_EARNINGS"] else ({}, True)
-    skipped = {s["symbol"]: s for s in st["skipped"]}
-    per_sym = {}
-    per_sec = {}
+    skipped = {}
+    per_sym, per_sec = {}, {}
     for sp in open_sp:
         per_sym[sp["symbol"]] = per_sym.get(sp["symbol"], 0) + 1
         per_sec[sp["sector"]] = per_sec.get(sp["sector"], 0) + 1
+    pending_syms = {p.get("symbol") for p in st["pending"].values()}
 
     def skip(sym, why):
         skipped[sym] = {"symbol": sym, "reason": why, "at": now.strftime("%H:%M")}
 
-    # least-used symbols first so the book spreads out
-    order = sorted(settings["WATCHLIST"], key=lambda s: (per_sym.get(s, 0), list(settings["WATCHLIST"]).index(s)))
-    for sym in order:
-        if len(open_sp) >= settings["MAX_OPEN_SPREADS"] or day_full():
-            break
+    def is_etf(sym):
+        return "ETF" in settings["WATCHLIST"][sym]
+
+    # ---- 1. cheap filters, then one batched price request
+    todo = []
+    for sym in settings["WATCHLIST"]:
         sec = sector_of(settings, sym)
-        if per_sym.get(sym, 0) >= settings["MAX_PER_SYMBOL"]:
+        if per_sym.get(sym, 0) >= settings["MAX_PER_SYMBOL"] or sym in pending_syms:
             continue
         if per_sec.get(sec, 0) >= settings["MAX_PER_SECTOR"]:
             skip(sym, f"{sec} already has {per_sec[sec]} open spreads")
             continue
-        if any(p.get("symbol") == sym for p in st["pending"].values()):
+        ed = earnings.get(sym)
+        if settings["AVOID_EARNINGS"] and not is_etf(sym):
+            if ed and ed < (today + timedelta(days=settings["MIN_DTE"])).isoformat():
+                skip(sym, f"earnings {ed} before any 30-45 day expiration")
+                continue
+            if not earn_ok and not ed:
+                skip(sym, "earnings calendar unavailable today")
+                continue
+        todo.append(sym)
+    prices = broker.stock_prices(todo)
+
+    # ---- 2. option chains: find each stock's best spread
+    cands = []
+    for sym in todo:
+        price = prices.get(sym)
+        if not price:
+            skip(sym, "no stock price (not tradable on Alpaca?)")
             continue
         try:
-            price = broker.stock_price(sym)
             chain = broker.put_chain(sym, today + timedelta(days=settings["MIN_DTE"]),
                                      today + timedelta(days=settings["MAX_DTE"]))
         except Exception as e:
             skip(sym, f"data error: {e}"[:120])
+            continue
+        if not chain:
+            skip(sym, "no options listed")
             continue
         pick, why = pick_spread(settings, chain, price, today, settings["MIN_DTE"], settings["MAX_DTE"],
                                 settings["TARGET_DTE"])
         if not pick:
             skip(sym, why)
             continue
-        if settings["AVOID_EARNINGS"] and "ETF" not in settings["WATCHLIST"][sym]:
-            ed = earnings.get(sym)
-            if ed and ed <= pick["expiration"]:
-                skip(sym, f"earnings {ed} before expiration {pick['expiration']}")
-                continue
-            if not earn_ok and not ed:
-                skip(sym, "earnings calendar unavailable today")
-                continue
+        ed = earnings.get(sym)
+        if settings["AVOID_EARNINGS"] and not is_etf(sym) and ed and ed <= pick["expiration"]:
+            skip(sym, f"earnings {ed} before expiration {pick['expiration']}")
+            continue
         floor = settings["MIN_CREDIT_PCT_OF_WIDTH"] * pick["width"]
-        worst = max(pick["natural"], floor, 0.01)   # the lowest credit we'll accept (last price tried)
+        worst = min(max(pick["natural"], floor, 0.01), pick["credit"])   # lowest credit we'll accept
         # size on the worst accepted credit so a fill anywhere in the ladder stays under the max-loss cap
-        qty = size(settings, pick["width"], min(worst, pick["credit"]))
+        qty = size(settings, pick["width"], worst)
         if qty < 1:
             skip(sym, "too small to size")
             continue
+        cands.append({"sym": sym, "pick": pick, "qty": qty, "worst": worst, "price": price,
+                      "score": pick["credit"] / pick["width"]})
+
+    # ---- 3. open the best ones
+    cands.sort(key=lambda c: (per_sym.get(c["sym"], 0), -c["score"]))
+    for c in cands:
+        sym, pick, qty = c["sym"], c["pick"], c["qty"]
+        sec = sector_of(settings, sym)
+        if len(open_sp) >= settings["MAX_OPEN_SPREADS"] or day_full():
+            skip(sym, f"good candidate ({c['score']:.0%} of width) but today's limit is reached")
+            continue
+        if per_sec.get(sec, 0) >= settings["MAX_PER_SECTOR"]:
+            skip(sym, f"{sec} already has {per_sec[sec]} open spreads")
+            continue
         sp = new_spread(settings, sym, pick, qty, today)
         # ask for the mid credit first, then step toward the natural price, never below the minimum credit
-        prices = [-c for c in ladder(pick["credit"], min(worst, pick["credit"]), 3)]
-        log(f"OPEN {sym} {pick['short_strike']:g}/{pick['long_strike']:g} put exp {pick['expiration']} x{qty} "
-            f"credit ${pick['credit']:.2f} (natural ${pick['natural']:.2f}) delta {pick['delta']} "
-            f"max loss ${(pick['width'] - pick['credit']) * 100 * qty:,.0f}")
-        skipped.pop(sym, None)
+        limits = [-x for x in ladder(pick["credit"], c["worst"], 3)]
+        log(f"OPEN {sym} @{c['price']:.2f} {pick['short_strike']:g}/{pick['long_strike']:g} put exp {pick['expiration']} "
+            f"x{qty} credit ${pick['credit']:.2f} ({c['score']:.1%} of width, natural ${pick['natural']:.2f}) "
+            f"delta {pick['delta']} max loss ${(pick['width'] - pick['credit']) * 100 * qty:,.0f}")
         if dry:
-            continue
-        p = {"kind": "open", "spread": sp, "symbol": sym}
-        try:
-            oid, o = work_order(broker, [(pick["short"], "sell", "sell_to_open"), (pick["long"], "buy", "buy_to_open")],
-                                qty, prices)
-        except Exception as e:
-            skip(sym, f"order rejected: {e}"[:160])
-            continue
-        if o["filled_qty"] > 0:
-            apply_fill(st, p, o, now)
+            dry_opened[0] += 1
         else:
-            st["pending"][oid] = p
+            p = {"kind": "open", "spread": sp, "symbol": sym}
+            try:
+                oid, o = work_order(broker, [(pick["short"], "sell", "sell_to_open"), (pick["long"], "buy", "buy_to_open")],
+                                    qty, limits)
+            except Exception as e:
+                skip(sym, f"order rejected: {e}"[:160])
+                continue
+            if o["filled_qty"] > 0:
+                apply_fill(st, p, o, now)
+            else:
+                st["pending"][oid] = p
         open_sp.append(sp)
         per_sym[sym] = per_sym.get(sym, 0) + 1
         per_sec[sec] = per_sec.get(sec, 0) + 1
-    st["skipped"] = list(skipped.values())
+    log(f"scanned {len(todo)} stocks, {len(cands)} had a spread that fits the rules")
+    st["skipped"] = sorted(skipped.values(), key=lambda x: x["symbol"])
 
 
 def main():
