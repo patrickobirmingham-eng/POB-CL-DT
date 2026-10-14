@@ -347,6 +347,65 @@ def build_closed_trades(orders):
     return closed
 
 
+def order_outcomes(orders):
+    """What each filled order did, for the Recent Orders table: {order id: info}.
+
+    FIFO-matches fills per symbol the same way build_closed_trades does, but
+    keeps the result per ORDER, so a row can say e.g. "Sell - close long"
+    together with the price the position was opened at and the profit or
+    loss that closing it actually realized. Opening orders get the shares
+    still open (0 once a later order closed them).
+    """
+    filled = [o for o in orders if o.status and o.status.value == "filled" and o.side and o.filled_avg_price]
+    filled.sort(key=lambda o: o.filled_at or o.submitted_at)
+    lots = defaultdict(deque)  # symbol -> deque[[signed qty, price, opening order id]]
+    info = {}
+    for o in filled:
+        side = o.side.value
+        if side not in ("buy", "sell"):
+            continue
+        qty = float(getattr(o, "filled_qty", None) or o.qty or 0)
+        price = float(o.filled_avg_price)
+        sign = 1 if side == "buy" else -1
+        queue = lots[o.symbol]
+        remaining, closed_qty, entry_cost, pl, closed_kind = qty, 0.0, 0.0, 0.0, None
+        while remaining > 1e-9 and queue and (queue[0][0] > 0) != (sign > 0):
+            lot = queue[0]
+            matched = min(remaining, abs(lot[0]))
+            closed_kind = "long" if lot[0] > 0 else "short"
+            pl += matched * ((price - lot[1]) if lot[0] > 0 else (lot[1] - price))
+            entry_cost += matched * lot[1]
+            closed_qty += matched
+            opener = info.get(lot[2])
+            if opener:
+                opener["open_qty"] -= matched
+            lot[0] -= matched * (1 if lot[0] > 0 else -1)
+            remaining -= matched
+            if abs(lot[0]) <= 1e-9:
+                queue.popleft()
+        rec = {"open_qty": 0.0}
+        if closed_qty > 0:
+            entry = entry_cost / closed_qty
+            rec.update(kind="close_" + closed_kind, entry=entry, pl=pl, closed_qty=closed_qty,
+                       gain=(pl / entry_cost * 100) if entry_cost else None)
+        if remaining > 1e-9:
+            queue.append([sign * remaining, price, str(o.id)])
+            rec["open_qty"] = remaining
+            if closed_qty == 0:
+                rec["kind"] = "open_long" if sign > 0 else "open_short"
+        info[str(o.id)] = rec
+    open_lots = {sym: [list(l) for l in q] for sym, q in lots.items() if q}
+    return info, open_lots
+
+
+ACTION_LABELS = {
+    "open_long": "Buy &middot; open long",
+    "close_long": "Sell &middot; close long",
+    "open_short": "Sell short &middot; open",
+    "close_short": "Buy to cover &middot; close short",
+}
+
+
 def generate(client=None):
     """Regenerates docs/index.html from the current Alpaca account state.
 
@@ -629,6 +688,14 @@ def generate(client=None):
 
     orders_rows = ""
     order_statuses_seen = set()
+    # Per-order outcome from the FULL order history, so a closing order in the
+    # newest 50 still finds the order that opened it.
+    outcomes, open_lots = order_outcomes(all_orders)
+    # Handed to the page so the live Refresh can label orders placed after this
+    # build the same way (it continues the matching from these open lots).
+    recent_ids = {str(o.id) for o in all_orders[:200]}
+    order_outcomes_json = json.dumps({"known": {k: v for k, v in outcomes.items() if k in recent_ids},
+                                      "lots": open_lots}).replace("</", "<\\/")
     if orders:
         for o in orders:
             submitted_dt = o.submitted_at.astimezone(ET)
@@ -638,68 +705,52 @@ def generate(client=None):
             order_statuses_seen.add(status)
             filled_price = float(o.filled_avg_price) if o.filled_avg_price else None
             qty = float(o.qty) if o.qty else 0.0
-            side_class = "pos" if side == "buy" else "neg"
+            current_price, _ = snapshot_prices(o.symbol)
 
-            current_price, lastday_price = snapshot_prices(o.symbol)
-
-            # Math uses the shares that actually FILLED (a canceled or partly
-            # filled order didn't trade its full quantity). Profit / (Loss) is
-            # signed by side: a BUY gains when the price rises after it, a SELL
-            # gains when the price falls after it. That way a buy and its sell
-            # add up to the real realized profit, and the Total row is correct.
-            filled_qty = float(o.filled_qty) if getattr(o, "filled_qty", None) else 0.0
-            filled = filled_price is not None and filled_qty > 0
-            sign = 1 if side == "buy" else -1
-            cost_basis = filled_qty * filled_price if filled else None
-            mkt_value = filled_qty * current_price if (filled and current_price is not None) else None
-            pl = sign * (mkt_value - cost_basis) if (mkt_value is not None and cost_basis is not None) else None
-            gain_pct = (pl / cost_basis * 100) if (pl is not None and cost_basis) else None
-
-            daily_price_change = (
-                current_price - lastday_price
-                if (current_price is not None and lastday_price is not None)
-                else None
-            )
-            daily_pct_change = (
-                daily_price_change / lastday_price * 100
-                if (daily_price_change is not None and lastday_price)
-                else None
-            )
-            # Today's Change: what this order's shares made or lost today —
-            # from the fill price if it filled today, else from yesterday's close.
-            filled_at = getattr(o, "filled_at", None)
-            filled_today = bool(filled_at) and filled_at.astimezone(ET).date() == datetime.now(ET).date()
-            base_price = filled_price if filled_today else lastday_price
-            todays_change = (
-                sign * filled_qty * (current_price - base_price)
-                if (filled and current_price is not None and base_price is not None) else None
-            )
+            # What the order did, and its result:
+            #  - a CLOSING order shows the profit/loss it locked in, against the
+            #    price the position was opened at (Entry Price);
+            #  - an OPENING order still held shows the open profit/loss at the
+            #    last price (marked "open"); once closed, its result is on the
+            #    closing order's row, so it shows "closed" instead of a number.
+            oc = outcomes.get(str(o.id))
+            kind = oc.get("kind") if oc else None
+            action = ACTION_LABELS.get(kind, side.upper())
+            action_class = "act-close" if kind and kind.startswith("close") else "act-open"
+            entry = pl = gain = None
+            pl_note = ""
+            if kind and kind.startswith("close"):
+                entry, pl, gain = oc["entry"], oc["pl"], oc["gain"]
+            elif kind and oc["open_qty"] > 1e-9 and current_price is not None and filled_price:
+                sign = 1 if kind == "open_long" else -1
+                pl = sign * oc["open_qty"] * (current_price - filled_price)
+                gain = sign * (current_price - filled_price) / filled_price * 100
+                pl_note = ' <span class="muted pl-note">open</span>'
+            elif kind and oc["open_qty"] > 1e-9:
+                pl_note = '<span class="muted pl-note">still open</span>'
+            elif kind:
+                pl_note = '<span class="muted pl-note">closed &ndash; see close row</span>'
 
             pl_class = "pos" if (pl is not None and pl >= 0) else ("neg" if pl is not None else "")
-            gain_class = "pos" if (gain_pct is not None and gain_pct >= 0) else ("neg" if gain_pct is not None else "")
-            daily_class = "pos" if (daily_price_change is not None and daily_price_change >= 0) else ("neg" if daily_price_change is not None else "")
-            todays_class = "pos" if (todays_change is not None and todays_change >= 0) else ("neg" if todays_change is not None else "")
+            gain_class = "pos" if (gain is not None and gain >= 0) else ("neg" if gain is not None else "")
+            pl_html = (fmt_money(pl) + pl_note) if pl is not None else (pl_note or "—")
 
             orders_rows += f"""
             <tr data-status="{status}">
               <td data-value="{submitted_dt.isoformat()}">{submitted}</td>
               <td data-value="{o.symbol}">{o.symbol}</td>
               <td data-value="{company_name(o.symbol)}">{company_name(o.symbol)}</td>
-              <td class="{side_class}" data-value="{side}">{side.upper()}</td>
+              <td class="{action_class}" data-value="{kind or side}">{action}</td>
               <td class="num" data-value="{raw_num(qty)}">{o.qty}</td>
               <td data-value="{status}">{status}</td>
-              <td class="num" data-value="{raw_num(current_price)}">{fmt_money(current_price) if current_price is not None else "—"}</td>
               <td class="num" data-value="{raw_num(filled_price)}">{fmt_money(filled_price) if filled_price is not None else "—"}</td>
-              <td class="num" data-value="{raw_num(cost_basis)}">{fmt_money(cost_basis) if cost_basis is not None else "—"}</td>
-              <td class="num" data-value="{raw_num(mkt_value)}">{fmt_money(mkt_value) if mkt_value is not None else "—"}</td>
-              <td class="num {pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl) if pl is not None else "—"}</td>
-              <td class="num {gain_class}" data-value="{raw_num(gain_pct)}">{f"{gain_pct:+.2f}%" if gain_pct is not None else "—"}</td>
-              <td class="num {daily_class}" data-value="{raw_num(daily_price_change)}">{fmt_money(daily_price_change) if daily_price_change is not None else "—"}</td>
-              <td class="num {daily_class}" data-value="{raw_num(daily_pct_change)}">{f"{daily_pct_change:+.2f}%" if daily_pct_change is not None else "—"}</td>
-              <td class="num {todays_class}" data-value="{raw_num(todays_change)}">{fmt_money(todays_change) if todays_change is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(entry)}">{fmt_money(entry) if entry is not None else "—"}</td>
+              <td class="num {pl_class}" data-value="{raw_num(pl)}">{pl_html}</td>
+              <td class="num {gain_class}" data-value="{raw_num(gain)}">{f"{gain:+.2f}%" if gain is not None else "—"}</td>
+              <td class="num" data-value="{raw_num(current_price)}">{fmt_money(current_price) if current_price is not None else "—"}</td>
             </tr>"""
     else:
-        orders_rows = "<tr><td colspan='15' class='muted'>No orders yet</td></tr>"
+        orders_rows = "<tr><td colspan='11' class='muted'>No orders yet</td></tr>"
 
     closed_trades = build_closed_trades(all_orders)
     closed_rows = ""
@@ -1030,6 +1081,10 @@ def generate(client=None):
   .symbol-search::placeholder {{ color: var(--faint); }}
   .symbol-search:focus {{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }}
   tr.no-match td {{ color: var(--muted); padding: 18px 8px; }}
+  td.act-open {{ color: var(--accent); white-space: nowrap; }}
+  td.act-close {{ font-weight: 600; white-space: nowrap; }}
+  .pl-note {{ font-size: 11.5px; font-weight: 400; }}
+  .orders-help {{ font-size: 12.5px; }}
   td.reason {{ text-align: left; color: var(--muted); font-size: 12.5px; min-width: 260px; }}
   .ai-summary {{ font-size: 12.5px; }}
   .panel h2 {{
@@ -1319,6 +1374,7 @@ def generate(client=None):
     <div class="panel">
       <div class="panel-head">
         <h2>Recent Orders (last 50)</h2>
+        <span class="muted orders-help">A closing order shows the profit or loss it locked in; an open position shows its profit or loss so far.</span>
         <input type="search" id="ordersSearch" class="symbol-search" placeholder="Search symbols or dates, e.g. AAPL, 2026-09-28"
                aria-label="Filter recent orders by stock symbol or submitted date" autocomplete="off" spellcheck="false" oninput="filterOrders()">
       </div>
@@ -1329,18 +1385,14 @@ def generate(client=None):
           <th class="sortable" onclick="sortTable('ordersTable',0,'text')">Submitted</th>
           <th class="sortable" onclick="sortTable('ordersTable',1,'text')">Symbol</th>
           <th class="sortable" onclick="sortTable('ordersTable',2,'text')">Company Name</th>
-          <th class="sortable" onclick="sortTable('ordersTable',3,'text')">Side</th>
+          <th class="sortable" onclick="sortTable('ordersTable',3,'text')">Action</th>
           <th class="sortable num" onclick="sortTable('ordersTable',4,'num')"># of Shares</th>
           <th class="sortable" onclick="sortTable('ordersTable',5,'text')">Status</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',6,'num')">Last Price</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',7,'num')">Fill Price</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',8,'num')">Cost Basis</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',9,'num')">Mkt Value</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',10,'num')">Profit / (Loss)</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',11,'num')">Gain %</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',12,'num')">Daily Price Change</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',13,'num')">Daily % Change</th>
-          <th class="sortable num" onclick="sortTable('ordersTable',14,'num')">Today's Change</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',6,'num')">Fill Price</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',7,'num')" title="For a closing order: the price the position was opened at">Entry Price</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',8,'num')" title="Closing orders: profit/loss locked in. Open positions: profit/loss so far at the last price.">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',9,'num')">Gain %</th>
+          <th class="sortable num" onclick="sortTable('ordersTable',10,'num')">Last Price</th>
         </tr></thead>
         <tbody>{orders_rows}</tbody>
       </table>
@@ -1508,14 +1560,15 @@ def generate(client=None):
     }}
 
     // Recent Orders: status checkboxes AND symbol/date search must all match.
-    // A Total row under Profit / (Loss) (column index 10) sums the rows shown.
+    // A Total row under Profit / (Loss) (column index 8) adds up the profit/loss
+    // LOCKED IN by the closing orders shown (open positions' paper P&L is left out).
     function filterOrders() {{
       const checked = Array.from(document.querySelectorAll('.status-filter:checked')).map(c => c.value);
       const q = parseSearch('ordersSearch');
       const table = document.getElementById('ordersTable');
       const tbody = table.tBodies[0];
       const nCols = table.tHead.rows[0].cells.length;
-      const plCol = 10;
+      const plCol = 8, actCol = 3;
       let total = 0, shown = 0, plSum = 0, plCount = 0;
       tbody.querySelectorAll('tr[data-status]').forEach(row => {{
         total++;
@@ -1523,6 +1576,7 @@ def generate(client=None):
         row.style.display = ok ? '' : 'none';
         if (!ok) return;
         shown++;
+        if (!(row.cells[actCol].getAttribute('data-value') || '').startsWith('close')) return;
         const v = parseFloat(row.cells[plCol].getAttribute('data-value'));
         if (!isNaN(v)) {{ plSum += v; plCount++; }}
       }});
@@ -1537,7 +1591,7 @@ def generate(client=None):
         totals.className = 'totals-row';
         for (let i = 0; i < nCols; i++) totals.appendChild(document.createElement('td'));
       }}
-      totals.cells[0].textContent = 'Total';
+      totals.cells[0].textContent = 'Total realized';
       const plCell = totals.cells[plCol];
       plCell.textContent = plCount ? fmtMoneyJS(plSum) : '—';
       plCell.className = 'num ' + (plCount ? (plSum >= 0 ? 'pos' : 'neg') : '');
@@ -1610,6 +1664,8 @@ def generate(client=None):
     // those only change once a position actually closes, which requires a
     // real bot session, so they still only refresh via the normal pipeline.
     const REFRESH_ENDPOINT = {REFRESH_ENDPOINT!r};
+    // What each order did (open/close, entry price, realized P&L) as of this build.
+    const ORDER_OUTCOMES = {order_outcomes_json};
     const REFRESH_TOKEN = {REFRESH_TOKEN!r};
 
     // --- Settings panel: view/edit config.py's tunable parameters and save
@@ -1968,10 +2024,42 @@ def generate(client=None):
       return rows;
     }}
 
+    // Same matching as order_outcomes() in dashboard.py: orders known at build
+    // time use the stored result; newer fills continue from the open lots.
+    function liveOutcomes(orders) {{
+      const info = JSON.parse(JSON.stringify(ORDER_OUTCOMES.known));  // fresh copy every refresh
+      const lots = {{}};
+      Object.entries(ORDER_OUTCOMES.lots || {{}}).forEach(([s, q]) => lots[s] = q.map(l => l.slice()));
+      const fresh = (orders || []).filter(o => !info[o.id] && o.status === 'filled' && o.filled_avg_price != null && (o.side === 'buy' || o.side === 'sell'))
+        .sort((a, b) => new Date(a.filled_at || a.submitted_at) - new Date(b.filled_at || b.submitted_at));
+      fresh.forEach(o => {{
+        const sign = o.side === 'buy' ? 1 : -1, price = Number(o.filled_avg_price);
+        const q = lots[o.symbol] = lots[o.symbol] || [];
+        let remaining = Number(o.filled_qty || o.qty || 0), closedQty = 0, entryCost = 0, pl = 0, kindClosed = null;
+        while (remaining > 1e-9 && q.length && (q[0][0] > 0) !== (sign > 0)) {{
+          const lot = q[0], m = Math.min(remaining, Math.abs(lot[0]));
+          kindClosed = lot[0] > 0 ? 'long' : 'short';
+          pl += m * (lot[0] > 0 ? price - lot[1] : lot[1] - price);
+          entryCost += m * lot[1]; closedQty += m;
+          if (info[lot[2]]) info[lot[2]].open_qty -= m;
+          lot[0] -= m * (lot[0] > 0 ? 1 : -1); remaining -= m;
+          if (Math.abs(lot[0]) <= 1e-9) q.shift();
+        }}
+        const rec = {{ open_qty: 0 }};
+        if (closedQty > 0) Object.assign(rec, {{ kind: 'close_' + kindClosed, entry: entryCost / closedQty, pl, gain: entryCost ? pl / entryCost * 100 : null }});
+        if (remaining > 1e-9) {{ q.push([sign * remaining, price, o.id]); rec.open_qty = remaining; if (!closedQty) rec.kind = sign > 0 ? 'open_long' : 'open_short'; }}
+        info[o.id] = rec;
+      }});
+      return info;
+    }}
+    const ACTION_LABELS = {{ open_long: 'Buy &middot; open long', close_long: 'Sell &middot; close long',
+                             open_short: 'Sell short &middot; open', close_short: 'Buy to cover &middot; close short' }};
+
     function buildOrdersRows(orders, names, snapshots) {{
       if (!orders || orders.length === 0) {{
-        return "<tr><td colspan='15' class='muted'>No orders yet</td></tr>";
+        return "<tr><td colspan='11' class='muted'>No orders yet</td></tr>";
       }}
+      const outcomes = liveOutcomes(orders);
       let rows = '';
       orders.forEach(o => {{
         const submittedDt = new Date(o.submitted_at);
@@ -1983,38 +2071,32 @@ def generate(client=None):
         const status = o.status || '—';
         const filledPrice = o.filled_avg_price != null ? Number(o.filled_avg_price) : null;
         const qty = o.qty != null ? Number(o.qty) : 0;
-        const [current, lastday] = snapshotPrices(snapshots, o.symbol);
-        // Same math as the server-rendered table: filled shares only, signed by side.
-        const filledQty = o.filled_qty != null ? Number(o.filled_qty) : 0;
-        const filled = filledPrice != null && filledQty > 0;
-        const sign = side === 'buy' ? 1 : -1;
-        const costBasis = filled ? filledQty * filledPrice : null;
-        const mktValue = (filled && current != null) ? filledQty * current : null;
-        const pl = (mktValue != null && costBasis != null) ? sign * (mktValue - costBasis) : null;
-        const gainPct = (pl != null && costBasis) ? (pl / costBasis * 100) : null;
-        const dailyChange = (current != null && lastday != null) ? (current - lastday) : null;
-        const dailyPct = (dailyChange != null && lastday) ? (dailyChange / lastday * 100) : null;
-        const etDay = d => d.toLocaleDateString('en-US', {{ timeZone: 'America/New_York' }});
-        const filledToday = !!o.filled_at && etDay(new Date(o.filled_at)) === etDay(new Date());
-        const basePrice = filledToday ? filledPrice : lastday;
-        const todaysChange = (filled && current != null && basePrice != null) ? sign * filledQty * (current - basePrice) : null;
+        const [current] = snapshotPrices(snapshots, o.symbol);
+        const oc = outcomes[o.id];
+        const kind = oc ? oc.kind : null;
+        const action = ACTION_LABELS[kind] || side.toUpperCase();
+        let entry = null, pl = null, gain = null, note = '';
+        if (kind && kind.startsWith('close')) {{ entry = oc.entry; pl = oc.pl; gain = oc.gain; }}
+        else if (kind && oc.open_qty > 1e-9 && current != null && filledPrice) {{
+          const sg = kind === 'open_long' ? 1 : -1;
+          pl = sg * oc.open_qty * (current - filledPrice); gain = sg * (current - filledPrice) / filledPrice * 100;
+          note = ' <span class="muted pl-note">open</span>';
+        }} else if (kind && oc.open_qty > 1e-9) note = '<span class="muted pl-note">still open</span>';
+        else if (kind) note = '<span class="muted pl-note">closed &ndash; see close row</span>';
+        const plHtml = pl != null ? fmtMoneyJS(pl) + note : (note || '—');
         const name = (names && names[o.symbol]) || o.symbol;
         rows += `<tr data-status="${{status}}">
           <td data-value="${{submittedDt.toISOString()}}">${{submitted}}</td>
           <td data-value="${{o.symbol}}">${{o.symbol}}</td>
           <td data-value="${{name}}">${{name}}</td>
-          <td class="${{side === 'buy' ? 'pos' : 'neg'}}" data-value="${{side}}">${{side.toUpperCase()}}</td>
+          <td class="${{kind && kind.startsWith('close') ? 'act-close' : 'act-open'}}" data-value="${{kind || side}}">${{action}}</td>
           <td class="num" data-value="${{qty}}">${{o.qty}}</td>
           <td data-value="${{status}}">${{status}}</td>
-          <td class="num" data-value="${{current ?? ''}}">${{current != null ? fmtMoneyJS(current) : '—'}}</td>
           <td class="num" data-value="${{filledPrice ?? ''}}">${{filledPrice != null ? fmtMoneyJS(filledPrice) : '—'}}</td>
-          <td class="num" data-value="${{costBasis ?? ''}}">${{costBasis != null ? fmtMoneyJS(costBasis) : '—'}}</td>
-          <td class="num" data-value="${{mktValue ?? ''}}">${{mktValue != null ? fmtMoneyJS(mktValue) : '—'}}</td>
-          <td class="num ${{cls(pl)}}" data-value="${{pl ?? ''}}">${{pl != null ? fmtMoneyJS(pl) : '—'}}</td>
-          <td class="num ${{cls(gainPct)}}" data-value="${{gainPct ?? ''}}">${{gainPct != null ? pctJS(gainPct) : '—'}}</td>
-          <td class="num ${{cls(dailyChange)}}" data-value="${{dailyChange ?? ''}}">${{dailyChange != null ? fmtMoneyJS(dailyChange) : '—'}}</td>
-          <td class="num ${{cls(dailyPct)}}" data-value="${{dailyPct ?? ''}}">${{dailyPct != null ? pctJS(dailyPct) : '—'}}</td>
-          <td class="num ${{cls(todaysChange)}}" data-value="${{todaysChange ?? ''}}">${{todaysChange != null ? fmtMoneyJS(todaysChange) : '—'}}</td>
+          <td class="num" data-value="${{entry ?? ''}}">${{entry != null ? fmtMoneyJS(entry) : '—'}}</td>
+          <td class="num ${{cls(pl)}}" data-value="${{pl ?? ''}}">${{plHtml}}</td>
+          <td class="num ${{cls(gain)}}" data-value="${{gain ?? ''}}">${{gain != null ? pctJS(gain) : '—'}}</td>
+          <td class="num" data-value="${{current ?? ''}}">${{current != null ? fmtMoneyJS(current) : '—'}}</td>
         </tr>`;
       }});
       return rows;
