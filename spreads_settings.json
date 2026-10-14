@@ -52,6 +52,7 @@
         ]
     ],
     "MIN_CREDIT_PCT_OF_WIDTH": 0.05,
+    "MIN_NATURAL_PCT_OF_MID": 0.6,
     "TAKE_PROFIT_PCT": 0.5,
     "STOP_LOSS_MULT": 2.0,
     "MAX_LOSS_PER_SPREAD": 30000,

@@ -273,12 +273,19 @@ def pick_spread(settings, chain, price, today, dte_lo, dte_hi, dte_target):
         k, (lsym, lc) = min(longs, key=lambda kv: abs(sc["strike"] - kv[0] - target_w))
         width = sc["strike"] - k
         credit = mid(sc["bid"], sc["ask"]) - mid(lc["bid"], lc["ask"])
+        natural = sc["bid"] - lc["ask"]
         if credit < settings["MIN_CREDIT_PCT_OF_WIDTH"] * width:
             why = f"credit ${credit:.2f} under {settings['MIN_CREDIT_PCT_OF_WIDTH']:.0%} of ${width:g} width"
             continue
+        # thinly traded options: the mid price is fiction if selling at the bid/buying at the ask
+        # pays far less (or costs money). Skip unless the natural credit is close to the mid.
+        if natural < settings.get("MIN_NATURAL_PCT_OF_MID", 0.6) * credit:
+            why = (f"options too thinly traded (mid credit ${credit:.2f}, but only ${natural:.2f} "
+                   f"selling at the bid / buying at the ask)")
+            continue
         best = {"short": ssym, "long": lsym, "short_strike": sc["strike"], "long_strike": k, "width": width,
                 "expiration": exp.isoformat(), "credit": round(credit, 2), "delta": round(abs(sc["delta"]), 3),
-                "natural": round(sc["bid"] - lc["ask"], 2)}
+                "natural": round(natural, 2)}
         break
     return (best, None) if best else (None, why)
 
