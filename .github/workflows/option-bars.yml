@@ -1,0 +1,38 @@
+name: Fetch option price history (research)
+
+# Downloads hourly bars for a list of option contracts so a past trade log can
+# be replayed offline. Takes only contract names + date windows (compressed);
+# the result is a short-lived artifact. Places no orders, commits nothing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      contracts_b64:
+        description: "base64(gzip('OCC,YYYYMMDD,YYYYMMDD;...'))"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Fetch bars
+        env:
+          SPREADS_APCA_API_KEY_ID: ${{ secrets.SPREADS_APCA_API_KEY_ID }}
+          SPREADS_APCA_API_SECRET_KEY: ${{ secrets.SPREADS_APCA_API_SECRET_KEY }}
+          CONTRACTS_B64: ${{ inputs.contracts_b64 }}
+        run: python scripts/fetch_option_bars.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: option-bars
+          path: option_bars.json.gz
+          retention-days: 1
