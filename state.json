@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1036640.26,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 512822.94999999995,
   "trade_meta": {
     "PYPL": {
@@ -746,7 +746,13 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "DXCM": "2026-10-15T15:40:42.123954-04:00",
+    "MCHP": "2026-10-15T15:40:42.123954-04:00",
+    "NXPI": "2026-10-15T15:40:42.123954-04:00",
+    "PANW": "2026-10-15T15:40:42.123954-04:00",
+    "PYPL": "2026-10-15T15:40:42.123954-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -755,6 +761,9 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
