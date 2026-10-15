@@ -169,3 +169,4 @@ timestamp,mode,symbol,direction,entry_price,stop_price,action,source,confidence,
 2026-10-15T09:41:52-04:00,shadow,DXCM,long,86.885,85.25,CONFIRM,ai,0.56,0.75,1.5,1.88,2.82,6551,"The breakout bar ran at 16x relative volume with cumulative volume far ahead of normal pace, price sits only 0.34% above VWAP, the prior-day high is already cleared and nothing stands overhead, but a 4% day and a weak QQQ argue for a smaller size and a shorter target."
 2026-10-15T09:42:19-04:00,shadow,MCHP,long,72.65,69.955,VETO,hard_limit,0.0,1.0,2.0,3.71,7.419,0,Stop distance 3.71% exceeds the 3.00% intraday limit.
 2026-10-15T09:42:30-04:00,shadow,NXPI,long,228.07,219.2,VETO,hard_limit,0.0,1.0,2.0,3.889,7.778,0,Stop distance 3.89% exceeds the 3.00% intraday limit.
+2026-10-15T09:43:11-04:00,shadow,ADI,long,409.345,395.595,VETO,hard_limit,0.0,1.0,2.0,3.359,6.718,0,Stop distance 3.36% exceeds the 3.00% intraday limit.
