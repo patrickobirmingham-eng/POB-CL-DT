@@ -1072,6 +1072,12 @@ def generate(client=None):
   }}
   .panel-head {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }}
   .panel-head h2 {{ margin: 0; }}
+  .dl-btn {{
+    background: var(--panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 7px 12px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; white-space: nowrap;
+  }}
+  .dl-btn:hover {{ border-color: var(--accent); background: var(--panel-2); }}
+  .panel-head .symbol-search + .dl-btn {{ margin-left: 0; }}
   .symbol-search {{
     width: 320px; max-width: 100%; margin-left: auto;
     background: var(--bg); color: var(--text); border: 1px solid var(--border-strong); border-radius: 8px;
@@ -1304,7 +1310,10 @@ def generate(client=None):
     </div>
 
     <div class="panel">
-      <h2>Income by Day</h2>
+      <div class="panel-head">
+        <h2>Income by Day</h2>
+        <button type="button" class="dl-btn" onclick="downloadTableCsv('dailyTable', 'income-by-day')" title="Download this table as a CSV file that opens in Excel">&#8681; Download for Excel</button>
+      </div>
       <div class="table-scroll">
       <table id="dailyTable">
         <thead><tr>
@@ -1404,6 +1413,7 @@ def generate(client=None):
         <h2>Closed Orders</h2>
         <input type="search" id="closedSearch" class="symbol-search" placeholder="Search symbols or dates, e.g. AAPL, 2026-09-28"
                aria-label="Filter closed orders by stock symbol or transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed()">
+        <button type="button" class="dl-btn" onclick="downloadTableCsv('closedTable', 'closed-orders')" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download for Excel</button>
       </div>
       <div class="table-scroll">
       <table id="closedTable">
@@ -1557,6 +1567,35 @@ def generate(client=None):
       tr.appendChild(td);
       const totals = tbody.querySelector('tr.totals-row');
       tbody.insertBefore(tr, totals);
+    }}
+
+    // "Download for Excel": the rows currently shown (search/filters applied),
+    // plus the Total row, as a CSV. Number cells use their raw data-value so
+    // Excel gets real numbers it can sum; a leading BOM keeps Excel on UTF-8.
+    function downloadTableCsv(tableId, name) {{
+      const table = document.getElementById(tableId);
+      if (!table) return;
+      const q = v => {{ const t = String(v ?? '').replace(/\\s+/g, ' ').trim(); return /[",\\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }};
+      const num = txt => {{ const t = txt.replace(/[$,%\\s]/g, '').replace(/^\\((.*)\\)$/, '-$1').replace(/\\u2212/g, '-'); return t !== '' && !isNaN(Number(t)) ? t : null; }};
+      const header = Array.from(table.tHead.rows[0].cells).map(th => q(th.textContent.replace(/[⇅▲▼]/g, '')));
+      const lines = [header.join(',')];
+      Array.from(table.tBodies[0].rows).forEach(row => {{
+        if (row.style.display === 'none' || row.classList.contains('no-match') || row.cells.length < 2) return;
+        lines.push(Array.from(row.cells).map(td => {{
+          const raw = td.getAttribute('data-value');
+          if (td.classList.contains('num')) {{
+            if (raw !== null && raw !== '' && !isNaN(Number(raw))) return String(Number(raw));
+            const n = num(td.textContent); if (n !== null) return n;
+          }}
+          return q(td.textContent);
+        }}).join(','));
+      }});
+      const blob = new Blob(['\\ufeff' + lines.join('\\r\\n')], {{ type: 'text/csv;charset=utf-8' }});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name + '-' + new Date().toLocaleDateString('en-CA', {{ timeZone: 'America/New_York' }}) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     }}
 
     // Recent Orders: status checkboxes AND symbol/date search must all match.
