@@ -1072,15 +1072,15 @@ def generate(client=None):
   .cards {{ display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }}
   .cards .card {{ flex: 1 1 0; min-width: min-content; }}
   .card {{
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 14px;
     box-shadow: var(--shadow); position: relative; overflow: hidden;
   }}
   .card::before {{ content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border-strong); }}
   .card.primary::before {{ background: var(--accent); }}
   .card.pos-card::before {{ background: var(--pos); }}
   .card.neg-card::before {{ background: var(--neg); }}
-  .card .label {{ color: var(--muted); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }}
-  .card .value {{ white-space: nowrap; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }}
+  .card .label {{ white-space: nowrap; color: var(--muted); font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }}
+  .card .value {{ white-space: nowrap; font-size: 20px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }}
 
   .panel {{
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
