@@ -169,17 +169,23 @@ def get_client():
 
 
 def build_daily_pl_chart(points, width=900, height=240, pad_left=72, pad_right=16, pad_top=16, pad_bottom=36):
-    """points: list of (date_str, float dollar P&L), oldest first, one entry per
-    trading day over the lookback window. Returns an inline SVG bar chart with a
-    dollar Y axis and a date X axis (green bars for up days, red for down days).
+    """points: list of (date_str, day trading P&L, QQQ momentum P&L), oldest
+    first, one entry per trading day. Returns an inline SVG bar chart with a
+    dollar Y axis and a date X axis. Each day's bar is split by strategy:
+    gains stack up from $0 and losses stack down, so a day where one strategy
+    made money and the other lost shows a segment on each side, with a short
+    line marking that day's net.
     """
     if not points:
         return "<p class='muted'>Not enough history yet for a chart.</p>"
 
-    values = [v for _, v in points]
-    lo, hi = min(values), max(values)
-    lo = min(lo, 0.0)
-    hi = max(hi, 0.0)
+    def parts(orb, qqq):
+        return [("orb", orb), ("qqq", qqq)]
+
+    ups = [sum(v for _, v in parts(o, q) if v > 0) for _, o, q in points]
+    downs = [sum(v for _, v in parts(o, q) if v < 0) for _, o, q in points]
+    lo = min(min(downs), 0.0)
+    hi = max(max(ups), 0.0)
     span = (hi - lo) or 1.0
     n = len(points)
 
@@ -194,17 +200,32 @@ def build_daily_pl_chart(points, width=900, height=240, pad_left=72, pad_right=1
     zero_y = y(0.0)
 
     bars = ""
-    for i, (d, v) in enumerate(points):
+    for i, (d, orb, qqq) in enumerate(points):
         x = pad_left + i * gap + (gap - bar_w) / 2
-        top = y(max(v, 0.0))
-        bottom = y(min(v, 0.0))
-        h = max(bottom - top, 1.0)
-        cls_name = "up" if v >= 0 else "down"
-        # data-date/data-pl feed the JS hover tooltip below; the <title> is a
-        # native-tooltip fallback for anyone viewing the raw SVG.
+        net = orb + qqq
+        up_base = down_base = 0.0
+        segs = ""
+        for name, v in parts(orb, qqq):
+            if abs(v) < 0.005:
+                continue
+            if v > 0:
+                top, bottom = y(up_base + v), y(up_base)
+                up_base += v
+            else:
+                top, bottom = y(down_base), y(down_base + v)
+                down_base += v
+            segs += (f'<rect class="pl-seg {name}" x="{x:.1f}" y="{top:.1f}" width="{bar_w:.1f}" '
+                     f'height="{max(bottom - top, 1.0):.1f}" rx="2" />')
+        if up_base and down_base:   # mixed day: mark the net
+            ny = y(net)
+            segs += f'<line class="pl-net" x1="{x - 2:.1f}" y1="{ny:.1f}" x2="{x + bar_w + 2:.1f}" y2="{ny:.1f}" />'
+        # One invisible full-height hit area per day feeds the JS hover tooltip
+        # (data-*); the <title> is a native-tooltip fallback for the raw SVG.
+        tip = f"{d}: {fmt_money(net)}\nQQQ momentum: {fmt_money(qqq)}\nDay trading: {fmt_money(orb)}"
         bars += (
-            f'<rect class="pl-bar {cls_name}" x="{x:.1f}" y="{top:.1f}" width="{bar_w:.1f}" height="{h:.1f}" rx="2" '
-            f'data-date="{d}" data-pl="{fmt_money(v)}"><title>{d}: {fmt_money(v)}</title></rect>'
+            f'<g class="pl-day">{segs}<rect class="pl-bar" x="{pad_left + i * gap:.1f}" y="{pad_top}" '
+            f'width="{gap:.1f}" height="{plot_h}" data-date="{d}" data-pl="{fmt_money(net)}" '
+            f'data-qqq="{fmt_money(qqq)}" data-orb="{fmt_money(orb)}"><title>{tip}</title></rect></g>'
         )
 
     # Sample ~8 evenly-spaced date labels across the X axis rather than one per
@@ -213,7 +234,7 @@ def build_daily_pl_chart(points, width=900, height=240, pad_left=72, pad_right=1
     label_idxs = sorted({round(i * (n - 1) / (n_labels - 1)) for i in range(n_labels)}) if n_labels > 1 else [0]
     x_labels = ""
     for i in label_idxs:
-        d, _ = points[i]
+        d = points[i][0]
         lx = pad_left + i * gap + gap / 2
         x_labels += (
             f'<text class="pl-axis" x="{lx:.1f}" y="{height - pad_bottom + 18}" '
@@ -826,7 +847,7 @@ def generate(client=None):
     # Income by Day — closed_trades rolled up per calendar date (ET), drawn
     # from the full paginated order history, so every trading day since the
     # account started shows up here, not just the most recent ones.
-    daily = defaultdict(lambda: {"trades": 0, "cost_basis": 0.0, "sold_cost": 0.0, "pl": 0.0})
+    daily = defaultdict(lambda: {"trades": 0, "cost_basis": 0.0, "sold_cost": 0.0, "pl": 0.0, "qqq_pl": 0.0})
     for t in closed_trades:
         day = t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d")
         d = daily[day]
@@ -834,6 +855,8 @@ def generate(client=None):
         d["cost_basis"] += t["shares"] * t["buy_price"]
         d["sold_cost"] += t["shares"] * t["sell_price"]
         d["pl"] += t["pl"]
+        if t["symbol"] == momentum_symbol:
+            d["qqq_pl"] += t["pl"]
 
     daily_rows = ""
     if daily:
@@ -889,7 +912,9 @@ def generate(client=None):
 
     # Chart data mirrors the Income by Day table exactly (same `daily` dict,
     # same per-day P&L), just sorted oldest-first for left-to-right plotting.
-    daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
+    # Each point is (day, day trading P&L, QQQ momentum P&L) for the split bars.
+    daily_pl_points = [(day, daily[day]["pl"] - daily[day]["qqq_pl"], daily[day]["qqq_pl"])
+                       for day in sorted(daily.keys())]
 
     # Avg. Daily Profit = Realized P&L / the trading days it took (days with at
     # least one closed trade since STATS_START_DATE, i.e. the Income by Day
@@ -898,15 +923,42 @@ def generate(client=None):
     trading_days = len(daily)
     avg_daily_pl = (total_closed_pl / trading_days) if trading_days else None
     est_annual_pl = (avg_daily_pl * TRADING_DAYS_PER_YEAR) if avg_daily_pl is not None else None
-    def _pl_card(label, value, tip):
+    # Hover pop-ups on the three P&L cards split each number into the QQQ
+    # momentum strategy and day trading (everything else, i.e. ORB).
+    qqq_trades = [t for t in closed_trades if t["symbol"] == momentum_symbol]
+    qqq_pl = sum(t["pl"] for t in qqq_trades)
+    orb_pl = total_closed_pl - qqq_pl
+    n_qqq, n_orb = len(qqq_trades), len(closed_trades) - len(qqq_trades)
+
+    def _pop(rows, note):
+        body = "".join(
+            f'<tr><td><span class="pop-key {k}"></span>{name}</td>'
+            f'<td class="num {"pos" if v >= 0 else "neg"}">{fmt_money(v)}</td></tr>' if k else
+            f'<tr class="pop-total"><td>{name}</td><td class="num {"pos" if v >= 0 else "neg"}">{fmt_money(v)}</td></tr>'
+            for k, name, v in rows)
+        return f'<div class="card-pop"><table>{body}</table><div class="pop-note">{note}</div></div>'
+
+    def _split_pop(scale, note):
+        if not trading_days:
+            return ""
+        s_ = scale if scale is not None else 1
+        return _pop([("qqq", "QQQ momentum", qqq_pl * s_), ("orb", "Day trading", orb_pl * s_),
+                     (None, "Total", total_closed_pl * s_)], note)
+
+    def _pl_card(label, value, pop):
         cls_card = "" if value is None else ("pos-card" if value >= 0 else "neg-card")
         cls_val = "" if value is None else ("pos" if value >= 0 else "neg")
-        return (f'<div class="card {cls_card}" title="{tip}"><div class="label">{label}</div>'
-                f'<div class="value {cls_val}">{fmt_money(value) if value is not None else "—"}</div></div>')
-    avg_daily_card = _pl_card("Avg. Daily Profit", avg_daily_pl,
-                              f"Realized P&amp;L divided by the {trading_days} trading days it took (days with closed trades since {STATS_START_DATE})")
-    est_annual_card = _pl_card("Est. Annual Realized P&amp;L", est_annual_pl,
-                               f"Avg. Daily Profit x {TRADING_DAYS_PER_YEAR} trading days a year")
+        return (f'<div class="card {cls_card}{" has-pop" if pop else ""}"{" tabindex=0" if pop else ""}>'
+                f'<div class="label">{label}</div>'
+                f'<div class="value {cls_val}">{fmt_money(value) if value is not None else "—"}</div>{pop}</div>')
+    realized_card = _pl_card("Realized P&amp;L", total_closed_pl, _split_pop(
+        None, f"{n_qqq} QQQ momentum and {n_orb} day trading closed trades since {STATS_START_DATE}"))
+    avg_daily_card = _pl_card("Avg. Daily Profit", avg_daily_pl, _split_pop(
+        1 / trading_days if trading_days else None,
+        f"Each strategy's realized P&amp;L divided by the {trading_days} trading days with closed trades since {STATS_START_DATE}"))
+    est_annual_card = _pl_card("Est. Annual Realized P&amp;L", est_annual_pl, _split_pop(
+        TRADING_DAYS_PER_YEAR / trading_days if trading_days else None,
+        f"Avg. Daily Profit x {TRADING_DAYS_PER_YEAR} trading days a year"))
     daily_pl_chart_html = build_daily_pl_chart(daily_pl_points, height=400)  # taller, to fill a panel as tall as the QQQ one beside it
 
     # AI filter decisions (ai_decisions.csv, written by ai_filter.py), newest
@@ -1008,14 +1060,14 @@ def generate(client=None):
     --text: #e8ebf2; --muted: #8791a7; --faint: #5d667b;
     --pos: #22c55e; --neg: #f0504e; --accent: #4f8cff; --accent-soft: rgba(79, 140, 255, 0.14);
     --row-hover: rgba(255, 255, 255, 0.03); --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --grid: rgba(255, 255, 255, 0.06); --vwap: #f5a524;
+    --grid: rgba(255, 255, 255, 0.06); --vwap: #f5a524; --orb: #3987e5; --qqq: #d95926;
   }}
   :root[data-theme="light"] {{
     --bg: #f3f5f9; --bg-2: #eaeef5; --panel: #ffffff; --panel-2: #f8f9fc; --border: #e3e8f0; --border-strong: #cfd6e3;
     --text: #131a29; --muted: #5a6479; --faint: #8a93a6;
     --pos: #12833f; --neg: #c62828; --accent: #1f5fe0; --accent-soft: rgba(31, 95, 224, 0.10);
     --row-hover: rgba(15, 30, 60, 0.035); --shadow: 0 1px 2px rgba(20, 30, 60, 0.06);
-    --grid: rgba(15, 30, 60, 0.08); --vwap: #b86e00;
+    --grid: rgba(15, 30, 60, 0.08); --vwap: #b86e00; --orb: #2a78d6; --qqq: #eb6834;
   }}
   * {{ box-sizing: border-box; }}
   html {{ -webkit-text-size-adjust: 100%; }}
@@ -1163,10 +1215,30 @@ def generate(client=None):
   .muted {{ color: var(--muted); }}
   .pl-chart {{ width: 100%; height: auto; max-height: 320px; display: block; }}
   .chart-wrap {{ position: relative; }}
-  .pl-bar {{ cursor: pointer; transition: opacity 0.1s ease; }}
-  .pl-bar.up {{ fill: var(--pos); }}
-  .pl-bar.down {{ fill: var(--neg); }}
-  .pl-bar:hover {{ opacity: 0.7; }}
+  /* Daily P&L bars, split by strategy (validated pair: blue / orange). */
+  .pl-bar {{ cursor: pointer; fill: transparent; }}
+  .pl-seg {{ stroke: var(--panel); stroke-width: 1; }}
+  .pl-seg.orb, .pop-key.orb, .pl-key.orb {{ fill: var(--orb); background: var(--orb); }}
+  .pl-seg.qqq, .pop-key.qqq, .pl-key.qqq {{ fill: var(--qqq); background: var(--qqq); }}
+  .pl-day:hover .pl-seg {{ opacity: 0.75; }}
+  .pl-net {{ stroke: var(--text); stroke-width: 2; stroke-linecap: round; pointer-events: none; }}
+  .pl-legend {{ display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: -4px 0 8px 0; }}
+  .pl-legend span {{ display: inline-flex; align-items: center; gap: 6px; }}
+  .pl-key {{ width: 10px; height: 10px; border-radius: 2px; display: inline-block; }}
+  .pl-key.net {{ width: 12px; height: 2px; background: var(--text); border-radius: 1px; }}
+  .card.has-pop {{ cursor: help; }}
+  .card-pop {{ display: none; }}
+  #cardPop {{
+    position: fixed; display: none; z-index: 50; pointer-events: none; min-width: 240px; max-width: 320px;
+    background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); padding: 10px 12px; font-size: 12.5px; color: var(--text);
+  }}
+  #cardPop table {{ width: 100%; border-collapse: collapse; }}
+  #cardPop td {{ padding: 4px 0; border: none; white-space: nowrap; text-align: left; background: none; }}
+  #cardPop td.num {{ text-align: right; padding-left: 16px; font-variant-numeric: tabular-nums; font-weight: 600; }}
+  #cardPop .pop-total td {{ border-top: 1px solid var(--border-strong); font-weight: 650; padding-top: 6px; }}
+  #cardPop .pop-key {{ width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 8px; vertical-align: -1px; }}
+  #cardPop .pop-note {{ color: var(--muted); font-size: 11.5px; margin-top: 6px; line-height: 1.4; white-space: normal; }}
   .pl-grid {{ stroke: var(--grid); stroke-width: 1; }}
   .pl-zero {{ stroke: var(--border-strong); stroke-width: 1.2; }}
   .pl-axis {{ fill: var(--muted); font-size: 10.5px; }}
@@ -1174,7 +1246,7 @@ def generate(client=None):
     position: absolute; display: none; pointer-events: none;
     background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: 8px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    padding: 7px 11px; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap;
+    padding: 7px 11px; font-size: 12px; font-weight: 500; color: var(--text); white-space: pre; line-height: 1.5;
     transform: translate(-50%, -100%); margin-top: -10px; z-index: 10;
   }}
   .disclaimer {{ color: var(--faint); font-size: 12px; margin-top: 28px; line-height: 1.6; text-align: center; border-top: 1px solid var(--border); padding-top: 18px; }}
@@ -1329,12 +1401,13 @@ def generate(client=None):
 
   <div class="wrap">
 
+    <div id="cardPop" role="tooltip"></div>
     <div class="cards">
       <div class="card primary"><div class="label">Equity</div><div class="value">{fmt_money(account.equity)}</div></div>
       <div class="card"><div class="label">Cash</div><div class="value">{fmt_money(account.cash)}</div></div>
       <div class="card"><div class="label">Buying Power</div><div class="value">{fmt_money(account.buying_power)}</div></div>
       <div class="card"><div class="label">Open Positions</div><div class="value">{len(positions)}</div></div>
-      <div class="card {'pos-card' if total_closed_pl >= 0 else 'neg-card'}"><div class="label">Realized P&amp;L</div><div class="value {'pos' if total_closed_pl >= 0 else 'neg'}">{fmt_money(total_closed_pl)}</div></div>
+      {realized_card}
       {avg_daily_card}
       {est_annual_card}
       <div class="card"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
@@ -1346,6 +1419,7 @@ def generate(client=None):
 
     <div class="panel pl-panel">
       <h2>Daily Profit / (Loss)</h2>
+      <div class="pl-legend"><span><i class="pl-key qqq"></i>QQQ momentum</span><span><i class="pl-key orb"></i>Day trading</span><span><i class="pl-key net"></i>Net for the day (when one gained and one lost)</span></div>
       <div class="chart-wrap">
         {daily_pl_chart_html}
         <div id="plTooltip" class="pl-tooltip"></div>
@@ -1749,6 +1823,36 @@ def generate(client=None):
       }}
     }}
 
+    // P&L card pop-ups: show the card's hidden breakdown (.card-pop) in one
+    // floating box under the card on hover / keyboard focus / tap.
+    (function() {{
+      const pop = document.getElementById('cardPop');
+      if (!pop) return;
+      let shownFor = null;
+      function show(card) {{
+        const src = card.querySelector('.card-pop');
+        if (!src) return;
+        pop.innerHTML = src.innerHTML;
+        pop.style.display = 'block';
+        const r = card.getBoundingClientRect();
+        const w = pop.offsetWidth;
+        const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+        pop.style.left = left + 'px';
+        pop.style.top = (r.bottom + 6) + 'px';
+        shownFor = card;
+      }}
+      function hide() {{ pop.style.display = 'none'; shownFor = null; }}
+      document.querySelectorAll('.card.has-pop').forEach(card => {{
+        card.addEventListener('mouseenter', () => show(card));
+        card.addEventListener('mouseleave', hide);
+        card.addEventListener('focus', () => show(card));
+        card.addEventListener('blur', hide);
+        card.addEventListener('click', e => {{ e.stopPropagation(); shownFor === card ? hide() : show(card); }});
+      }});
+      document.addEventListener('click', hide);
+      window.addEventListener('scroll', hide, {{ passive: true }});
+    }})();
+
     (function() {{
       const tooltip = document.getElementById('plTooltip');
       // The P&L chart's own wrapper (the QQQ chart above also uses .chart-wrap).
@@ -1757,7 +1861,7 @@ def generate(client=None):
       chartWrap.querySelectorAll('.pl-bar').forEach(bar => {{
         bar.addEventListener('mousemove', e => {{
           const wrapRect = chartWrap.getBoundingClientRect();
-          tooltip.textContent = `${{bar.getAttribute('data-date')}}: ${{bar.getAttribute('data-pl')}}`;
+          tooltip.textContent = `${{bar.getAttribute('data-date')}}: ${{bar.getAttribute('data-pl')}}\nQQQ momentum: ${{bar.getAttribute('data-qqq')}}\nDay trading: ${{bar.getAttribute('data-orb')}}`;
           tooltip.style.left = (e.clientX - wrapRect.left) + 'px';
           tooltip.style.top = (e.clientY - wrapRect.top) + 'px';
           tooltip.style.display = 'block';
