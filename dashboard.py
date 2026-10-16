@@ -878,6 +878,23 @@ def generate(client=None):
     # Chart data mirrors the Income by Day table exactly (same `daily` dict,
     # same per-day P&L), just sorted oldest-first for left-to-right plotting.
     daily_pl_points = [(day, daily[day]["pl"]) for day in sorted(daily.keys())]
+
+    # Avg. Daily Profit = Realized P&L / the trading days it took (days with at
+    # least one closed trade since STATS_START_DATE, i.e. the Income by Day
+    # rows); Est. Annual = that x a year of trading days.
+    TRADING_DAYS_PER_YEAR = 252
+    trading_days = len(daily)
+    avg_daily_pl = (total_closed_pl / trading_days) if trading_days else None
+    est_annual_pl = (avg_daily_pl * TRADING_DAYS_PER_YEAR) if avg_daily_pl is not None else None
+    def _pl_card(label, value, tip):
+        cls_card = "" if value is None else ("pos-card" if value >= 0 else "neg-card")
+        cls_val = "" if value is None else ("pos" if value >= 0 else "neg")
+        return (f'<div class="card {cls_card}" title="{tip}"><div class="label">{label}</div>'
+                f'<div class="value {cls_val}">{fmt_money(value) if value is not None else "—"}</div></div>')
+    avg_daily_card = _pl_card("Avg. Daily Profit", avg_daily_pl,
+                              f"Realized P&amp;L divided by the {trading_days} trading days it took (days with closed trades since {STATS_START_DATE})")
+    est_annual_card = _pl_card("Est. Annual Realized P&amp;L", est_annual_pl,
+                               f"Avg. Daily Profit x {TRADING_DAYS_PER_YEAR} trading days a year")
     daily_pl_chart_html = build_daily_pl_chart(daily_pl_points, height=400)  # taller, to fill a panel as tall as the QQQ one beside it
 
     # AI filter decisions (ai_decisions.csv, written by ai_filter.py), newest
@@ -1052,9 +1069,10 @@ def generate(client=None):
   #refreshStatus:empty {{ display: none; }}
   @media (max-width: 1000px) {{ .updated .upd-label {{ display: none; }} }}
 
-  .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 22px; }}
+  .cards {{ display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }}
+  .cards .card {{ flex: 1 1 0; min-width: min-content; }}
   .card {{
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px;
     box-shadow: var(--shadow); position: relative; overflow: hidden;
   }}
   .card::before {{ content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border-strong); }}
@@ -1062,7 +1080,7 @@ def generate(client=None):
   .card.pos-card::before {{ background: var(--pos); }}
   .card.neg-card::before {{ background: var(--neg); }}
   .card .label {{ color: var(--muted); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }}
-  .card .value {{ font-size: 26px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }}
+  .card .value {{ white-space: nowrap; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }}
 
   .panel {{
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
@@ -1237,7 +1255,7 @@ def generate(client=None):
     #refreshBtn .btn-label {{ display: none; }}
     .modal-overlay {{ padding: 20px 10px 0 10px; }}
     .settings-row {{ flex-wrap: wrap; }}
-    .cards {{ grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }}
+    .cards {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }}
     .card {{ padding: 13px 14px; }}
     .card .value {{ font-size: 19px; }}
     .panel {{ padding: 14px 12px; margin-bottom: 14px; }}
@@ -1305,6 +1323,8 @@ def generate(client=None):
       <div class="card"><div class="label">Buying Power</div><div class="value">{fmt_money(account.buying_power)}</div></div>
       <div class="card"><div class="label">Open Positions</div><div class="value">{len(positions)}</div></div>
       <div class="card {'pos-card' if total_closed_pl >= 0 else 'neg-card'}"><div class="label">Realized P&amp;L</div><div class="value {'pos' if total_closed_pl >= 0 else 'neg'}">{fmt_money(total_closed_pl)}</div></div>
+      {avg_daily_card}
+      {est_annual_card}
       <div class="card"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
       <div class="card"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
     </div>
