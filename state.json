@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1037318.67,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 599646.9400000001,
   "trade_meta": {
     "CMCSA": {
@@ -746,7 +746,9 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "CMCSA": "2026-10-16T15:41:21.226717-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -755,6 +757,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
