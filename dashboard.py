@@ -931,10 +931,16 @@ def generate(client=None):
     n_qqq, n_orb = len(qqq_trades), len(closed_trades) - len(qqq_trades)
 
     def _pop(rows, note):
+        # Each part's share of the Total row (the last one); shares add up to
+        # 100%, so a part can read over 100% when the other part is a loss.
+        total = rows[-1][2]
+        def cells(v):
+            pct = f"{v / total * 100:.1f}%" if abs(total) > 0.005 else "—"
+            return (f'<td class="num {"pos" if v >= 0 else "neg"}">{fmt_money(v)}</td>'
+                    f'<td class="num pop-pct">{pct}</td>')
         body = "".join(
-            f'<tr><td><span class="pop-key {k}"></span>{name}</td>'
-            f'<td class="num {"pos" if v >= 0 else "neg"}">{fmt_money(v)}</td></tr>' if k else
-            f'<tr class="pop-total"><td>{name}</td><td class="num {"pos" if v >= 0 else "neg"}">{fmt_money(v)}</td></tr>'
+            f'<tr><td><span class="pop-key {k}"></span>{name}</td>{cells(v)}</tr>' if k else
+            f'<tr class="pop-total"><td>{name}</td>{cells(v)}</tr>'
             for k, name, v in rows)
         return f'<div class="card-pop"><table>{body}</table><div class="pop-note">{note}</div></div>'
 
@@ -1229,13 +1235,14 @@ def generate(client=None):
   .card.has-pop {{ cursor: help; }}
   .card-pop {{ display: none; }}
   #cardPop {{
-    position: fixed; display: none; z-index: 50; pointer-events: none; min-width: 240px; max-width: 320px;
+    position: fixed; display: none; z-index: 50; pointer-events: none; min-width: 280px; max-width: 380px;
     background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); padding: 10px 12px; font-size: 12.5px; color: var(--text);
   }}
   #cardPop table {{ width: 100%; border-collapse: collapse; }}
   #cardPop td {{ padding: 4px 0; border: none; white-space: nowrap; text-align: left; background: none; }}
   #cardPop td.num {{ text-align: right; padding-left: 16px; font-variant-numeric: tabular-nums; font-weight: 600; }}
+  #cardPop td.pop-pct {{ color: var(--muted); font-weight: 500; padding-left: 12px; }}
   #cardPop .pop-total td {{ border-top: 1px solid var(--border-strong); font-weight: 650; padding-top: 6px; }}
   #cardPop .pop-key {{ width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 8px; vertical-align: -1px; }}
   #cardPop .pop-note {{ color: var(--muted); font-size: 11.5px; margin-top: 6px; line-height: 1.4; white-space: normal; }}
