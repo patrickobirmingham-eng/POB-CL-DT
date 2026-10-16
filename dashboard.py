@@ -1312,7 +1312,7 @@ def generate(client=None):
     <div class="panel">
       <div class="panel-head">
         <h2>Income by Day</h2>
-        <button type="button" class="dl-btn" onclick="downloadTableCsv('dailyTable', 'income-by-day')" title="Download this table as a CSV file that opens in Excel">&#8681; Download for Excel</button>
+        <button type="button" class="dl-btn" onclick="downloadTableCsv('dailyTable', 'income-by-day')" title="Download this table as a CSV file that opens in Excel">&#8681; Download Table</button>
       </div>
       <div class="table-scroll">
       <table id="dailyTable">
@@ -1413,7 +1413,7 @@ def generate(client=None):
         <h2>Closed Orders</h2>
         <input type="search" id="closedSearch" class="symbol-search" placeholder="Search symbols or dates, e.g. AAPL, 2026-09-28"
                aria-label="Filter closed orders by stock symbol or transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed()">
-        <button type="button" class="dl-btn" onclick="downloadTableCsv('closedTable', 'closed-orders')" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download for Excel</button>
+        <button type="button" class="dl-btn" onclick="downloadTableCsv('closedTable', 'closed-orders')" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button>
       </div>
       <div class="table-scroll">
       <table id="closedTable">
@@ -1569,7 +1569,7 @@ def generate(client=None):
       tbody.insertBefore(tr, totals);
     }}
 
-    // "Download for Excel": the rows currently shown (search/filters applied),
+    // "Download Table": the rows currently shown (search/filters applied),
     // plus the Total row, as a CSV. Number cells use their raw data-value so
     // Excel gets real numbers it can sum; a leading BOM keeps Excel on UTF-8.
     function downloadTableCsv(tableId, name) {{

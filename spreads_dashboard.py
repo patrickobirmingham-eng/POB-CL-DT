@@ -333,7 +333,7 @@ svg text{fill:var(--muted);font-size:11px}
 
   <div class="panel">
     <div class="phead"><h2>Open spreads</h2><span class="sub" id="opensub"></span>
-      <input type="search" id="qOpen" placeholder="Search stock or sector…"><button class="btn dl" onclick="dlOpen()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download for Excel</button></div>
+      <input type="search" id="qOpen" placeholder="Search stock or sector…"><button class="btn dl" onclick="dlOpen()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button></div>
     <div class="tw"><table id="open"></table></div>
     <div class="note" id="opennote"></div>
   </div>
@@ -358,7 +358,7 @@ svg text{fill:var(--muted);font-size:11px}
 
   <div class="panel">
     <div class="phead"><h2>Transactions</h2><span class="sub" id="txsub"></span>
-      <input type="search" id="qTx" placeholder="Search…"><button class="btn dl" onclick="dlTx()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download for Excel</button></div>
+      <input type="search" id="qTx" placeholder="Search…"><button class="btn dl" onclick="dlTx()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button></div>
     <div class="tw"><table id="tx"></table></div>
   </div>
 
@@ -426,7 +426,7 @@ function setRange(v){
 }
 const sortState={tx:{k:0,dir:-1}};
 const SHOWN={open:[],tx:[]};
-// "Download for Excel": the rows currently shown (search, filters and sort applied) + a Total row,
+// "Download Table": the rows currently shown (search, filters and sort applied) + a Total row,
 // as CSV with plain numbers so Excel can add them up; the BOM keeps Excel on UTF-8.
 function csvDownload(name,header,rows){
   const q=v=>{const t=v==null?'':String(v);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t};
