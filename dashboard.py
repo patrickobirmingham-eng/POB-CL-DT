@@ -54,6 +54,14 @@ REFRESH_TOKEN = os.getenv("DASHBOARD_REFRESH_TOKEN", "")
 # above, because this one can change live trading parameters, not just read
 # data. Leave DASHBOARD_SETTINGS_SAVE_URL unset to hide the gear icon.
 SETTINGS_SAVE_ENDPOINT = os.getenv("DASHBOARD_SETTINGS_SAVE_URL", "")
+
+# Trading stats (Realized P&L, Win Rate, Closed Trades, Closed Orders, Income by
+# Day, the daily P&L chart) count trades closed on or after this date. The
+# first day, 2026-09-22, sized every trade off the whole account by mistake
+# (6 trades, +$13,336), which skewed the totals; the owner asked to start the
+# record on 2026-09-23. Account values (Equity, Cash...) are Alpaca's real
+# balances and still include that day.
+STATS_START_DATE = "2026-09-23"
 SETTINGS_SOURCE_URL = (
     "https://raw.githubusercontent.com/patrickobirmingham-eng/POB-CL-DT/main/settings.json"
 )
@@ -752,7 +760,10 @@ def generate(client=None):
     else:
         orders_rows = "<tr><td colspan='11' class='muted'>No orders yet</td></tr>"
 
-    closed_trades = build_closed_trades(all_orders)
+    # Match on the full history (so FIFO lots line up), then keep the trades
+    # closed from STATS_START_DATE on.
+    closed_trades = [t for t in build_closed_trades(all_orders)
+                     if t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d") >= STATS_START_DATE]
     closed_rows = ""
     total_closed_pl = 0.0
     total_purchase_cost = 0.0  # sum of shares * buy_price, across all closed trades
@@ -1072,6 +1083,7 @@ def generate(client=None):
   }}
   .panel-head {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }}
   .panel-head h2 {{ margin: 0; }}
+  .stats-note {{ font-size: 12.5px; margin-right: auto; }}
   .dl-btn {{
     background: var(--panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 8px;
     padding: 7px 12px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; white-space: nowrap;
@@ -1312,6 +1324,7 @@ def generate(client=None):
     <div class="panel">
       <div class="panel-head">
         <h2>Income by Day</h2>
+        <span class="muted stats-note" title="The first trading day (Sep 22) sized trades off the whole account by mistake, so it is left out of the trading stats. Account balances still include it.">Trading stats start Sep 23, 2026</span>
         <button type="button" class="dl-btn" onclick="downloadTableCsv('dailyTable', 'income-by-day')" title="Download this table as a CSV file that opens in Excel">&#8681; Download Table</button>
       </div>
       <div class="table-scroll">
