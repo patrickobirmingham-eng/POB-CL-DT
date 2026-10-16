@@ -764,52 +764,64 @@ def generate(client=None):
     # closed from STATS_START_DATE on.
     closed_trades = [t for t in build_closed_trades(all_orders)
                      if t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d") >= STATS_START_DATE]
-    closed_rows = ""
-    total_closed_pl = 0.0
-    total_purchase_cost = 0.0  # sum of shares * buy_price, across all closed trades
-    total_sell_proceeds = 0.0  # sum of shares * sell_price, across all closed trades
-    if closed_trades:
-        for t in closed_trades:
-            tx_dt = t["transaction_date"].astimezone(ET)
-            pl = t["pl"]
-            gain_pct = t["gain_pct"]
-            total_closed_pl += pl
-            total_purchase_cost += t["shares"] * t["buy_price"]
-            total_sell_proceeds += t["shares"] * t["sell_price"]
-            pl_class = "pos" if pl >= 0 else "neg"
-            gain_class = "pos" if gain_pct >= 0 else "neg"
-            closed_rows += f"""
-            <tr>
-              <td data-value="{tx_dt.isoformat()}">{tx_dt.strftime("%Y-%m-%d %I:%M %p")}</td>
-              <td data-value="{t['symbol']}">{t['symbol']}{' <span class="muted">(short)</span>' if t.get('side') == 'short' else ''}</td>
-              <td data-value="{company_name(t['symbol'])}">{company_name(t['symbol'])}</td>
-              <td class="num" data-value="{raw_num(t['shares'])}">{t['shares']:g}</td>
-              <td class="num" data-value="{raw_num(t['buy_price'])}">{fmt_money(t['buy_price'])}</td>
-              <td class="num" data-value="{raw_num(t['sell_price'])}">{fmt_money(t['sell_price'])}</td>
-              <td class="num {pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl)}</td>
-              <td class="num {gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
-            </tr>"""
-        total_class = "pos" if total_closed_pl >= 0 else "neg"
-        # Overall % gain/loss for the totals row: total P&L over total capital put
-        # in (sum of purchase costs) — the same "$ out vs $ back" basis used for
-        # each individual row, just aggregated, rather than an average of the
-        # per-trade percentages (which would let a tiny trade's swing skew the
-        # total as much as a big one).
-        total_gain_pct = (total_closed_pl / total_purchase_cost * 100) if total_purchase_cost else 0.0
-        total_gain_class = "pos" if total_gain_pct >= 0 else "neg"
-        closed_rows += f"""
-            <tr class="totals-row">
-              <td>Total</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td class="num">{fmt_money(total_purchase_cost)}</td>
-              <td class="num">{fmt_money(total_sell_proceeds)}</td>
-              <td class="num {total_class}">{fmt_money(total_closed_pl)}</td>
-              <td class="num {total_gain_class}">{total_gain_pct:+.2f}%</td>
-            </tr>"""
-    else:
-        closed_rows = "<tr><td colspan='8' class='muted'>No closed trades yet</td></tr>"
+
+    def closed_table_rows(trades, empty_msg):
+        """Rows (plus a Total row) for a Closed Orders-style table; returns
+        (rows html, total P&L)."""
+        rows = ""
+        total_closed_pl = 0.0
+        total_purchase_cost = 0.0  # sum of shares * buy_price, across all closed trades
+        total_sell_proceeds = 0.0  # sum of shares * sell_price, across all closed trades
+        if trades:
+            for t in trades:
+                tx_dt = t["transaction_date"].astimezone(ET)
+                pl = t["pl"]
+                gain_pct = t["gain_pct"]
+                total_closed_pl += pl
+                total_purchase_cost += t["shares"] * t["buy_price"]
+                total_sell_proceeds += t["shares"] * t["sell_price"]
+                pl_class = "pos" if pl >= 0 else "neg"
+                gain_class = "pos" if gain_pct >= 0 else "neg"
+                rows += f"""
+                <tr>
+                  <td data-value="{tx_dt.isoformat()}">{tx_dt.strftime("%Y-%m-%d %I:%M %p")}</td>
+                  <td data-value="{t['symbol']}">{t['symbol']}{' <span class="muted">(short)</span>' if t.get('side') == 'short' else ''}</td>
+                  <td data-value="{company_name(t['symbol'])}">{company_name(t['symbol'])}</td>
+                  <td class="num" data-value="{raw_num(t['shares'])}">{t['shares']:g}</td>
+                  <td class="num" data-value="{raw_num(t['buy_price'])}">{fmt_money(t['buy_price'])}</td>
+                  <td class="num" data-value="{raw_num(t['sell_price'])}">{fmt_money(t['sell_price'])}</td>
+                  <td class="num {pl_class}" data-value="{raw_num(pl)}">{fmt_money(pl)}</td>
+                  <td class="num {gain_class}" data-value="{raw_num(gain_pct)}">{gain_pct:+.2f}%</td>
+                </tr>"""
+            total_class = "pos" if total_closed_pl >= 0 else "neg"
+            # Overall % gain/loss for the totals row: total P&L over total capital put
+            # in (sum of purchase costs) — the same "$ out vs $ back" basis used for
+            # each individual row, just aggregated, rather than an average of the
+            # per-trade percentages (which would let a tiny trade's swing skew the
+            # total as much as a big one).
+            total_gain_pct = (total_closed_pl / total_purchase_cost * 100) if total_purchase_cost else 0.0
+            total_gain_class = "pos" if total_gain_pct >= 0 else "neg"
+            rows += f"""
+                <tr class="totals-row">
+                  <td>Total</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="num">{fmt_money(total_purchase_cost)}</td>
+                  <td class="num">{fmt_money(total_sell_proceeds)}</td>
+                  <td class="num {total_class}">{fmt_money(total_closed_pl)}</td>
+                  <td class="num {total_gain_class}">{total_gain_pct:+.2f}%</td>
+                </tr>"""
+        else:
+            rows = f"<tr><td colspan='8' class='muted'>{empty_msg}</td></tr>"
+        return rows, total_closed_pl
+
+    closed_rows, total_closed_pl = closed_table_rows(closed_trades, "No closed trades yet")
+    # The QQQ momentum strategy (Concretum Bands) is the only thing that trades
+    # MOMENTUM_SYMBOL, so its closed orders are the closed trades in that symbol.
+    momentum_symbol = getattr(bot_config, "MOMENTUM_SYMBOL", "QQQ")
+    qqq_closed_rows, _ = closed_table_rows([t for t in closed_trades if t["symbol"] == momentum_symbol],
+                                           f"No closed {momentum_symbol} momentum trades yet")
 
     # Income by Day — closed_trades rolled up per calendar date (ET), drawn
     # from the full paginated order history, so every trading day since the
@@ -1443,9 +1455,33 @@ def generate(client=None):
 
     <div class="panel">
       <div class="panel-head">
+        <h2>QQQ Momentum Strategy &mdash; Concretum Bands - Closed Orders</h2>
+        <input type="search" id="qqqClosedSearch" class="symbol-search" placeholder="Search dates, e.g. 2026-10-16"
+               aria-label="Filter QQQ momentum closed orders by transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed('qqqClosedTable', 'qqqClosedSearch')">
+        <button type="button" class="dl-btn" onclick="downloadTableCsv('qqqClosedTable', 'qqq-momentum-closed-orders')" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button>
+      </div>
+      <div class="table-scroll">
+      <table id="qqqClosedTable">
+        <thead><tr>
+          <th class="sortable" onclick="sortTable('qqqClosedTable',0,'text')">Transaction Date</th>
+          <th class="sortable" onclick="sortTable('qqqClosedTable',1,'text')">Symbol</th>
+          <th class="sortable" onclick="sortTable('qqqClosedTable',2,'text')">Company Name</th>
+          <th class="sortable num" onclick="sortTable('qqqClosedTable',3,'num')"># of Shares</th>
+          <th class="sortable num" onclick="sortTable('qqqClosedTable',4,'num')">Purchase Price</th>
+          <th class="sortable num" onclick="sortTable('qqqClosedTable',5,'num')">Sell Price</th>
+          <th class="sortable num" onclick="sortTable('qqqClosedTable',6,'num')">Profit / (Loss)</th>
+          <th class="sortable num" onclick="sortTable('qqqClosedTable',7,'num')">% Gain / Loss</th>
+        </tr></thead>
+        <tbody>{qqq_closed_rows}</tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
         <h2>Closed Orders</h2>
         <input type="search" id="closedSearch" class="symbol-search" placeholder="Search symbols or dates, e.g. AAPL, 2026-09-28"
-               aria-label="Filter closed orders by stock symbol or transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed()">
+               aria-label="Filter closed orders by stock symbol or transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed('closedTable', 'closedSearch')">
         <button type="button" class="dl-btn" onclick="downloadTableCsv('closedTable', 'closed-orders')" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button>
       </div>
       <div class="table-scroll">
@@ -1670,15 +1706,17 @@ def generate(client=None):
       tbody.appendChild(totals);
     }}
 
-    // Closed Orders: symbol/date search; the Total row (incl. Profit / (Loss))
-    // is recomputed for whatever is visible and restored when cleared.
-    let closedTotalsOriginal = null;
-    function filterClosed() {{
-      const table = document.getElementById('closedTable');
+    // Closed Orders tables (all trades, and the QQQ momentum one): symbol/date
+    // search; the Total row (incl. Profit / (Loss)) is recomputed for whatever
+    // is visible and restored when cleared.
+    const closedTotalsOriginal = {{}};
+    function filterClosed(tableId, searchId) {{
+      const table = document.getElementById(tableId);
+      if (!table) return;
       const tbody = table.tBodies[0];
       const totals = tbody.querySelector('tr.totals-row');
-      if (totals && closedTotalsOriginal === null) closedTotalsOriginal = totals.innerHTML;
-      const q = parseSearch('closedSearch');
+      if (totals && !(tableId in closedTotalsOriginal)) closedTotalsOriginal[tableId] = totals.innerHTML;
+      const q = parseSearch(searchId);
       const hasQuery = q.symbols.length > 0 || q.dates.length > 0;
       const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row):not(.no-match)')).filter(r => r.cells.length > 2);
       let shown = 0, cost = 0, proceeds = 0, pl = 0;
@@ -1692,11 +1730,11 @@ def generate(client=None):
         proceeds += shares * parseFloat(row.cells[5].getAttribute('data-value'));
         pl += parseFloat(row.cells[6].getAttribute('data-value'));
       }});
-      setNoMatch('closedTable', rows.length > 0 && shown === 0, 'No closed orders for ' + describeQuery(q) + '.');
+      setNoMatch(tableId, rows.length > 0 && shown === 0, 'No closed orders for ' + describeQuery(q) + '.');
       if (!totals) return;
       if (!hasQuery) {{
         totals.style.display = '';
-        if (closedTotalsOriginal !== null) totals.innerHTML = closedTotalsOriginal;
+        if (tableId in closedTotalsOriginal) totals.innerHTML = closedTotalsOriginal[tableId];
       }} else if (shown === 0) {{
         totals.style.display = 'none';
       }} else {{
@@ -2275,7 +2313,8 @@ def generate(client=None):
     // Apply the default status filter (Filled only, checked above) on first
     // load, same as if the user had just toggled the checkboxes themselves.
     filterOrders();
-    filterClosed();
+    filterClosed('closedTable', 'closedSearch');
+    filterClosed('qqqClosedTable', 'qqqClosedSearch');
 
     // --- Dark / light theme toggle ------------------------------------------------
     // Defaults to dark (matches the original look) and remembers the choice
