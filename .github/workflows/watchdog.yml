@@ -161,8 +161,13 @@ jobs:
           from datetime import datetime, timezone, timedelta
           runs = json.load(sys.stdin).get('workflow_runs', [])
           now = datetime.now(timezone.utc)
-          busy = any(r['status'] in ('queued', 'in_progress', 'waiting', 'pending') for r in runs)
-          recent = any(now - datetime.fromisoformat(r['created_at'].replace('Z', '+00:00')) < timedelta(minutes=12) for r in runs)
+          age = lambda r: now - datetime.fromisoformat(r['created_at'].replace('Z', '+00:00'))
+          # A run can't really be working past its 14-min timeout. GitHub sometimes
+          # leaves a finished run marked in_progress for 30+ min (2026-10-19:
+          # the 11:30 and 12:15 ET runs), which blocked new runs, so a status
+          # older than 15 min doesn't count as busy.
+          busy = any(r['status'] in ('queued', 'in_progress', 'waiting', 'pending') and age(r) < timedelta(minutes=15) for r in runs)
+          recent = any(age(r) < timedelta(minutes=12) for r in runs)
           print('no' if busy or recent else 'yes')
           ")
           if [ "$NEED" != "yes" ]; then echo "Spreads bot ran recently or is running - nothing to do."; exit 0; fi
