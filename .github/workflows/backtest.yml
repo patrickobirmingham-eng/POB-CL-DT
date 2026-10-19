@@ -33,6 +33,7 @@ on:
           - research-intraday-momentum
           - research-momentum-intervals
           - research-momentum-take-profit
+          - research-momentum-exit-checks
           - in-play
           - settings
           - market-filter
@@ -72,6 +73,11 @@ jobs:
           if [ "${{ inputs.comparison }}" = "research-momentum-take-profit" ]; then
             # Would a fixed profit target beat the trailing exit? (days input unused)
             python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'QQQ' }}" --take-profit 0.5,1,1.5,2
+            exit 0
+          fi
+          if [ "${{ inputs.comparison }}" = "research-momentum-exit-checks" ]; then
+            # Check exits more often than the 30-min entry checks? (days input unused)
+            python research_spy_momentum.py --start 2016-01-01 --symbols "${{ inputs.symbols || 'QQQ' }}" --exit-intervals 1,5,10,15
             exit 0
           fi
           if [ "${{ inputs.comparison }}" = "research-momentum-intervals" ]; then

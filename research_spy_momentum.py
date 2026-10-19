@@ -94,11 +94,14 @@ def prepare_days(m: pd.DataFrame):
 
 
 def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MAX_LEV, every=30,
-             take_profit=None, tp_reenter=False):
+             take_profit=None, tp_reenter=False, exit_every=None):
     """take_profit: optional fraction (0.01 = +1%). A resting limit order sells
     (or covers) as soon as any minute bar reaches entry * (1 +/- take_profit),
     filled at the target price. tp_reenter: after a take-profit, keep taking
-    new signals at later checks (False = done for the day)."""
+    new signals at later checks (False = done for the day).
+    exit_every: optional minutes. Between the regular checks, an open position
+    is also checked for its exit (same band/VWAP rule) every N minutes; new
+    entries still only happen at the regular checks."""
     trades, daily = [], []
     for i in range(LOOKBACK + 1, len(days)):
         day = days[i]
@@ -130,7 +133,13 @@ def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MA
             n_tr += 1
 
         check_bars = [ms.check_bar(t) for t in (ms.CHECK_TIMES if every == 30 else ms.make_check_times(every))]
-        if take_profit is None:
+        exit_set = set()
+        if exit_every:
+            grid = list(b.index)
+            minutes = grid[grid.index(check_bars[0]):grid.index(check_bars[-1]) + 1]
+            exit_set = set(minutes[::exit_every])
+            check_set = set(check_bars)
+        elif take_profit is None:
             minutes = check_bars
         else:
             grid = list(b.index)
@@ -148,6 +157,14 @@ def simulate(days, slip=0.01, long_only=False, target_vol=TARGET_VOL, max_lev=MA
                     close_pos(target + slip if pos > 0 else target - slip)
                     tp_done = not tp_reenter
             if take_profit is not None and bar not in check_set:
+                continue
+            if exit_every and bar not in check_set:
+                if pos != 0 and bar in exit_set:
+                    px = b.at[bar, "close"]
+                    exit_now, _ = ms.decide(pos, px, upper[bar], lower[bar], b.at[bar, "vwap"],
+                                            allow_shorts=not long_only)
+                    if exit_now:
+                        close_pos(px)
                 continue
             px = b.at[bar, "close"]
             exit_now, new_side = ms.decide(pos, px, upper[bar], lower[bar], b.at[bar, "vwap"],
@@ -209,6 +226,49 @@ def compare_intervals(client, sym, start, end, intervals, out):
                 "after-publication Sharpe, doubled costs, profitable years). Keep 30 minutes.")
 
 
+def compare_exit_intervals(client, sym, start, end, intervals, out):
+    """Entries every 30 minutes as now; exits also checked every N minutes."""
+    days = prepare_days(fetch_minutes(client, sym, start, end))
+    out()
+    out(f"### {sym}: exit check frequency (entries stay every 30 min)")
+    out()
+    out("| Exit checked every | Trades | Avg losing trade | Worst trade | Avg winning trade | All: return | "
+        "All: Sharpe | All: max DD | Out-of-sample return | Out-of-sample Sharpe | OOS Sharpe, 2x slippage | "
+        "Profitable years |")
+    out("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    rows = {}
+    for m in [30] + [m for m in intervals if m != 30]:
+        ex = None if m == 30 else m
+        trades, daily = simulate(days, exit_every=ex)
+        _, daily2 = simulate(days, exit_every=ex, slip=0.02)
+        daily["year"] = daily["date"].str[:4]
+        a = summarize(daily)
+        o = summarize(daily[daily["date"] >= PUBLISHED])
+        o2 = summarize(daily2[daily2["date"] >= PUBLISHED])
+        yp = sum(1 for _, g in daily.groupby("year") if g["pnl"].sum() > 0)
+        yn = daily["year"].nunique()
+        pct = trades["pnl"] / EQUITY
+        loss, win = pct[pct < 0], pct[pct > 0]
+        rows[m] = (a, o, o2, yp)
+        label = "30 min (now)" if m == 30 else f"{m} min"
+        out(f"| {label} | {len(trades)} | {loss.mean() if len(loss) else 0:+.2%} | {pct.min():+.2%} | "
+            f"{win.mean() if len(win) else 0:+.2%} | {a['ret']:+.1%} | {a['sharpe']:.2f} | {a['dd']:.1%} | "
+            f"{o['ret']:+.1%} | {o['sharpe']:.2f} | {o2['sharpe']:.2f} | {yp}/{yn} |")
+        trades.to_csv(f"research_momentum_{sym.lower()}_exit{m}min.csv", index=False)
+    base = rows[30]
+    better = [m for m, (a, o, o2, yp) in rows.items() if m != 30
+              and o["sharpe"] >= base[1]["sharpe"] + 0.2 and a["sharpe"] >= base[0]["sharpe"] + 0.1
+              and o2["sharpe"] >= base[2]["sharpe"] and yp >= base[3]]
+    out()
+    if better:
+        out(f"**Verdict:** checking exits every {', '.join(f'{m} min' for m in better)} beats the current 30-minute "
+            f"exits clearly and consistently (higher Sharpe overall and after publication, robust to doubled costs, "
+            f"at least as many profitable years).")
+    else:
+        out("**Verdict:** checking exits more often does not clearly beat the current 30-minute exits on all counts "
+            "(overall Sharpe, after-publication Sharpe, doubled costs, profitable years). Keep 30 minutes.")
+
+
 def compare_take_profit(client, sym, start, end, levels, out):
     """Current rules vs the same rules plus a fixed take-profit target."""
     days = prepare_days(fetch_minutes(client, sym, start, end))
@@ -255,6 +315,7 @@ def main():
     ap.add_argument("--start", default="2016-01-01")
     ap.add_argument("--symbols", default="SPY,QQQ")
     ap.add_argument("--intervals", default="", help="e.g. 10,15,30,60: compare decision frequencies instead")
+    ap.add_argument("--exit-intervals", default="", help="e.g. 1,5,10,15: check exits this often (entries stay 30 min)")
     ap.add_argument("--take-profit", default="", help="e.g. 0.5,1,1.5,2 (percent): compare take-profit targets instead")
     args = ap.parse_args()
     key, secret = os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_KEY")
@@ -268,6 +329,20 @@ def main():
     def out(s=""):
         print(s)
         lines.append(s)
+
+    if args.exit_intervals:
+        out("## Research: intraday momentum — check exits more often than every 30 minutes?")
+        out()
+        out(f"Same rules, sizing and costs as the main study. Entries are still decided only at 10:00, 10:30 ... "
+            f"15:30 ET; an open position is also checked for its exit (price back inside the band / across VWAP) "
+            f"every N minutes in between. Trade %s are of ${EQUITY:,.0f} equity. Out-of-sample = on/after {PUBLISHED}.")
+        for sym in [x.strip().upper() for x in args.symbols.split(",") if x.strip()]:
+            compare_exit_intervals(client, sym, start, end, [int(x) for x in args.exit_intervals.split(",")], out)
+        path = os.getenv("GITHUB_STEP_SUMMARY")
+        if path:
+            with open(path, "a") as f:
+                f.write("\n".join(lines) + "\n")
+        return
 
     if args.take_profit:
         out("## Research: intraday momentum — does a fixed take-profit target help?")
