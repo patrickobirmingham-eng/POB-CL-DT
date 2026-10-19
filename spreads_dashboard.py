@@ -438,9 +438,9 @@ function csvDownload(name,header,rows){
 }
 function dlOpen(){
   const r=SHOWN.open,S=f=>r.reduce((x,y)=>x+(f(y)||0),0);
-  csvDownload('open-spreads',['Stock','Category','Stock price','% above short strike','Short strike','Long strike','Width','Opened','Expires','Days to expiry','Qty','Delta at open','Credit per share','Cost to close per share','Total credit','Total cost to close','P&L','Max loss'],
-    r.map(s=>[s.sym,s.sec,s.price,s.price!=null?(s.price/s.sk-1)*100:'',s.sk,s.lk,s.w,s.o,s.e,s.dte,s.q,s.d,s.cr,s.px,s.credit,s.cost,s.pl,s.ml])
-     .concat([[`Total (${r.length})`,'','','','','','','','','',S(s=>s.q),'','','',S(s=>s.credit),S(s=>s.cost),S(s=>s.pl),S(s=>s.ml)]]));
+  csvDownload('open-spreads',['Stock','Category','Stock price','% above short strike','Short strike','Long strike','Width','Opened','Expires','Days to expiry','Qty','Delta at open','Credit per share','Cost to close per share','Total credit','Total cost to close','P&L','ROI %','Max loss'],
+    r.map(s=>[s.sym,s.sec,s.price,s.price!=null?(s.price/s.sk-1)*100:'',s.sk,s.lk,s.w,s.o,s.e,s.dte,s.q,s.d,s.cr,s.px,s.credit,s.cost,s.pl,roi(s),s.ml])
+     .concat([[`Total (${r.length})`,'','','','','','','','','',S(s=>s.q),'','','',S(s=>s.credit),S(s=>s.cost),S(s=>s.pl),S(s=>s.credit)?S(s=>s.pl)/S(s=>s.credit)*100:'',S(s=>s.ml)]]));
 }
 function dlTx(){
   const r=SHOWN.tx;
@@ -468,12 +468,14 @@ function bar(s){const lo=-SL,hi=TP,x=Math.max(0,Math.min(100,(prog(s)-lo)/(hi-lo
 const sym=s=>`<span class="sym">${esc(s.sym)}</span> <span class="muted">${esc(s.sec)}</span>`;
 // stock price, and how far it is above the short strike (the cushion)
 const px=s=>s.price==null?'<span class="muted">—</span>':`$${Number(s.price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}<div class="${s.price>s.sk*1.05?'muted':s.price>s.sk?'warn':'neg'}" style="font-size:12px">${((s.price/s.sk-1)*100).toFixed(1)}% above strike</div>`;
+// ROI % = P&L as a % of the total credit collected
+const roi=s=>s.credit?s.pl/s.credit*100:null, pctS=v=>v==null?'—':(v>=0?'+':'−')+Math.abs(v).toFixed(1)+'%';
 const openCols=[
  {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Stock price',key:'price'},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Expires',key:'e'},{t:'Qty',key:'q'},{t:'Delta at open',key:'d'},
- {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'Stop ← → Target',sort:prog},{t:'Max loss',key:'ml'}];
+ {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Stop ← → Target',sort:prog},{t:'Max loss',key:'ml'}];
 const closedCols=[
  {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Closed',key:'c'},{t:'Days held',key:'days'},{t:'Qty',key:'q'},
- {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'Why',key:'why'}];
+ {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Why',key:'why'}];
 const txCols=[{t:'Date',key:'dt'},{t:'Action',key:'act'},{t:'Stock',key:'sym',l:1},{t:'Option',key:'leg'},{t:'Expires',key:'exp'},{t:'Qty',key:'q'},{t:'Price',key:'px'},{t:'Fees',key:'fee'},{t:'Amount',key:'amt'}];
 function draw(){
   const from=$('from').value, to=$('to').value;
@@ -495,11 +497,14 @@ function draw(){
    group('PROFIT &amp; LOSS',[tile('Realized Profit / Loss',tm(realized),cls(realized)),tile('Open Premium',tm(openPrem),'warn'),tile('Assigned Premium',tm(assigned),'warn')])+
    group('PERFORMANCE',[tile('Avg Premium per Trade',tm(avgPrem),'pos'),tile('% Premium Captured',closedR.length?captured.toFixed(1)+'%':'—',captured>=50?'pos':closedR.length?'neg':'muted'),tile('Commission Drag',tm(fees),'warn')])+
    group('ACTIVITY',[tile('Open / Closed Positions',`${openSp.length} / ${closedR.length}`,'warn'),tile('Open / Closed Contracts',`${sum(openSp,s=>s.q)} / ${sum(closedR,s=>s.q)}`,'warn'),tile('Avg Days Held',closedR.length?days.toFixed(1)+'d':'—','warn')]);
-  SHOWN.open=sortable('open',openCols,openSp,s=>`<tr><td class="l">${sym(s)}${s.rolls?` <span class="tag rolled" title="rolled ${s.rolls}×">rolled</span>`:''}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.e))} <span class="muted">(${s.dte}d)</span></td><td>${s.q}</td><td>${s.d.toFixed(2)}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td>${bar(s)}</td><td>${m0(s.ml)}</td></tr>`,'qOpen',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),pl=S(s=>s.pl);
+  SHOWN.open=sortable('open',openCols,openSp,s=>`<tr><td class="l">${sym(s)}${s.rolls?` <span class="tag rolled" title="rolled ${s.rolls}×">rolled</span>`:''}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.e))} <span class="muted">(${s.dte}d)</span></td><td>${s.q}</td><td>${s.d.toFixed(2)}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td>${bar(s)}</td><td>${m0(s.ml)}</td></tr>`,'qOpen',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),pl=S(s=>s.pl);
     return totalRow(openCols,r,{[openCols.findIndex(c=>c.key==='credit')]:m0(S(s=>s.credit)),[openCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
-      [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`})});
+      [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`,
+      [openCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(pl)}">${pctS(roi({pl,credit:S(s=>s.credit)}))}</span>`})});
   $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
-  sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span></td></tr>`,'qClosed');
+  sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span></td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
+    return totalRow(closedCols,r,{[closedCols.findIndex(c=>c.key==='credit')]:m0(t.credit),[closedCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
+      [closedCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(t.pl)}">${money(t.pl,true,0)}</span>`,[closedCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(t.pl)}">${pctS(roi(t))}</span>`})});
   $('closedsub').textContent=`${closedR.length} in range · ${closedR.filter(s=>s.pl>0).length} winners`;
   SHOWN.tx=sortable('tx',txCols,ftx,x=>`<tr><td>${fmt(D(x.dt))}</td><td>${esc(x.act)}</td><td class="l sym">${esc(x.sym)}</td><td>${esc(x.leg)}</td><td>${fmt(D(x.exp))}</td><td>${x.q}</td><td>${x.px?money(Math.abs(x.px)):'—'}</td><td>${money(x.fee)}</td><td class="${cls(x.amt)}">${money(x.amt,true)}</td></tr>`,'qTx',r=>{const a=r.reduce((x,y)=>x+y.amt,0);
     return totalRow(txCols,r,{[txCols.findIndex(c=>c.key==='amt')]:`<span class="${cls(a)}">${money(a,true)}</span>`})});
