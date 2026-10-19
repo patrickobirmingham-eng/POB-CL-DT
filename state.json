@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1057649.43,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 597944.225,
   "trade_meta": {
     "COST": {
@@ -746,7 +746,11 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "CDNS": "2026-10-19T15:40:31.684266-04:00",
+    "COST": "2026-10-19T15:40:31.684266-04:00",
+    "MAR": "2026-10-19T15:40:31.684266-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -755,6 +759,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
