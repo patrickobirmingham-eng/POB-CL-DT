@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1050166.89,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 599687.295,
   "trade_meta": {
     "ABNB": {
@@ -746,7 +746,12 @@
     }
   },
   "breakeven_moved": [],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "CSX": "2026-10-20T15:40:57.195397-04:00",
+    "EXC": "2026-10-20T15:40:57.195397-04:00",
+    "TRI": "2026-10-20T15:40:57.195397-04:00",
+    "WDAY": "2026-10-20T15:40:57.195397-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -755,6 +760,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
