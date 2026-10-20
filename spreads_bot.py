@@ -514,8 +514,13 @@ def run(broker, settings, dry=False, now=None):
                     continue
                 reason = "touched short strike (no roll for a credit)"
             # close
-            if reason == "target":      # mid, then halfway to the natural price (still a profit)
-                limits = ladder(round(cost, 2), round(min(max(cost, natural), sp["credit"] * 0.75), 2), 2)
+            if reason == "target":      # mid, then halfway to the natural price, never above the target price
+                # (credit x (1 - TAKE_PROFIT_PCT)), so a target close always keeps the target profit. An
+                # unfilled order is cancelled next run and re-priced off the new mid; no need to chase.
+                # (Was capped at 75% of the credit: on 2026-10-20 a wide market closed UNH at $1.40 with
+                # the mid at $0.42, keeping 25% of the credit instead of the 50% target.)
+                half = cost + (max(cost, natural) - cost) / 2
+                limits = ladder(round(cost, 2), round(min(half, sp["credit"] * (1 - settings["TAKE_PROFIT_PCT"])), 2), 2)
             else:                       # stop / defensive closes: pay up to get out
                 limits = [round(max(cost, natural) + 0.05, 2)]
             log(f"CLOSE {sp['symbol']} ({reason}): cost ${cost:.2f}, limits {limits}")
