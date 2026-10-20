@@ -386,6 +386,9 @@ def submit_bracket_order(trading_client, symbol, direction, shares, stop_price, 
     return trading_client.submit_order(order)
 
 
+LIVE_ORDER_STATUSES = {"new", "held", "accepted", "pending_new", "partially_filled", "pending_replace"}
+
+
 def apply_breakeven_stops(trading_client, day_state, positions):
     """Once an open position has moved config.BREAKEVEN_TRIGGER_R multiples of
     its initial risk (entry-to-stop distance) in our favor, move that
@@ -423,10 +426,16 @@ def apply_breakeven_stops(trading_client, day_state, positions):
             continue
 
         try:
-            open_orders = trading_client.get_orders(
-                filter=GetOrdersRequest(status=QueryOrderStatus.OPEN, symbols=[symbol])
+            # A bracket's stop-loss leg sits in Alpaca status "held" (not "new")
+            # while its take-profit leg is working, and a status=OPEN query
+            # leaves held orders out, so this never found the stop and the
+            # breakeven move never happened (seen 2026-10-20 on WDAY). Look at
+            # all of the symbol's recent orders and keep the live ones.
+            recent = trading_client.get_orders(
+                filter=GetOrdersRequest(status=QueryOrderStatus.ALL, symbols=[symbol], limit=50)
             )
-            stop_leg = next((o for o in open_orders if o.order_type == OrderType.STOP), None)
+            stop_leg = next((o for o in recent if o.order_type == OrderType.STOP
+                             and getattr(o.status, "value", o.status) in LIVE_ORDER_STATUSES), None)
             if stop_leg is None:
                 log(f"{symbol}: reached {config.BREAKEVEN_TRIGGER_R:.1f}R in profit but no open "
                     f"stop-loss order was found — skipping breakeven move this pass.")
