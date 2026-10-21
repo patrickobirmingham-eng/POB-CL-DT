@@ -25,6 +25,13 @@ import requests
 ET = ZoneInfo("America/New_York")
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "docs", "spreads.html")
+
+# Notes shown next to a closed spread's reason (by trade id in spreads_trades.csv).
+# Alpaca's history can't be edited, so a trade that went wrong because of a bot
+# bug stays in the totals and gets a label instead.
+TRADE_NOTES = {
+    "UNH-2026-11-27-370-094735": "closed low: pricing bug, fixed Oct 20",
+}
 PAPER_URL = "https://paper-api.alpaca.markets"
 # The Rules box saves through server/spreads-settings-save.php on the owner's web
 # server (next to orb-settings-save.php, which does the same for the day bot).
@@ -147,7 +154,8 @@ def spread_rows(state, trades, settings):
         rows.append({"sym": t["symbol"], "sec": settings["WATCHLIST"].get(t["symbol"], t.get("sector", "")),
                      "sk": float(t["short_strike"]), "lk": float(t["long_strike"]), "o": t["opened_at"],
                      "e": t["expiration"], "q": int(float(t["qty"])), "d": float(t["delta_at_open"] or 0),
-                     "cr": float(t["credit"]), "px": float(t["close_cost"]), "c": t["closed_at"], "why": why})
+                     "cr": float(t["credit"]), "px": float(t["close_cost"]), "c": t["closed_at"], "why": why,
+                     "note": TRADE_NOTES.get(t.get("id", ""), "")})
     return rows
 
 
@@ -267,6 +275,7 @@ tr:hover td{background:var(--row-hover)}
 .tag.stop{background:rgba(240,80,78,.15);color:var(--neg)}
 .tag.rolled{background:var(--accent-soft);color:var(--accent)}
 .tag.touched{background:rgba(245,165,36,.15);color:var(--warn)}
+.tag.note{background:rgba(245,165,36,.15);color:var(--warn);font-weight:500}
 .sector{display:grid;grid-template-columns:110px 1fr 40px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
 .sector .track{height:10px;background:var(--grid);border-radius:5px;overflow:hidden}
 .sector .fill{height:100%;background:var(--accent);border-radius:5px}
@@ -502,7 +511,7 @@ function draw(){
       [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`,
       [openCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(pl)}">${pctS(roi({pl,credit:S(s=>s.credit)}))}</span>`})});
   $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
-  sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span></td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
+  sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
     return totalRow(closedCols,r,{[closedCols.findIndex(c=>c.key==='credit')]:m0(t.credit),[closedCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
       [closedCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(t.pl)}">${money(t.pl,true,0)}</span>`,[closedCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(t.pl)}">${pctS(roi(t))}</span>`})});
   $('closedsub').textContent=`${closedR.length} in range · ${closedR.filter(s=>s.pl>0).length} winners`;
