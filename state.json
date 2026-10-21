@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1044842.96,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 598271.53,
   "trade_meta": {
     "TRI": {
@@ -748,7 +748,11 @@
   "breakeven_moved": [
     "TRI"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "ABNB": "2026-10-21T15:00:34.862393-04:00",
+    "MPWR": "2026-10-21T15:40:55.401778-04:00",
+    "TRI": "2026-10-21T15:40:55.401778-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -757,6 +761,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
