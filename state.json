@@ -1,758 +1,759 @@
 {
-  "date": "2026-10-21",
+  "date": "2026-10-22",
   "opening_ranges": {
     "ADBE": {
       "symbol": "ADBE",
-      "date": "2026-10-21",
-      "high": 256.03,
-      "low": 252.71,
-      "avg_volume": 510.3333333333333
+      "date": "2026-10-22",
+      "high": 259.66,
+      "low": 256.695,
+      "avg_volume": 662.3
     },
     "AMD": {
       "symbol": "AMD",
-      "date": "2026-10-21",
-      "high": 554.03,
-      "low": 545.45,
-      "avg_volume": 4781.3
+      "date": "2026-10-22",
+      "high": 525.97,
+      "low": 519.92,
+      "avg_volume": 4320.0
     },
     "ABNB": {
       "symbol": "ABNB",
-      "date": "2026-10-21",
-      "high": 175.81,
-      "low": 174.05,
-      "avg_volume": 630.5
+      "date": "2026-10-22",
+      "high": 174.1,
+      "low": 172.46,
+      "avg_volume": 825.6
     },
     "ALNY": {
       "symbol": "ALNY",
-      "date": "2026-10-21",
-      "high": 229.1,
-      "low": 227.915,
-      "avg_volume": 210.6
+      "date": "2026-10-22",
+      "high": 225.8,
+      "low": 223.86,
+      "avg_volume": 197.5
     },
     "GOOGL": {
       "symbol": "GOOGL",
-      "date": "2026-10-21",
-      "high": 337.21,
-      "low": 331.5,
-      "avg_volume": 10916.2
+      "date": "2026-10-22",
+      "high": 331.39,
+      "low": 329.58,
+      "avg_volume": 4749.7
     },
     "GOOG": {
       "symbol": "GOOG",
-      "date": "2026-10-21",
-      "high": 333.68,
-      "low": 327.85,
-      "avg_volume": 6767.1
+      "date": "2026-10-22",
+      "high": 327.64,
+      "low": 326.02,
+      "avg_volume": 4671.1
     },
     "AMZN": {
       "symbol": "AMZN",
-      "date": "2026-10-21",
-      "high": 262.88,
-      "low": 259.87,
-      "avg_volume": 8770.3
+      "date": "2026-10-22",
+      "high": 258.35,
+      "low": 255.82,
+      "avg_volume": 10138.6
     },
     "AEP": {
       "symbol": "AEP",
-      "date": "2026-10-21",
-      "high": 128.12,
-      "low": 127.725,
-      "avg_volume": 470.0
+      "date": "2026-10-22",
+      "high": 128.535,
+      "low": 127.955,
+      "avg_volume": 2640.6666666666665
     },
     "AMGN": {
       "symbol": "AMGN",
-      "date": "2026-10-21",
-      "high": 440.59,
-      "low": 435.795,
-      "avg_volume": 366.3333333333333
+      "date": "2026-10-22",
+      "high": 442.085,
+      "low": 437.62,
+      "avg_volume": 729.2222222222222
     },
     "ADI": {
       "symbol": "ADI",
-      "date": "2026-10-21",
-      "high": 403.93,
-      "low": 397.59,
-      "avg_volume": 341.0
+      "date": "2026-10-22",
+      "high": 398.995,
+      "low": 393.82,
+      "avg_volume": 309.3
     },
     "AAPL": {
       "symbol": "AAPL",
-      "date": "2026-10-21",
-      "high": 340.33,
-      "low": 338.895,
-      "avg_volume": 9834.5
+      "date": "2026-10-22",
+      "high": 347.27,
+      "low": 344.68,
+      "avg_volume": 5913.8
     },
     "AMAT": {
       "symbol": "AMAT",
-      "date": "2026-10-21",
-      "high": 413.82,
-      "low": 409.32,
-      "avg_volume": 1999.3
+      "date": "2026-10-22",
+      "high": 386.22,
+      "low": 381.26,
+      "avg_volume": 3981.9
     },
     "APP": {
       "symbol": "APP",
-      "date": "2026-10-21",
-      "high": 272.36,
-      "low": 268.98,
-      "avg_volume": 322.0
+      "date": "2026-10-22",
+      "high": 266.12,
+      "low": 264.15,
+      "avg_volume": 851.1
     },
     "ARM": {
       "symbol": "ARM",
-      "date": "2026-10-21",
-      "high": 227.99,
-      "low": 222.305,
-      "avg_volume": 491.1111111111111
+      "date": "2026-10-22",
+      "high": 217.21,
+      "low": 213.3,
+      "avg_volume": 1709.3
     },
     "ASML": {
       "symbol": "ASML",
-      "date": "2026-10-21",
-      "high": 1683.48,
-      "low": 1667.4,
-      "avg_volume": 899.8
+      "date": "2026-10-22",
+      "high": 1627.57,
+      "low": 1609.46,
+      "avg_volume": 456.3
     },
     "ALAB": {
       "symbol": "ALAB",
-      "date": "2026-10-21",
-      "high": 295.12,
-      "low": 287.225,
-      "avg_volume": 631.375
+      "date": "2026-10-22",
+      "high": 274.94,
+      "low": 271.105,
+      "avg_volume": 525.875
     },
     "ADSK": {
       "symbol": "ADSK",
-      "date": "2026-10-21",
-      "high": 244.99,
-      "low": 243.5,
-      "avg_volume": 162.5
+      "date": "2026-10-22",
+      "high": 249.79,
+      "low": 247.64,
+      "avg_volume": 371.8333333333333
     },
     "ADP": {
       "symbol": "ADP",
-      "date": "2026-10-21",
-      "high": 292.49,
-      "low": 290.6,
-      "avg_volume": 388.2857142857143
+      "date": "2026-10-22",
+      "high": 298.3,
+      "low": 297.445,
+      "avg_volume": 502.5
     },
     "AXON": {
       "symbol": "AXON",
-      "date": "2026-10-21",
-      "high": 398.55,
-      "low": 394.575,
-      "avg_volume": 148.6
+      "date": "2026-10-22",
+      "high": 406.9,
+      "low": 401.28,
+      "avg_volume": 138.88888888888889
     },
     "BKR": {
       "symbol": "BKR",
-      "date": "2026-10-21",
-      "high": 56.08,
-      "low": 55.72,
-      "avg_volume": 638.0
+      "date": "2026-10-22",
+      "high": 55.9,
+      "low": 54.885,
+      "avg_volume": 564.4444444444445
     },
     "BKNG": {
       "symbol": "BKNG",
-      "date": "2026-10-21",
-      "high": 161.48,
-      "low": 159.72,
-      "avg_volume": 662.1
+      "date": "2026-10-22",
+      "high": 161.14,
+      "low": 157.49,
+      "avg_volume": 2540.7
     },
     "AVGO": {
       "symbol": "AVGO",
-      "date": "2026-10-21",
-      "high": 338.79,
-      "low": 335.99,
-      "avg_volume": 6951.5
+      "date": "2026-10-22",
+      "high": 330.4,
+      "low": 326.45,
+      "avg_volume": 7045.2
     },
     "CDNS": {
       "symbol": "CDNS",
-      "date": "2026-10-21",
-      "high": 326.97,
-      "low": 323.655,
-      "avg_volume": 337.625
+      "date": "2026-10-22",
+      "high": 319.465,
+      "low": 314.22,
+      "avg_volume": 254.33333333333334
     },
     "CTAS": {
       "symbol": "CTAS",
-      "date": "2026-10-21",
-      "high": 215.85,
-      "low": 215.455,
-      "avg_volume": 350.5
+      "date": "2026-10-22",
+      "high": 222.61,
+      "low": 221.68,
+      "avg_volume": 153.0
     },
     "CSCO": {
       "symbol": "CSCO",
-      "date": "2026-10-21",
-      "high": 107.56,
-      "low": 106.89,
-      "avg_volume": 1636.1
+      "date": "2026-10-22",
+      "high": 106.25,
+      "low": 105.65,
+      "avg_volume": 1304.888888888889
     },
     "CCEP": {
       "symbol": "CCEP",
-      "date": "2026-10-21",
-      "high": 112.97,
-      "low": 112.555,
-      "avg_volume": 1058.0
+      "date": "2026-10-22",
+      "high": 111.725,
+      "low": 111.35,
+      "avg_volume": 826.25
     },
     "CMCSA": {
       "symbol": "CMCSA",
-      "date": "2026-10-21",
-      "high": 22.11,
-      "low": 21.88,
-      "avg_volume": 26166.8
+      "date": "2026-10-22",
+      "high": 22.68,
+      "low": 22.0,
+      "avg_volume": 13577.4
     },
     "CEG": {
       "symbol": "CEG",
-      "date": "2026-10-21",
-      "high": 267.4,
-      "low": 264.41,
-      "avg_volume": 789.9
+      "date": "2026-10-22",
+      "high": 266.96,
+      "low": 264.05,
+      "avg_volume": 903.5
     },
     "CPRT": {
       "symbol": "CPRT",
-      "date": "2026-10-21",
-      "high": 27.73,
-      "low": 27.425,
-      "avg_volume": 1188.4
+      "date": "2026-10-22",
+      "high": 28.07,
+      "low": 27.73,
+      "avg_volume": 1174.5
     },
     "CRWV": {
       "symbol": "CRWV",
-      "date": "2026-10-21",
-      "high": 64.56,
-      "low": 61.665,
-      "avg_volume": 12322.7
+      "date": "2026-10-22",
+      "high": 60.39,
+      "low": 58.175,
+      "avg_volume": 11612.4
     },
     "COST": {
       "symbol": "COST",
-      "date": "2026-10-21",
-      "high": 996.76,
-      "low": 990.27,
-      "avg_volume": 161.0
+      "date": "2026-10-22",
+      "high": 1006.8,
+      "low": 1002.01,
+      "avg_volume": 500.9
     },
     "CRWD": {
       "symbol": "CRWD",
-      "date": "2026-10-21",
-      "high": 233.44,
-      "low": 228.77,
-      "avg_volume": 1697.8
+      "date": "2026-10-22",
+      "high": 244.475,
+      "low": 241.03,
+      "avg_volume": 3981.0
     },
     "CSX": {
       "symbol": "CSX",
-      "date": "2026-10-21",
-      "high": 48.18,
-      "low": 47.925,
-      "avg_volume": 3963.1
+      "date": "2026-10-22",
+      "high": 51.505,
+      "low": 49.44,
+      "avg_volume": 9330.4
     },
     "DDOG": {
       "symbol": "DDOG",
-      "date": "2026-10-21",
-      "high": 265.45,
-      "low": 259.91,
-      "avg_volume": 1171.5
+      "date": "2026-10-22",
+      "high": 274.96,
+      "low": 269.67,
+      "avg_volume": 671.5
     },
     "DXCM": {
       "symbol": "DXCM",
-      "date": "2026-10-21",
-      "high": 85.73,
-      "low": 83.72,
-      "avg_volume": 590.875
-    },
-    "DASH": {
-      "symbol": "DASH",
-      "date": "2026-10-21",
-      "high": 190.56,
-      "low": 188.21,
-      "avg_volume": 772.625
-    },
-    "EXC": {
-      "symbol": "EXC",
-      "date": "2026-10-21",
-      "high": 43.2,
-      "low": 43.04,
-      "avg_volume": 1104.3
-    },
-    "FAST": {
-      "symbol": "FAST",
-      "date": "2026-10-21",
-      "high": 51.81,
-      "low": 51.49,
-      "avg_volume": 976.3
-    },
-    "FER": {
-      "symbol": "FER",
-      "date": "2026-10-21",
-      "high": 50.155,
-      "low": 49.81,
-      "avg_volume": 605.5555555555555
-    },
-    "FTNT": {
-      "symbol": "FTNT",
-      "date": "2026-10-21",
-      "high": 170.865,
-      "low": 167.425,
-      "avg_volume": 1599.5
-    },
-    "GEHC": {
-      "symbol": "GEHC",
-      "date": "2026-10-21",
-      "high": 69.78,
-      "low": 69.635,
-      "avg_volume": 219.0
-    },
-    "GILD": {
-      "symbol": "GILD",
-      "date": "2026-10-21",
-      "high": 155.42,
-      "low": 154.01,
-      "avg_volume": 892.4444444444445
-    },
-    "HON": {
-      "symbol": "HON",
-      "date": "2026-10-21",
-      "high": 215.04,
-      "low": 211.77,
-      "avg_volume": 386.5
-    },
-    "IDXX": {
-      "symbol": "IDXX",
-      "date": "2026-10-21",
-      "high": 557.985,
-      "low": 553.25,
-      "avg_volume": 102.25
-    },
-    "INTC": {
-      "symbol": "INTC",
-      "date": "2026-10-21",
-      "high": 94.33,
-      "low": 91.605,
-      "avg_volume": 24117.7
-    },
-    "INTU": {
-      "symbol": "INTU",
-      "date": "2026-10-21",
-      "high": 334.66,
-      "low": 331.91,
-      "avg_volume": 716.2222222222222
-    },
-    "ISRG": {
-      "symbol": "ISRG",
-      "date": "2026-10-21",
-      "high": 429.0,
-      "low": 399.68,
-      "avg_volume": 2392.6
-    },
-    "KDP": {
-      "symbol": "KDP",
-      "date": "2026-10-21",
-      "high": 34.7,
-      "low": 34.49,
-      "avg_volume": 1567.5
-    },
-    "KLAC": {
-      "symbol": "KLAC",
-      "date": "2026-10-21",
-      "high": 164.46,
-      "low": 162.95,
-      "avg_volume": 2776.8
-    },
-    "KHC": {
-      "symbol": "KHC",
-      "date": "2026-10-21",
-      "high": 23.71,
-      "low": 23.54,
-      "avg_volume": 4562.8
-    },
-    "LRCX": {
-      "symbol": "LRCX",
-      "date": "2026-10-21",
-      "high": 269.9,
-      "low": 265.99,
-      "avg_volume": 1625.2
-    },
-    "LIN": {
-      "symbol": "LIN",
-      "date": "2026-10-21",
-      "high": 500.61,
-      "low": 497.61,
-      "avg_volume": 280.9
-    },
-    "LITE": {
-      "symbol": "LITE",
-      "date": "2026-10-21",
-      "high": 878.03,
-      "low": 840.08,
-      "avg_volume": 1892.6
-    },
-    "MAR": {
-      "symbol": "MAR",
-      "date": "2026-10-21",
-      "high": 397.78,
-      "low": 396.84,
-      "avg_volume": 893.3333333333334
-    },
-    "MRVL": {
-      "symbol": "MRVL",
-      "date": "2026-10-21",
-      "high": 250.11,
-      "low": 242.33,
-      "avg_volume": 1892.8
-    },
-    "MELI": {
-      "symbol": "MELI",
-      "date": "2026-10-21",
-      "high": 1875.66,
-      "low": 1862.05,
-      "avg_volume": 122.4
-    },
-    "META": {
-      "symbol": "META",
-      "date": "2026-10-21",
-      "high": 705.665,
-      "low": 692.52,
-      "avg_volume": 5234.2
-    },
-    "MCHP": {
-      "symbol": "MCHP",
-      "date": "2026-10-21",
-      "high": 76.98,
-      "low": 75.81,
-      "avg_volume": 1034.625
-    },
-    "MU": {
-      "symbol": "MU",
-      "date": "2026-10-21",
-      "high": 928.4,
-      "low": 894.64,
-      "avg_volume": 5971.6
-    },
-    "MSFT": {
-      "symbol": "MSFT",
-      "date": "2026-10-21",
-      "high": 530.19,
-      "low": 525.14,
-      "avg_volume": 4260.1
-    },
-    "MSTR": {
-      "symbol": "MSTR",
-      "date": "2026-10-21",
-      "high": 146.6,
-      "low": 144.08,
-      "avg_volume": 1980.2
-    },
-    "MDLZ": {
-      "symbol": "MDLZ",
-      "date": "2026-10-21",
-      "high": 63.87,
-      "low": 63.55,
-      "avg_volume": 926.4
-    },
-    "MPWR": {
-      "symbol": "MPWR",
-      "date": "2026-10-21",
-      "high": 1279.98,
-      "low": 1259.87,
-      "avg_volume": 100.66666666666667
-    },
-    "MNST": {
-      "symbol": "MNST",
-      "date": "2026-10-21",
-      "high": 46.99,
-      "low": 46.52,
-      "avg_volume": 1957.9
-    },
-    "NBIS": {
-      "symbol": "NBIS",
-      "date": "2026-10-21",
-      "high": 178.75,
-      "low": 169.42,
-      "avg_volume": 7740.6
-    },
-    "NFLX": {
-      "symbol": "NFLX",
-      "date": "2026-10-21",
-      "high": 66.305,
-      "low": 64.145,
-      "avg_volume": 40089.9
-    },
-    "NVDA": {
-      "symbol": "NVDA",
-      "date": "2026-10-21",
-      "high": 222.16,
-      "low": 219.55,
-      "avg_volume": 24481.4
-    },
-    "NXPI": {
-      "symbol": "NXPI",
-      "date": "2026-10-21",
-      "high": 241.28,
-      "low": 237.885,
-      "avg_volume": 270.75
-    },
-    "ORLY": {
-      "symbol": "ORLY",
-      "date": "2026-10-21",
-      "high": 89.61,
-      "low": 89.235,
-      "avg_volume": 648.8333333333334
-    },
-    "ODFL": {
-      "symbol": "ODFL",
-      "date": "2026-10-21",
-      "high": 189.15,
-      "low": 188.27,
-      "avg_volume": 255.0
-    },
-    "PCAR": {
-      "symbol": "PCAR",
-      "date": "2026-10-21",
-      "high": 110.36,
-      "low": 110.175,
-      "avg_volume": 299.0
-    },
-    "PLTR": {
-      "symbol": "PLTR",
-      "date": "2026-10-21",
-      "high": 195.82,
-      "low": 189.93,
-      "avg_volume": 3405.6
-    },
-    "PANW": {
-      "symbol": "PANW",
-      "date": "2026-10-21",
-      "high": 344.64,
-      "low": 341.05,
-      "avg_volume": 858.125
-    },
-    "PAYX": {
-      "symbol": "PAYX",
-      "date": "2026-10-21",
-      "high": 112.085,
-      "low": 111.67,
-      "avg_volume": 161.5
-    },
-    "PYPL": {
-      "symbol": "PYPL",
-      "date": "2026-10-21",
-      "high": 57.21,
-      "low": 56.85,
-      "avg_volume": 1215.0
-    },
-    "PDD": {
-      "symbol": "PDD",
-      "date": "2026-10-21",
-      "high": 80.68,
-      "low": 79.72,
-      "avg_volume": 3155.4
-    },
-    "PEP": {
-      "symbol": "PEP",
-      "date": "2026-10-21",
-      "high": 134.27,
-      "low": 133.38,
-      "avg_volume": 1427.9
-    },
-    "QCOM": {
-      "symbol": "QCOM",
-      "date": "2026-10-21",
-      "high": 176.61,
-      "low": 174.315,
-      "avg_volume": 993.7
-    },
-    "REGN": {
-      "symbol": "REGN",
-      "date": "2026-10-21",
-      "high": 811.25,
-      "low": 803.3,
-      "avg_volume": 362.77777777777777
-    },
-    "RKLB": {
-      "symbol": "RKLB",
-      "date": "2026-10-21",
-      "high": 53.52,
-      "low": 52.05,
-      "avg_volume": 3220.9
-    },
-    "ROP": {
-      "symbol": "ROP",
-      "date": "2026-10-21",
-      "high": 397.08,
-      "low": 394.295,
-      "avg_volume": 88.83333333333333
-    },
-    "ROST": {
-      "symbol": "ROST",
-      "date": "2026-10-21",
-      "high": 235.435,
-      "low": 234.76,
-      "avg_volume": 280.0
-    },
-    "SNDK": {
-      "symbol": "SNDK",
-      "date": "2026-10-21",
-      "high": 1423.42,
-      "low": 1332.35,
-      "avg_volume": 3974.6
-    },
-    "STX": {
-      "symbol": "STX",
-      "date": "2026-10-21",
-      "high": 715.63,
-      "low": 692.305,
-      "avg_volume": 3648.0
-    },
-    "SHOP": {
-      "symbol": "SHOP",
-      "date": "2026-10-21",
-      "high": 175.785,
-      "low": 171.24,
-      "avg_volume": 2505.0
-    },
-    "SBUX": {
-      "symbol": "SBUX",
-      "date": "2026-10-21",
-      "high": 99.05,
-      "low": 98.545,
-      "avg_volume": 482.25
-    },
-    "SNPS": {
-      "symbol": "SNPS",
-      "date": "2026-10-21",
-      "high": 458.32,
-      "low": 452.17,
-      "avg_volume": 673.8
-    },
-    "TMUS": {
-      "symbol": "TMUS",
-      "date": "2026-10-21",
-      "high": 154.365,
-      "low": 151.65,
-      "avg_volume": 1585.4444444444443
-    },
-    "TTWO": {
-      "symbol": "TTWO",
-      "date": "2026-10-21",
-      "high": 206.24,
-      "low": 205.45,
-      "avg_volume": 288.25
-    },
-    "TER": {
-      "symbol": "TER",
-      "date": "2026-10-21",
-      "high": 349.31,
-      "low": 345.64,
-      "avg_volume": 262.0
-    },
-    "TSLA": {
-      "symbol": "TSLA",
-      "date": "2026-10-21",
-      "high": 386.57,
-      "low": 380.58,
-      "avg_volume": 6943.1
-    },
-    "TXN": {
-      "symbol": "TXN",
-      "date": "2026-10-21",
-      "high": 286.04,
-      "low": 277.48,
-      "avg_volume": 1521.3
-    },
-    "TRI": {
-      "symbol": "TRI",
-      "date": "2026-10-21",
-      "high": 113.165,
-      "low": 111.85,
-      "avg_volume": 227.8
-    },
-    "VRTX": {
-      "symbol": "VRTX",
-      "date": "2026-10-21",
-      "high": 517.045,
-      "low": 511.14,
-      "avg_volume": 554.8
-    },
-    "WMT": {
-      "symbol": "WMT",
-      "date": "2026-10-21",
-      "high": 117.9,
-      "low": 116.63,
-      "avg_volume": 5428.3
-    },
-    "WDC": {
-      "symbol": "WDC",
-      "date": "2026-10-21",
-      "high": 381.1,
-      "low": 372.21,
-      "avg_volume": 2674.9
-    },
-    "WDAY": {
-      "symbol": "WDAY",
-      "date": "2026-10-21",
-      "high": 204.98,
-      "low": 202.81,
-      "avg_volume": 213.14285714285714
-    },
-    "XEL": {
-      "symbol": "XEL",
-      "date": "2026-10-21",
-      "high": 77.18,
-      "low": 76.87,
-      "avg_volume": 1103.142857142857
+      "date": "2026-10-22",
+      "high": 80.365,
+      "low": 78.25,
+      "avg_volume": 2502.7
     },
     "FANG": {
       "symbol": "FANG",
-      "date": "2026-10-21",
-      "high": 200.54,
-      "low": 200.41,
-      "avg_volume": 205.0
+      "date": "2026-10-22",
+      "high": 203.295,
+      "low": 201.28,
+      "avg_volume": 192.75
+    },
+    "DASH": {
+      "symbol": "DASH",
+      "date": "2026-10-22",
+      "high": 185.31,
+      "low": 182.025,
+      "avg_volume": 468.9
+    },
+    "EXC": {
+      "symbol": "EXC",
+      "date": "2026-10-22",
+      "high": 43.35,
+      "low": 43.22,
+      "avg_volume": 1206.0
+    },
+    "FAST": {
+      "symbol": "FAST",
+      "date": "2026-10-22",
+      "high": 52.465,
+      "low": 51.69,
+      "avg_volume": 530.6666666666666
+    },
+    "FER": {
+      "symbol": "FER",
+      "date": "2026-10-22",
+      "high": 49.44,
+      "low": 49.32,
+      "avg_volume": 307.55555555555554
+    },
+    "FTNT": {
+      "symbol": "FTNT",
+      "date": "2026-10-22",
+      "high": 177.02,
+      "low": 174.665,
+      "avg_volume": 1377.2222222222222
+    },
+    "GEHC": {
+      "symbol": "GEHC",
+      "date": "2026-10-22",
+      "high": 69.77,
+      "low": 69.455,
+      "avg_volume": 411.2
+    },
+    "GILD": {
+      "symbol": "GILD",
+      "date": "2026-10-22",
+      "high": 154.87,
+      "low": 153.145,
+      "avg_volume": 1073.125
+    },
+    "HON": {
+      "symbol": "HON",
+      "date": "2026-10-22",
+      "high": 214.45,
+      "low": 207.45,
+      "avg_volume": 3051.875
+    },
+    "IDXX": {
+      "symbol": "IDXX",
+      "date": "2026-10-22",
+      "high": 558.39,
+      "low": 558.39,
+      "avg_volume": 115.0
+    },
+    "INTC": {
+      "symbol": "INTC",
+      "date": "2026-10-22",
+      "high": 88.62,
+      "low": 87.28,
+      "avg_volume": 23997.7
+    },
+    "INTU": {
+      "symbol": "INTU",
+      "date": "2026-10-22",
+      "high": 341.13,
+      "low": 337.58,
+      "avg_volume": 838.7
+    },
+    "ISRG": {
+      "symbol": "ISRG",
+      "date": "2026-10-22",
+      "high": 431.3,
+      "low": 428.0,
+      "avg_volume": 256.0
+    },
+    "KDP": {
+      "symbol": "KDP",
+      "date": "2026-10-22",
+      "high": 34.82,
+      "low": 34.68,
+      "avg_volume": 1758.3
+    },
+    "KLAC": {
+      "symbol": "KLAC",
+      "date": "2026-10-22",
+      "high": 154.79,
+      "low": 152.32,
+      "avg_volume": 4171.6
+    },
+    "KHC": {
+      "symbol": "KHC",
+      "date": "2026-10-22",
+      "high": 23.82,
+      "low": 23.68,
+      "avg_volume": 845.5555555555555
+    },
+    "LRCX": {
+      "symbol": "LRCX",
+      "date": "2026-10-22",
+      "high": 236.09,
+      "low": 233.17,
+      "avg_volume": 5857.7
+    },
+    "LIN": {
+      "symbol": "LIN",
+      "date": "2026-10-22",
+      "high": 504.215,
+      "low": 500.565,
+      "avg_volume": 618.8888888888889
+    },
+    "LITE": {
+      "symbol": "LITE",
+      "date": "2026-10-22",
+      "high": 808.01,
+      "low": 786.46,
+      "avg_volume": 1622.6
+    },
+    "MAR": {
+      "symbol": "MAR",
+      "date": "2026-10-22",
+      "high": 402.69,
+      "low": 401.355,
+      "avg_volume": 619.4285714285714
+    },
+    "MRVL": {
+      "symbol": "MRVL",
+      "date": "2026-10-22",
+      "high": 233.3,
+      "low": 229.87,
+      "avg_volume": 3438.4
+    },
+    "MELI": {
+      "symbol": "MELI",
+      "date": "2026-10-22",
+      "high": 1856.74,
+      "low": 1849.945,
+      "avg_volume": 36.5
+    },
+    "META": {
+      "symbol": "META",
+      "date": "2026-10-22",
+      "high": 680.88,
+      "low": 650.83,
+      "avg_volume": 20665.8
+    },
+    "MCHP": {
+      "symbol": "MCHP",
+      "date": "2026-10-22",
+      "high": 75.41,
+      "low": 74.515,
+      "avg_volume": 2305.5555555555557
+    },
+    "MU": {
+      "symbol": "MU",
+      "date": "2026-10-22",
+      "high": 897.39,
+      "low": 877.45,
+      "avg_volume": 6170.4
+    },
+    "MSFT": {
+      "symbol": "MSFT",
+      "date": "2026-10-22",
+      "high": 533.26,
+      "low": 529.075,
+      "avg_volume": 4443.3
+    },
+    "MSTR": {
+      "symbol": "MSTR",
+      "date": "2026-10-22",
+      "high": 147.495,
+      "low": 144.09,
+      "avg_volume": 2913.2
+    },
+    "MDLZ": {
+      "symbol": "MDLZ",
+      "date": "2026-10-22",
+      "high": 63.675,
+      "low": 63.31,
+      "avg_volume": 1470.7
+    },
+    "MPWR": {
+      "symbol": "MPWR",
+      "date": "2026-10-22",
+      "high": 1227.91,
+      "low": 1217.71,
+      "avg_volume": 124.0
+    },
+    "MNST": {
+      "symbol": "MNST",
+      "date": "2026-10-22",
+      "high": 46.775,
+      "low": 46.5,
+      "avg_volume": 871.2222222222222
+    },
+    "NBIS": {
+      "symbol": "NBIS",
+      "date": "2026-10-22",
+      "high": 167.325,
+      "low": 162.96,
+      "avg_volume": 6376.9
+    },
+    "NFLX": {
+      "symbol": "NFLX",
+      "date": "2026-10-22",
+      "high": 67.23,
+      "low": 65.19,
+      "avg_volume": 24246.0
+    },
+    "NVDA": {
+      "symbol": "NVDA",
+      "date": "2026-10-22",
+      "high": 218.86,
+      "low": 216.75,
+      "avg_volume": 29230.7
+    },
+    "NXPI": {
+      "symbol": "NXPI",
+      "date": "2026-10-22",
+      "high": 241.03,
+      "low": 236.34,
+      "avg_volume": 1124.5555555555557
+    },
+    "ORLY": {
+      "symbol": "ORLY",
+      "date": "2026-10-22",
+      "high": 89.76,
+      "low": 89.265,
+      "avg_volume": 486.3333333333333
+    },
+    "ODFL": {
+      "symbol": "ODFL",
+      "date": "2026-10-22",
+      "high": 191.17,
+      "low": 188.03,
+      "avg_volume": 224.85714285714286
+    },
+    "PCAR": {
+      "symbol": "PCAR",
+      "date": "2026-10-22",
+      "high": 108.745,
+      "low": 108.745,
+      "avg_volume": 210.0
+    },
+    "PLTR": {
+      "symbol": "PLTR",
+      "date": "2026-10-22",
+      "high": 202.47,
+      "low": 200.42,
+      "avg_volume": 2816.9
+    },
+    "PANW": {
+      "symbol": "PANW",
+      "date": "2026-10-22",
+      "high": 364.74,
+      "low": 355.005,
+      "avg_volume": 5424.3
+    },
+    "PAYX": {
+      "symbol": "PAYX",
+      "date": "2026-10-22",
+      "high": 114.55,
+      "low": 113.585,
+      "avg_volume": 824.3333333333334
+    },
+    "PYPL": {
+      "symbol": "PYPL",
+      "date": "2026-10-22",
+      "high": 57.335,
+      "low": 56.855,
+      "avg_volume": 934.9
+    },
+    "PDD": {
+      "symbol": "PDD",
+      "date": "2026-10-22",
+      "high": 78.225,
+      "low": 77.41,
+      "avg_volume": 2903.4
+    },
+    "PEP": {
+      "symbol": "PEP",
+      "date": "2026-10-22",
+      "high": 136.295,
+      "low": 134.98,
+      "avg_volume": 1067.8
+    },
+    "QCOM": {
+      "symbol": "QCOM",
+      "date": "2026-10-22",
+      "high": 175.18,
+      "low": 172.3,
+      "avg_volume": 2118.9
+    },
+    "REGN": {
+      "symbol": "REGN",
+      "date": "2026-10-22",
+      "high": 808.39,
+      "low": 802.82,
+      "avg_volume": 77.75
+    },
+    "RKLB": {
+      "symbol": "RKLB",
+      "date": "2026-10-22",
+      "high": 52.97,
+      "low": 51.56,
+      "avg_volume": 2831.9
+    },
+    "ROP": {
+      "symbol": "ROP",
+      "date": "2026-10-22",
+      "high": 414.62,
+      "low": 410.72,
+      "avg_volume": 242.0
+    },
+    "ROST": {
+      "symbol": "ROST",
+      "date": "2026-10-22",
+      "high": 236.6,
+      "low": 236.42,
+      "avg_volume": 212.25
+    },
+    "SNDK": {
+      "symbol": "SNDK",
+      "date": "2026-10-22",
+      "high": 1329.08,
+      "low": 1299.3,
+      "avg_volume": 1414.4
+    },
+    "STX": {
+      "symbol": "STX",
+      "date": "2026-10-22",
+      "high": 671.5,
+      "low": 661.98,
+      "avg_volume": 1224.9
+    },
+    "SHOP": {
+      "symbol": "SHOP",
+      "date": "2026-10-22",
+      "high": 176.64,
+      "low": 171.7,
+      "avg_volume": 3705.1
+    },
+    "SBUX": {
+      "symbol": "SBUX",
+      "date": "2026-10-22",
+      "high": 99.84,
+      "low": 98.89,
+      "avg_volume": 997.2222222222222
+    },
+    "SNPS": {
+      "symbol": "SNPS",
+      "date": "2026-10-22",
+      "high": 442.71,
+      "low": 437.44,
+      "avg_volume": 472.0
+    },
+    "TMUS": {
+      "symbol": "TMUS",
+      "date": "2026-10-22",
+      "high": 156.685,
+      "low": 155.435,
+      "avg_volume": 436.6666666666667
+    },
+    "TTWO": {
+      "symbol": "TTWO",
+      "date": "2026-10-22",
+      "high": 207.56,
+      "low": 206.7,
+      "avg_volume": 1323.5
+    },
+    "TER": {
+      "symbol": "TER",
+      "date": "2026-10-22",
+      "high": 323.99,
+      "low": 312.96,
+      "avg_volume": 943.2
+    },
+    "TSLA": {
+      "symbol": "TSLA",
+      "date": "2026-10-22",
+      "high": 380.095,
+      "low": 374.07,
+      "avg_volume": 9334.4
+    },
+    "TXN": {
+      "symbol": "TXN",
+      "date": "2026-10-22",
+      "high": 285.95,
+      "low": 280.71,
+      "avg_volume": 3413.5
+    },
+    "TRI": {
+      "symbol": "TRI",
+      "date": "2026-10-22",
+      "high": 119.31,
+      "low": 117.975,
+      "avg_volume": 336.85714285714283
+    },
+    "VRTX": {
+      "symbol": "VRTX",
+      "date": "2026-10-22",
+      "high": 525.91,
+      "low": 523.26,
+      "avg_volume": 306.3333333333333
+    },
+    "WMT": {
+      "symbol": "WMT",
+      "date": "2026-10-22",
+      "high": 119.33,
+      "low": 118.01,
+      "avg_volume": 8718.9
+    },
+    "WDC": {
+      "symbol": "WDC",
+      "date": "2026-10-22",
+      "high": 364.46,
+      "low": 355.58,
+      "avg_volume": 2836.7
+    },
+    "WDAY": {
+      "symbol": "WDAY",
+      "date": "2026-10-22",
+      "high": 207.725,
+      "low": 205.845,
+      "avg_volume": 225.0
+    },
+    "XEL": {
+      "symbol": "XEL",
+      "date": "2026-10-22",
+      "high": 77.49,
+      "low": 77.0,
+      "avg_volume": 365.57142857142856
     }
   },
   "traded_today": [
-    "ABNB",
-    "BKNG",
-    "CSCO",
-    "IDXX",
-    "MPWR",
-    "TRI"
+    "ADBE",
+    "ADP",
+    "EXC",
+    "INTU",
+    "KDP",
+    "KHC"
   ],
   "trade_count": 6,
-  "starting_equity": 1044842.96,
-  "flattened": true,
-  "notional_deployed_today": 598271.53,
+  "starting_equity": 1035079.01,
+  "flattened": false,
+  "notional_deployed_today": 599503.61,
   "trade_meta": {
-    "TRI": {
+    "EXC": {
       "direction": "long",
-      "entry_price": 113.425,
-      "stop_price": 111.85,
-      "target_price": 116.575
+      "entry_price": 43.41,
+      "stop_price": 43.22,
+      "target_price": 43.78999999999999
     },
-    "ABNB": {
+    "KDP": {
       "direction": "long",
-      "entry_price": 176.875,
-      "stop_price": 174.05,
-      "target_price": 182.52499999999998
+      "entry_price": 34.91,
+      "stop_price": 34.68,
+      "target_price": 35.36999999999999
     },
-    "BKNG": {
+    "KHC": {
       "direction": "long",
-      "entry_price": 162.4,
-      "stop_price": 159.72,
-      "target_price": 167.76000000000002
+      "entry_price": 23.835,
+      "stop_price": 23.68,
+      "target_price": 24.145000000000003
     },
-    "CSCO": {
+    "ADBE": {
       "direction": "long",
-      "entry_price": 107.64,
-      "stop_price": 106.89,
-      "target_price": 109.14
+      "entry_price": 261.005,
+      "stop_price": 256.695,
+      "target_price": 269.625
     },
-    "IDXX": {
+    "ADP": {
       "direction": "long",
-      "entry_price": 560.63,
-      "stop_price": 553.25,
-      "target_price": 575.39
+      "entry_price": 299.52,
+      "stop_price": 297.445,
+      "target_price": 303.66999999999996
     },
-    "MPWR": {
+    "INTU": {
       "direction": "long",
-      "entry_price": 1282.39,
-      "stop_price": 1259.87,
-      "target_price": 1327.4300000000005
+      "entry_price": 341.97,
+      "stop_price": 337.58,
+      "target_price": 350.7500000000001
     }
   },
   "breakeven_moved": [
-    "TRI"
+    "ADBE",
+    "ADP",
+    "EXC",
+    "INTU",
+    "KDP",
+    "KHC"
   ],
-  "last_tightened_at": {
-    "ABNB": "2026-10-21T15:00:34.862393-04:00",
-    "MPWR": "2026-10-21T15:40:55.401778-04:00",
-    "TRI": "2026-10-21T15:40:55.401778-04:00"
-  },
+  "last_tightened_at": {},
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -761,12 +762,6 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30"
+    "12:30"
   ]
 }
