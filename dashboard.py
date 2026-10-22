@@ -316,6 +316,12 @@ def fetch_all_orders(client, page_size=500, max_orders=5000):
     return sorted(all_orders, key=lambda o: o.submitted_at, reverse=True)
 
 
+def _filled_qty(o):
+    """Shares that actually traded. Counts orders cancelled after a partial
+    fill (status "canceled", filled_qty > 0) - skipping them left phantom lots."""
+    return float(getattr(o, "filled_qty", None) or 0)
+
+
 def build_closed_trades(orders):
     """FIFO-matches filled orders per symbol (in chronological order) into
     closed round-trip trades, each with its own P&L. Handles both directions:
@@ -328,7 +334,7 @@ def build_closed_trades(orders):
     both directions; "side" says which came first. Called with the full
     paginated order history (see `fetch_all_orders`), not just the newest 50.
     """
-    filled = [o for o in orders if o.status and o.status.value == "filled" and o.side and o.filled_avg_price]
+    filled = [o for o in orders if o.side and o.filled_avg_price and _filled_qty(o) > 0]
     filled.sort(key=lambda o: o.filled_at or o.submitted_at)
 
     lots = defaultdict(deque)  # symbol -> deque[[signed qty, price]]  (+ long, - short)
@@ -338,7 +344,7 @@ def build_closed_trades(orders):
         side = o.side.value
         if side not in ("buy", "sell"):
             continue
-        qty = float(getattr(o, "filled_qty", None) or o.qty or 0)
+        qty = _filled_qty(o)
         price = float(o.filled_avg_price)
         filled_at = o.filled_at or o.submitted_at
         sign = 1 if side == "buy" else -1
@@ -385,7 +391,7 @@ def order_outcomes(orders):
     loss that closing it actually realized. Opening orders get the shares
     still open (0 once a later order closed them).
     """
-    filled = [o for o in orders if o.status and o.status.value == "filled" and o.side and o.filled_avg_price]
+    filled = [o for o in orders if o.side and o.filled_avg_price and _filled_qty(o) > 0]
     filled.sort(key=lambda o: o.filled_at or o.submitted_at)
     lots = defaultdict(deque)  # symbol -> deque[[signed qty, price, opening order id]]
     info = {}
@@ -393,7 +399,7 @@ def order_outcomes(orders):
         side = o.side.value
         if side not in ("buy", "sell"):
             continue
-        qty = float(getattr(o, "filled_qty", None) or o.qty or 0)
+        qty = _filled_qty(o)
         price = float(o.filled_avg_price)
         sign = 1 if side == "buy" else -1
         queue = lots[o.symbol]
@@ -2251,12 +2257,12 @@ def generate(client=None):
       const info = JSON.parse(JSON.stringify(ORDER_OUTCOMES.known));  // fresh copy every refresh
       const lots = {{}};
       Object.entries(ORDER_OUTCOMES.lots || {{}}).forEach(([s, q]) => lots[s] = q.map(l => l.slice()));
-      const fresh = (orders || []).filter(o => !info[o.id] && o.status === 'filled' && o.filled_avg_price != null && (o.side === 'buy' || o.side === 'sell'))
+      const fresh = (orders || []).filter(o => !info[o.id] && Number(o.filled_qty || 0) > 0 && o.filled_avg_price != null && (o.side === 'buy' || o.side === 'sell'))
         .sort((a, b) => new Date(a.filled_at || a.submitted_at) - new Date(b.filled_at || b.submitted_at));
       fresh.forEach(o => {{
         const sign = o.side === 'buy' ? 1 : -1, price = Number(o.filled_avg_price);
         const q = lots[o.symbol] = lots[o.symbol] || [];
-        let remaining = Number(o.filled_qty || o.qty || 0), closedQty = 0, entryCost = 0, pl = 0, kindClosed = null;
+        let remaining = Number(o.filled_qty || 0), closedQty = 0, entryCost = 0, pl = 0, kindClosed = null;
         while (remaining > 1e-9 && q.length && (q[0][0] > 0) !== (sign > 0)) {{
           const lot = q[0], m = Math.min(remaining, Math.abs(lot[0]));
           kindClosed = lot[0] > 0 ? 'long' : 'short';
