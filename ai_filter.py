@@ -266,7 +266,10 @@ def evaluate(context: dict) -> Decision:
     except anthropic.AuthenticationError:
         reason = "Claude API key rejected"
     except anthropic.APIStatusError as e:
-        reason = f"Claude API error {e.status_code}"
+        # Keep the API's own explanation (e.g. "credit balance is too low", an
+        # invalid parameter): a bare status code left the Oct 22 400s undiagnosable.
+        detail = " ".join(str(getattr(e, "message", "") or "").split())[:200]
+        reason = f"Claude API error {e.status_code}" + (f" ({detail})" if detail else "")
     except anthropic.APIConnectionError:
         reason = "Could not reach the Claude API"
     except Exception as e:  # malformed output, parsing bugs, anything else
