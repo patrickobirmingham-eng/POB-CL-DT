@@ -146,7 +146,9 @@ def spread_rows(state, trades, settings):
         rows.append({"sym": sp["symbol"], "sec": settings["WATCHLIST"].get(sp["symbol"], sp.get("sector", "")),
                      "sk": sp["short_strike"], "lk": sp["long_strike"], "o": sp["opened_at"], "e": sp["expiration"],
                      "q": int(sp["qty"]), "d": float(sp.get("delta") or 0), "cr": float(sp["credit"]),
-                     "px": float(cost) if cost is not None else float(sp["credit"]), "c": "", "why": "",
+                     # clamp to what a put spread can cost to close ($0..width) in case a bad quote was saved
+                     "px": min(max(float(cost), 0.0), float(sp["width"])) if cost is not None else float(sp["credit"]),
+                     "c": "", "why": "",
                      "price": sp.get("last_price"), "rolls": sp.get("rolls", 0)})
     for t in trades:
         why = t["reason"]
