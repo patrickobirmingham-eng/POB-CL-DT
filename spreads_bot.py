@@ -491,8 +491,14 @@ def run(broker, settings, dry=False, now=None):
                     log(f"price {sp['symbol']}: {e}")
                     prices[sp["symbol"]] = None
             cost, natural = close_cost(qs, sp)
-            sp["last_cost"], sp["last_price"], sp["last_checked"] = round(cost, 2), prices[sp["symbol"]], now.isoformat(timespec="seconds")
-            action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today, quotes_ok(qs, sp))
+            # A put spread costs between $0 and its width to close; anything else is a bad quote
+            # (2026-10-22 15:45: a wild long-leg quote put COST at -$1.26, which fired a "target"
+            # close and showed +161% ROI on the dashboard). Keep the last good cost instead.
+            valid = quotes_ok(qs, sp) and -0.005 <= cost <= sp["width"] + 0.005
+            if valid:
+                sp["last_cost"] = round(cost, 2)
+            sp["last_price"], sp["last_checked"] = prices[sp["symbol"]], now.isoformat(timespec="seconds")
+            action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today, valid)
             if not action:
                 continue
             if action == "roll":
