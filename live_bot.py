@@ -441,7 +441,14 @@ def apply_breakeven_stops(trading_client, day_state, positions):
                     f"stop-loss order was found — skipping breakeven move this pass.")
                 continue
 
-            new_stop = round(entry, 2)
+            # Breakeven is the actual average fill, not the breakout price the
+            # order was sized from: AVGO on 2026-10-23 filled $1 above its
+            # $323.67 signal, so a stop at the signal price "broke even" for
+            # -$322. Fall back to the signal price if the fill would put the
+            # stop on the wrong side of the current price.
+            fill = float(getattr(p, "avg_entry_price", None) or entry)
+            ok = fill < current_price if direction == "long" else fill > current_price
+            new_stop = round(fill if ok else entry, 2)
             trading_client.replace_order_by_id(
                 order_id=stop_leg.id,
                 order_data=ReplaceOrderRequest(stop_price=new_stop),
