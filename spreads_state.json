@@ -14,9 +14,9 @@
       "credit": 3.95,
       "delta": 0.164,
       "opened_at": "2026-10-14",
-      "last_cost": 8.41,
-      "last_price": 878.645,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 7.88,
+      "last_price": 879.18,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "SKHY-2026-11-20-130-095028": {
@@ -33,9 +33,9 @@
       "credit": 1.37,
       "delta": 0.168,
       "opened_at": "2026-10-14",
-      "last_cost": 3.2,
-      "last_price": 136.83,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 3.33,
+      "last_price": 137.03,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "ORCL-2026-11-20-115-095111": {
@@ -52,9 +52,9 @@
       "credit": 1.32,
       "delta": 0.171,
       "opened_at": "2026-10-14",
-      "last_cost": 2.01,
-      "last_price": 127.415,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 2.02,
+      "last_price": 127.005,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "P-2026-11-20-110-094747": {
@@ -71,9 +71,9 @@
       "credit": 2.1,
       "delta": 0.19,
       "opened_at": "2026-10-15",
-      "last_cost": 3.35,
-      "last_price": 124.34,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 3.43,
+      "last_price": 123.865,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "ASML-2026-11-20-1450-094934": {
@@ -90,9 +90,9 @@
       "credit": 3.4,
       "delta": 0.177,
       "opened_at": "2026-10-15",
-      "last_cost": 6.23,
-      "last_price": 1572.57,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 5.9,
+      "last_price": 1572.11,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "SOXX-2026-11-20-450-095019": {
@@ -109,9 +109,9 @@
       "credit": 2.7,
       "delta": 0.19,
       "opened_at": "2026-10-15",
-      "last_cost": 5.83,
-      "last_price": 479.51,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 5.71,
+      "last_price": 479.18,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "MRVL-2026-11-20-195-095114": {
@@ -128,9 +128,9 @@
       "credit": 1.95,
       "delta": 0.156,
       "opened_at": "2026-10-15",
-      "last_cost": 2.27,
-      "last_price": 228.72,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 2.38,
+      "last_price": 228.46,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "DELL-2026-11-20-380-094831": {
@@ -147,9 +147,9 @@
       "credit": 2.4,
       "delta": 0.15,
       "opened_at": "2026-10-15",
-      "last_cost": 2.71,
-      "last_price": 458.41,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 2.53,
+      "last_price": 458.22,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "SMH-2026-11-20-490-095142": {
@@ -166,9 +166,9 @@
       "credit": 2.4,
       "delta": 0.158,
       "opened_at": "2026-10-16",
-      "last_cost": 4.7,
-      "last_price": 528.22,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 4.51,
+      "last_price": 527.95,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "CRWD-2026-11-20-200-094838": {
@@ -185,9 +185,9 @@
       "credit": 1.64,
       "delta": 0.151,
       "opened_at": "2026-10-16",
-      "last_cost": 0.9,
-      "last_price": 254.99,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 0.81,
+      "last_price": 256.2,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "XBI-2026-11-20-135-100118": {
@@ -205,8 +205,8 @@
       "delta": 0.198,
       "opened_at": "2026-10-16",
       "last_cost": 0.85,
-      "last_price": 149.22,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_price": 149.43,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "ADBE-2026-11-20-225-100201": {
@@ -223,9 +223,9 @@
       "credit": 1.41,
       "delta": 0.165,
       "opened_at": "2026-10-16",
-      "last_cost": 0.88,
-      "last_price": 264.23,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 1.02,
+      "last_price": 263.89,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "XOP-2026-11-20-180-100253": {
@@ -242,9 +242,9 @@
       "credit": 0.87,
       "delta": 0.181,
       "opened_at": "2026-10-16",
-      "last_cost": 0.93,
-      "last_price": 201.86,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 0.91,
+      "last_price": 201.955,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "TSM-2026-11-27-375-094901": {
@@ -261,9 +261,9 @@
       "credit": 1.83,
       "delta": 0.146,
       "opened_at": "2026-10-19",
-      "last_cost": 1.96,
-      "last_price": 418.035,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 2.26,
+      "last_price": 417.32,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "QQQ-2026-11-27-660-094944": {
@@ -280,9 +280,9 @@
       "credit": 1.86,
       "delta": 0.149,
       "opened_at": "2026-10-19",
-      "last_cost": 2.97,
-      "last_price": 705.06,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 3.09,
+      "last_price": 704.89,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "TRV-2026-11-20-370-094824": {
@@ -299,9 +299,9 @@
       "credit": 1.45,
       "delta": 0.164,
       "opened_at": "2026-10-20",
-      "last_cost": 1.4,
-      "last_price": 398.7,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 1.3,
+      "last_price": 398.75,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "COST-2026-11-27-940-131604": {
@@ -318,9 +318,9 @@
       "credit": 2.05,
       "delta": 0.174,
       "opened_at": "2026-10-20",
-      "last_cost": 2.3,
-      "last_price": 1003.98,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 2.38,
+      "last_price": 1003.92,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "GE-2026-11-27-265-114612": {
@@ -337,9 +337,9 @@
       "credit": 1.14,
       "delta": 0.172,
       "opened_at": "2026-10-22",
-      "last_cost": 2.08,
-      "last_price": 286.79,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 2.13,
+      "last_price": 286.535,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "META-2026-11-27-575-094748": {
@@ -356,9 +356,9 @@
       "credit": 2.45,
       "delta": 0.15,
       "opened_at": "2026-10-23",
-      "last_cost": 2.84,
-      "last_price": 645.455,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 2.92,
+      "last_price": 645.54,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     },
     "VLO-2026-11-27-375-110127": {
@@ -375,13 +375,21 @@
       "credit": 3.0,
       "delta": 0.193,
       "opened_at": "2026-10-23",
-      "last_cost": 5.05,
-      "last_price": 422.025,
-      "last_checked": "2026-10-23T15:15:41-04:00",
+      "last_cost": 5.04,
+      "last_price": 419.27,
+      "last_checked": "2026-10-23T15:30:41-04:00",
       "stop_hits": 0
     }
   },
-  "pending": {},
+  "pending": {
+    "a396f084-b0b5-40da-b5e0-ee1e4ec17830": {
+      "kind": "close",
+      "spread_id": "CRWD-2026-11-20-200-094838",
+      "reason": "target",
+      "price": 0.815,
+      "symbol": "CRWD"
+    }
+  },
   "day": "2026-10-23",
   "opened_today": 2,
   "events": [
