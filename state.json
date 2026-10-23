@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1052450.77,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 575639.46,
   "trade_meta": {
     "HON": {
@@ -749,7 +749,11 @@
     "AVGO",
     "BKR"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "AMAT": "2026-10-23T15:40:57.548049-04:00",
+    "AVGO": "2026-10-23T15:05:17.000511-04:00",
+    "NBIS": "2026-10-23T15:40:57.548049-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -758,6 +762,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
