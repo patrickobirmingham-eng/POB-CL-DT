@@ -76,7 +76,9 @@ jobs:
           morning_cutoff = time(9, 25)
           afternoon_cutoff = time(12, 55)
           end_of_day = time(15, 50)
-          if now.time() < morning_cutoff:
+          if now.weekday() >= 5:              # Sat/Sun: no session (ran the bot for nothing on Oct 24-25)
+              print('none')
+          elif now.time() < morning_cutoff:
               print('none')
           elif now.time() < afternoon_cutoff:
               print(f'morning {now.date()}T09:25:00')
