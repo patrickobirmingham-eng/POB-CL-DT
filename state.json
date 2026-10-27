@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1048554.22,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 587534.9,
   "trade_meta": {
     "ALAB": {
@@ -749,7 +749,11 @@
     "ADI",
     "ALAB"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "ADI": "2026-10-27T15:00:13.548091-04:00",
+    "MRVL": "2026-10-27T15:40:41.313185-04:00",
+    "SNDK": "2026-10-27T15:40:41.313185-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -758,6 +762,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
