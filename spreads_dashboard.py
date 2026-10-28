@@ -485,7 +485,7 @@ const openCols=[
  {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Stock price',key:'price'},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Expires',key:'e'},{t:'Qty',key:'q'},{t:'Delta at open',key:'d'},
  {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Stop ← → Target',sort:prog},{t:'Max loss',key:'ml'}];
 const closedCols=[
- {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Closed',key:'c'},{t:'Days held',key:'days'},{t:'Qty',key:'q'},
+ {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Closed',key:'c'},{t:'Expires',key:'e'},{t:'Days held',key:'days'},{t:'Qty',key:'q'},
  {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Why',key:'why'}];
 const txCols=[{t:'Date',key:'dt'},{t:'Action',key:'act'},{t:'Stock',key:'sym',l:1},{t:'Option',key:'leg'},{t:'Expires',key:'exp'},{t:'Qty',key:'q'},{t:'Price',key:'px'},{t:'Fees',key:'fee'},{t:'Amount',key:'amt'}];
 function draw(){
@@ -513,7 +513,7 @@ function draw(){
       [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`,
       [openCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(pl)}">${pctS(roi({pl,credit:S(s=>s.credit)}))}</span>`})});
   $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
-  sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
+  sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${fmt(D(s.e))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
     return totalRow(closedCols,r,{[closedCols.findIndex(c=>c.key==='credit')]:m0(t.credit),[closedCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
       [closedCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(t.pl)}">${money(t.pl,true,0)}</span>`,[closedCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(t.pl)}">${pctS(roi(t))}</span>`})});
   $('closedsub').textContent=`${closedR.length} in range · ${closedR.filter(s=>s.pl>0).length} winners`;
