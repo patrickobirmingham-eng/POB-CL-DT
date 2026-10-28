@@ -1,0 +1,47 @@
+name: Refresh Credit Spreads Page Only
+
+# Manual-only: regenerates docs/spreads.html from the current spreads account
+# and spreads_state.json, and commits it. No trading logic, nothing is opened
+# or closed, works any time (market open or closed). Use it to pick up a page
+# change or fresh numbers without waiting for the next ~15-min bot run.
+# ("Refresh Dashboard Only" is the Day Trading page's equivalent.)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # commit docs/spreads.html back
+
+concurrency:
+  group: spreads-bot          # never runs at the same time as a bot run
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SPREADS_APCA_API_KEY_ID: ${{ secrets.SPREADS_APCA_API_KEY_ID }}
+      SPREADS_APCA_API_SECRET_KEY: ${{ secrets.SPREADS_APCA_API_SECRET_KEY }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build credit spreads page
+        run: python spreads_dashboard.py
+
+      - name: Commit updated page
+        run: |
+          # spreads_trades.csv too: the page can fill in missing stock-price-at-close values
+          bash scripts/publish_files.sh "Refresh credit spreads page only [skip ci]" docs/spreads.html spreads_trades.csv
