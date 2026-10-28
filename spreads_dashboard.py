@@ -363,7 +363,7 @@ svg text{fill:var(--muted);font-size:11px}
 
   <div class="panel">
     <div class="phead"><h2>Closed spreads</h2><span class="sub" id="closedsub"></span>
-      <input type="search" id="qClosed" placeholder="Search stock, sector or reason…"></div>
+      <input type="search" id="qClosed" placeholder="Search stock, sector or reason…"><button class="btn dl" onclick="dlClosed()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button></div>
     <div class="tw"><table id="closed"></table></div>
   </div>
 
@@ -436,7 +436,7 @@ function setRange(v){
   $('from').value=iso(f);$('to').value=iso(t);
 }
 const sortState={tx:{k:0,dir:-1}};
-const SHOWN={open:[],tx:[]};
+const SHOWN={open:[],closed:[],tx:[]};
 // "Download Table": the rows currently shown (search, filters and sort applied) + a Total row,
 // as CSV with plain numbers so Excel can add them up; the BOM keeps Excel on UTF-8.
 function csvDownload(name,header,rows){
@@ -452,6 +452,12 @@ function dlOpen(){
   csvDownload('open-spreads',['Stock','Category','Stock price','% above short strike','Short strike','Long strike','Width','Opened','Expires','Days to expiry','Qty','Delta at open','Credit per share','Cost to close per share','Total credit','Total cost to close','P&L','ROI %','Max loss'],
     r.map(s=>[s.sym,s.sec,s.price,s.price!=null?(s.price/s.sk-1)*100:'',s.sk,s.lk,s.w,s.o,s.e,s.dte,s.q,s.d,s.cr,s.px,s.credit,s.cost,s.pl,roi(s),s.ml])
      .concat([[`Total (${r.length})`,'','','','','','','','','',S(s=>s.q),'','','',S(s=>s.credit),S(s=>s.cost),S(s=>s.pl),S(s=>s.credit)?S(s=>s.pl)/S(s=>s.credit)*100:'',S(s=>s.ml)]]));
+}
+function dlClosed(){
+  const r=SHOWN.closed,S=f=>r.reduce((x,y)=>x+(f(y)||0),0);
+  csvDownload('closed-spreads',['Stock','Category','Short strike','Long strike','Width','Opened','Closed','Expires','Days held','Qty','Credit per share','Cost to close per share','Total credit','Total cost to close','P&L','ROI %','Why','Note'],
+    r.map(s=>[s.sym,s.sec,s.sk,s.lk,s.w,s.o,s.c,s.e,s.days,s.q,s.cr,s.px,s.credit,s.cost,s.pl,roi(s),s.why,s.note||''])
+     .concat([[`Total (${r.length})`,'','','','','','','','',S(s=>s.q),'','',S(s=>s.credit),S(s=>s.cost),S(s=>s.pl),S(s=>s.credit)?S(s=>s.pl)/S(s=>s.credit)*100:'','','']]));
 }
 function dlTx(){
   const r=SHOWN.tx;
@@ -513,7 +519,7 @@ function draw(){
       [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`,
       [openCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(pl)}">${pctS(roi({pl,credit:S(s=>s.credit)}))}</span>`})});
   $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
-  sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${fmt(D(s.e))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
+  SHOWN.closed=sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${fmt(D(s.e))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
     return totalRow(closedCols,r,{[closedCols.findIndex(c=>c.key==='credit')]:m0(t.credit),[closedCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
       [closedCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(t.pl)}">${money(t.pl,true,0)}</span>`,[closedCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(t.pl)}">${pctS(roi(t))}</span>`})});
   $('closedsub').textContent=`${closedR.length} in range · ${closedR.filter(s=>s.pl>0).length} winners`;
