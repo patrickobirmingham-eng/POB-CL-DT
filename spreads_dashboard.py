@@ -33,6 +33,7 @@ TRADE_NOTES = {
     "UNH-2026-11-27-370-094735": "closed low: pricing bug, fixed Oct 20",
 }
 PAPER_URL = "https://paper-api.alpaca.markets"
+DATA_URL = "https://data.alpaca.markets"
 # The Rules box saves through server/spreads-settings-save.php on the owner's web
 # server (next to orb-settings-save.php, which does the same for the day bot).
 # The passcode is typed on every save and never stored in this page.
@@ -61,8 +62,8 @@ class Api:
         self.ok = bool(key and secret)
         self.h = {"APCA-API-KEY-ID": key or "", "APCA-API-SECRET-KEY": secret or ""}
 
-    def get(self, path, **params):
-        r = requests.get(PAPER_URL + path, headers=self.h, params=params, timeout=20)
+    def get(self, path, base=PAPER_URL, **params):
+        r = requests.get(base + path, headers=self.h, params=params, timeout=20)
         r.raise_for_status()
         return r.json()
 
@@ -127,6 +128,47 @@ def transactions(acts):
     return rows, fees
 
 
+def close_prices(api, trades, acts):
+    """Fill in "stock_price" (the stock's price when the spread was closed) on closed spreads
+    recorded before the bot logged it: the 1-minute bar at the closing fill of the short leg, or
+    that day's close for expirations/assignments. Returns True if any trade was filled in."""
+    changed = False
+    for t in trades:
+        if t.get("stock_price"):
+            continue
+        exp = datetime.strptime(t["expiration"], "%Y-%m-%d")
+        occ = f"{t['symbol']}{exp:%y%m%d}P{int(round(float(t['short_strike']) * 1000)):08d}"
+        when = None
+        for a in acts:                  # last buy-to-close of the short leg that day
+            if (a.get("activity_type") == "FILL" and a.get("symbol") == occ and a.get("side") == "buy"
+                    and et_date(a["transaction_time"]) == t["closed_at"]):
+                when = datetime.fromisoformat(a["transaction_time"].replace("Z", "+00:00"))
+        try:
+            if when:
+                bars = api.get(f"/v2/stocks/{t['symbol']}/bars", base=DATA_URL, timeframe="1Min", feed="iex",
+                               start=(when - timedelta(minutes=15)).isoformat(), end=when.isoformat(), limit=20)
+            else:
+                bars = api.get(f"/v2/stocks/{t['symbol']}/bars", base=DATA_URL, timeframe="1Day", feed="iex",
+                               start=t["closed_at"], end=t["closed_at"])
+            b = (bars.get("bars") or [])[-1:]
+            if b:
+                t["stock_price"] = round(float(b[0]["c"]), 2)
+                changed = True
+        except Exception:
+            pass                        # leave blank; tried again on the next build
+    return changed
+
+
+def save_trades(trades):
+    fields = list(trades[0].keys()) if trades else []
+    if "stock_price" not in fields:
+        fields.append("stock_price")
+    with open(os.path.join(HERE, "spreads_trades.csv"), "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows({k: t.get(k, "") or "" for k in fields} for t in trades)
+
+
 def daily_pl(api):
     h = api.get("/v2/account/portfolio/history", period="3M", timeframe="1D")
     out = []
@@ -157,7 +199,8 @@ def spread_rows(state, trades, settings):
                      "sk": float(t["short_strike"]), "lk": float(t["long_strike"]), "o": t["opened_at"],
                      "e": t["expiration"], "q": int(float(t["qty"])), "d": float(t["delta_at_open"] or 0),
                      "cr": float(t["credit"]), "px": float(t["close_cost"]), "c": t["closed_at"], "why": why,
-                     "note": TRADE_NOTES.get(t.get("id", ""), "")})
+                     "note": TRADE_NOTES.get(t.get("id", ""), ""),
+                     "price": float(t["stock_price"]) if t.get("stock_price") else None})
     return rows
 
 
@@ -176,7 +219,10 @@ def build():
         except Exception as e:
             errors.append(f"account: {e}")
         try:
-            tx, fees = transactions(activities(api))
+            acts = activities(api)
+            tx, fees = transactions(acts)
+            if close_prices(api, trades, acts):
+                save_trades(trades)
         except Exception as e:
             errors.append(f"activities: {e}")
         try:
@@ -478,9 +524,9 @@ function dlOpen(){
 }
 function dlClosed(){
   const r=SHOWN.closed,S=f=>r.reduce((x,y)=>x+(f(y)||0),0);
-  csvDownload('closed-spreads',['Stock','Category','Short strike','Long strike','Width','Opened','Closed','Expires','Days held','Qty','Credit per share','Cost to close per share','Total credit','Total cost to close','P&L','ROI %','Why','Note'],
-    r.map(s=>[s.sym,s.sec,s.sk,s.lk,s.w,s.o,s.c,s.e,s.days,s.q,s.cr,s.px,s.credit,s.cost,s.pl,roi(s),s.why,s.note||''])
-     .concat([[`Total (${r.length})`,'','','','','','','','',S(s=>s.q),'','',S(s=>s.credit),S(s=>s.cost),S(s=>s.pl),S(s=>s.credit)?S(s=>s.pl)/S(s=>s.credit)*100:'','','']]));
+  csvDownload('closed-spreads',['Stock','Category','Stock price at close','% above short strike','Short strike','Long strike','Width','Opened','Closed','Expires','Days held','Qty','Credit per share','Cost to close per share','Total credit','Total cost to close','P&L','ROI %','Why','Note'],
+    r.map(s=>[s.sym,s.sec,s.price,s.price!=null?(s.price/s.sk-1)*100:'',s.sk,s.lk,s.w,s.o,s.c,s.e,s.days,s.q,s.cr,s.px,s.credit,s.cost,s.pl,roi(s),s.why,s.note||''])
+     .concat([[`Total (${r.length})`,'','','','','','','','','','',S(s=>s.q),'','',S(s=>s.credit),S(s=>s.cost),S(s=>s.pl),S(s=>s.credit)?S(s=>s.pl)/S(s=>s.credit)*100:'','','']]));
 }
 function dlTx(){
   const r=SHOWN.tx;
@@ -514,14 +560,14 @@ function bar(s){
     `<div class="lbl"><span style="left:0">stop</span><span style="left:${z}%;transform:translateX(-50%)">open</span><span style="right:0">target</span></div></div><span class="sbb">${badge}</span></div>`}
 const sym=s=>`<span class="sym">${esc(s.sym)}</span> <span class="muted">${esc(s.sec)}</span>`;
 // stock price, and how far it is above the short strike (the cushion)
-const px=s=>s.price==null?'<span class="muted">—</span>':`$${Number(s.price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}<div class="${s.price>s.sk*1.05?'muted':s.price>s.sk?'warn':'neg'}" style="font-size:12px">${((s.price/s.sk-1)*100).toFixed(1)}% above strike</div>`;
+const px=s=>s.price==null?'<span class="muted">—</span>':`$${Number(s.price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}<div class="${s.price>s.sk*1.05?'muted':s.price>s.sk?'warn':'neg'}" style="font-size:12px">${Math.abs((s.price/s.sk-1)*100).toFixed(1)}% ${s.price>=s.sk?'above':'below'} strike</div>`;
 // ROI % = P&L as a % of the total credit collected
 const roi=s=>s.credit?s.pl/s.credit*100:null, pctS=v=>v==null?'—':(v>=0?'+':'−')+Math.abs(v).toFixed(1)+'%';
 const openCols=[
  {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Stock price',key:'price'},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Expires',key:'e'},{t:'Qty',key:'q'},{t:'Delta at open',key:'d'},
  {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Stop / Target',sort:prog},{t:'Max loss',key:'ml'}];
 const closedCols=[
- {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Closed',key:'c'},{t:'Expires',key:'e'},{t:'Days held',key:'days'},{t:'Qty',key:'q'},
+ {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Stock price at close',key:'price'},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Closed',key:'c'},{t:'Expires',key:'e'},{t:'Days held',key:'days'},{t:'Qty',key:'q'},
  {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Why',key:'why'}];
 const txCols=[{t:'Date',key:'dt'},{t:'Action',key:'act'},{t:'Stock',key:'sym',l:1},{t:'Option',key:'leg'},{t:'Expires',key:'exp'},{t:'Qty',key:'q'},{t:'Price',key:'px'},{t:'Fees',key:'fee'},{t:'Amount',key:'amt'}];
 function draw(){
@@ -549,7 +595,7 @@ function draw(){
       [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`,
       [openCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(pl)}">${pctS(roi({pl,credit:S(s=>s.credit)}))}</span>`})});
   $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
-  SHOWN.closed=sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${fmt(D(s.e))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
+  SHOWN.closed=sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${fmt(D(s.e))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
     return totalRow(closedCols,r,{[closedCols.findIndex(c=>c.key==='credit')]:m0(t.credit),[closedCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
       [closedCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(t.pl)}">${money(t.pl,true,0)}</span>`,[closedCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(t.pl)}">${pctS(roi(t))}</span>`})});
   $('closedsub').textContent=`${closedR.length} in range · ${closedR.filter(s=>s.pl>0).length} winners`;
