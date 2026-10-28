@@ -635,7 +635,7 @@ const RULE_GROUPS=[
  ['Expiration',[['MIN_DTE','Shortest expiration','','int','days'],['TARGET_DTE','Preferred expiration','picks the date closest to this','int','days'],['MAX_DTE','Longest expiration','','int','days']]],
  ['Short strike',[['MIN_DELTA','Lowest delta','','num'],['TARGET_DELTA','Preferred delta','','num'],['MAX_DELTA','Highest delta','','num']]],
  ['Credit',[['MIN_CREDIT_PCT_OF_WIDTH','Minimum credit','as % of the spread width','pct','%'],['MIN_NATURAL_PCT_OF_MID','Liquidity check','bid/ask price must give at least this % of the mid credit','pct','%']]],
- ['Exits',[['TAKE_PROFIT_PCT','Take profit','close when this % of the credit is kept','pct','%'],['STOP_LOSS_MULT','Stop','close when the loss reaches this many × the credit','num','×'],['STOP_CONFIRM_CHECKS','Stop must show on','checks in a row (one check every ~15 min, real bid/ask on both options)','int','checks'],['CLOSE_BEFORE_EXPIRY_DTE','Close before expiration','days before','int','days']]],
+ ['Exits',[['TAKE_PROFIT_PCT','Take profit','close when this % of the credit is kept','pct','%'],['STOP_LOSS_MULT','Stop','close when the loss reaches this many × the credit','num','×'],['STOP_CONFIRM_CHECKS','Stop must show on','checks in a row (one check every ~15 min, real bid/ask on both options)','int','checks'],['STOP_STOCK_GATE_PCT','Stop only if stock is within','of the short strike (farther away, a 2× loss is held)','pct','%'],['CLOSE_BEFORE_EXPIRY_DTE','Close before expiration','days before','int','days']]],
  ['Rolling',[['ROLL_ENABLED','Roll when the short strike is touched','otherwise close','bool'],['ROLL_MIN_DTE_LEFT','Only roll with at least','days left','int','days'],['ROLL_TARGET_DTE','Roll out to about','','int','days'],['MAX_ROLLS','Most rolls per spread','','int']]],
  ['Size and limits',[['MAX_LOSS_PER_SPREAD','Max loss per spread','','num','$'],['MAX_OPEN_SPREADS','Most spreads open','','int'],['MAX_NEW_PER_DAY','New spreads per day','','int'],['MAX_PER_SECTOR','Per category','','int'],['MAX_PER_SYMBOL','Per stock','','int']]],
  ['Timing and earnings',[['OPEN_START_ET','Open new spreads from','ET','time'],['OPEN_END_ET','until','ET','time'],['AVOID_EARNINGS','Skip stocks with earnings before expiration','ETFs are never skipped','bool']]],
@@ -667,6 +667,8 @@ function collectRules(){
   const W=(CURRENT.WIDTH_TABLE||[]).map(r=>r.slice());
   document.querySelectorAll('#rulesform [data-w]').forEach(el=>{const [i,j]=el.dataset.w.split(',').map(Number);W[i][j]=Number(el.value)});
   out.WIDTH_TABLE=W;
+  // newer rule: only sent when changed, so saving still works before the updated save script is uploaded
+  if(out.STOP_STOCK_GATE_PCT===CURRENT.STOP_STOCK_GATE_PCT)delete out.STOP_STOCK_GATE_PCT;
   const {wl,bad}=textToWl($('wlText').value);errs.push(...bad);
   if(!Object.keys(wl).length)errs.push('the watchlist is empty');
   out.WATCHLIST=wl;
@@ -689,7 +691,7 @@ async function saveRules(){
   try{
     const resp=await fetch(DATA.save_url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:pass,settings:out})});
     const d=await resp.json().catch(()=>({}));
-    if(!resp.ok||!d.ok)throw new Error(d.error||('HTTP '+resp.status));
+    if(!resp.ok||!d.ok)throw new Error(/unknown rule STOP_STOCK_GATE_PCT/.test(d.error||'')?'the save script on the server is older than this rule — upload the updated server/spreads-settings-save.php to change it':(d.error||('HTTP '+resp.status)));
     $('passcode').value='';
     if(d.unchanged){setStatus('Nothing changed.','info');return}
     setStatus('Saved; checking the repo…','info');
