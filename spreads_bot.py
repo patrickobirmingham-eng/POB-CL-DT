@@ -345,7 +345,12 @@ def decide(settings, sp, cost, price, today, valid=True):
     loss near $20K."""
     credit = sp["credit"]
     dte = (date.fromisoformat(sp["expiration"]) - today).days
-    if valid and cost >= credit * (1 + settings["STOP_LOSS_MULT"]):
+    # The stop only counts while the stock is within STOP_STOCK_GATE_PCT of the short strike: a 2x mark
+    # while the stock is still well above the strike is usually a volatility spike that recovers
+    # (owner decision 2026-10-28; on his Apr-Oct trades a 5% gate made ~$21K more with a smaller worst loss).
+    gate = settings.get("STOP_STOCK_GATE_PCT")
+    near = gate is None or price is None or price <= sp["short_strike"] * (1 + gate)
+    if valid and near and cost >= credit * (1 + settings["STOP_LOSS_MULT"]):
         sp["stop_hits"] = sp.get("stop_hits", 0) + 1
         if sp["stop_hits"] >= settings.get("STOP_CONFIRM_CHECKS", 2):
             return "close", "stop"
@@ -559,8 +564,9 @@ def run(broker, settings, dry=False, now=None):
                 # the mid at $0.42, keeping 25% of the credit instead of the 50% target.)
                 half = cost + (max(cost, natural) - cost) / 2
                 limits = ladder(round(cost, 2), round(min(half, sp["credit"] * (1 - settings["TAKE_PROFIT_PCT"])), 2), 2)
-            else:                       # stop / defensive closes: pay up to get out
-                limits = [round(max(cost, natural) + 0.05, 2)]
+            else:                       # stop / defensive closes: try mid, then halfway, then pay up to get out
+                # (paying the ask straight away cost a lot on wide markets, e.g. VLO 2026-10-28 at $12.40)
+                limits = ladder(round(cost, 2), round(max(cost, natural) + 0.05, 2), 3)
             log(f"CLOSE {sp['symbol']} ({reason}): cost ${cost:.2f}, limits {limits}")
             if not dry:
                 p = {"kind": "close", "spread_id": sp["id"], "reason": reason.split(" (")[0], "price": cost,
