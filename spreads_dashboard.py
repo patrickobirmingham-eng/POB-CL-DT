@@ -280,8 +280,6 @@ tr:hover td{background:var(--row-hover)}
 .bar i{position:absolute;top:-4px;width:7px;height:20px;border-radius:4px;background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.4)}
 .lbl{position:relative;height:13px;width:120px;font-size:10px;color:var(--faint);margin-top:3px}
 .lbl span{position:absolute;top:0;white-space:nowrap}
-.sbv{text-align:left;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
-.sbv.mid{color:var(--warn)} .sbv.bad{color:#f07a3a}
 .pillx{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:800;letter-spacing:.3px;color:#fff;white-space:nowrap}
 .pillx.stop{background:var(--neg)} .pillx.tgt{background:var(--pos)}
 .tag{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:2px 6px;background:rgba(135,145,167,.15);color:var(--muted)}
@@ -508,10 +506,10 @@ const totalRow=(cols,r,cells)=>'<tr class="total">'+cols.map((c,i)=>i===0?`<td c
 const prog=s=>(s.cr-s.px)/s.cr;
 function bar(s){
   // left half: open (no gain, no loss) -> stop; right half: open -> profit target. The fill runs from open to the marker
-  const lo=-SL,hi=TP,p=prog(s),z=50,x=Math.max(0,Math.min(100,p<0?50*(1-p/lo):50+50*p/hi)),r=roi(s);
+  const lo=-SL,hi=TP,p=prog(s),z=50,x=Math.max(0,Math.min(100,p<0?50*(1-p/lo):50+50*p/hi));
   const hit=p<=lo, tgt=p>=hi, loss=x<z;
   const badge=hit?'<span class="pillx stop">STOP HIT</span>':tgt?'<span class="pillx tgt">TARGET</span>'
-    :`<span class="sbv ${r>=0?'pos':r>-50?'mid':'bad'}">${pctS(r)}</span>`;
+    :'';
   return `<div class="sb"><div class="sbw"><span class="bar${hit?' hit':''}"><span class="f ${loss?'loss':'gain'}" style="left:${Math.min(x,z)}%;width:${Math.abs(x-z)}%"></span><b style="left:${z}%"></b><i style="left:calc(${x}% - 3.5px)"></i></span>`+
     `<div class="lbl"><span style="left:0">stop</span><span style="left:${z}%;transform:translateX(-50%)">open</span><span style="right:0">target</span></div></div><span class="sbb">${badge}</span></div>`}
 const sym=s=>`<span class="sym">${esc(s.sym)}</span> <span class="muted">${esc(s.sec)}</span>`;
@@ -561,7 +559,7 @@ function draw(){
   const risk=sum(openSp,s=>s.ml), by={};openSp.forEach(s=>{const k=s.sec.replace(' ETF','');by[k]=(by[k]||0)+1});
   $('risk').innerHTML=`<div style="font-size:22px;font-weight:650">${m0(risk)}</div><div class="muted" style="font-size:12px;margin-bottom:10px">of ${m0(MAXN*MAXL)} allowed (${MAXN} × ${m0(MAXL)})</div>`+(Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<div class="sector"><span>${esc(s)}</span><div class="track"><div class="fill ${n>=MAXSEC?'full':''}" style="width:${Math.min(100,n/MAXSEC*100)}%"></div></div><span class="muted">${n}/${MAXSEC}</span></div>`).join(''):'<div class="empty">No open spreads</div>');
 }
-$('opennote').textContent=`Click any column title to sort. Stop / Target: the middle is where the spread opened; the bar fills left toward the stop (cost to close reaches ${1+SL}× the credit) or right toward the profit target (${Math.round(TP*100)}% of the credit kept). The number is its ROI %.`;
+$('opennote').textContent=`Click any column title to sort. Stop / Target: the middle is where the spread opened; the bar fills left toward the stop (cost to close reaches ${1+SL}× the credit) or right toward the profit target (${Math.round(TP*100)}% of the credit kept).`;
 $('risknote').textContent=`Limits: ${MAXSEC} spreads per sector · ${R.MAX_PER_SYMBOL||2} per stock · ${MAXN} total · ${m0(MAXL)} max loss each · ${R.MAX_NEW_PER_DAY||5} new per day.`;
 ['from','to'].forEach(id=>$(id).onchange=()=>{$('range').value='custom';draw()});
 $('range').onchange=e=>{setRange(e.target.value);draw()};
