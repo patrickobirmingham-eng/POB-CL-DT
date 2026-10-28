@@ -332,7 +332,7 @@ svg text{fill:var(--muted);font-size:11px}
   <nav class="tabs" aria-label="Dashboards"><a href="index.html">Day Trading</a><a href="spreads.html" class="on">Credit Spreads</a></nav>
   <div class="right">
     <span id="updated"></span>
-    <button class="btn" onclick="location.reload()">&#8635; Refresh</button>
+    <button class="btn" id="refreshBtn" onclick="refreshPage()" title="Load the newest published update">&#8635; Refresh</button>
     <span class="pill paper">PAPER</span>
     <button class="btn" onclick="document.getElementById('rules').classList.add('on')">&#9881; Rules</button>
     <button class="btn" id="themeBtn" onclick="toggleTheme()"></button>
@@ -421,6 +421,19 @@ const m0=v=>money(v,false,0), cls=v=>v>0?'pos':v<0?'neg':'muted';
 const D=s=>new Date(s+'T12:00:00'), fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 const today=D(DATA.today), iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 $('updated').textContent='Last updated '+new Date(DATA.generated).toLocaleString('en-US',{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});
+// Refresh: a plain reload just showed the browser's cached copy, so the button seemed to do
+// nothing. Fetch the published page bypassing caches; if the bot has published a newer update,
+// load it, otherwise say so (the spreads bot republishes about every 15 min in market hours).
+async function refreshPage(){
+  const btn=$('refreshBtn'),up=$('updated'),was=up.textContent;btn.disabled=true;up.textContent='Checking for a newer update…';
+  try{
+    const html=await (await fetch(location.pathname+'?r='+Date.now(),{cache:'no-store'})).text();
+    const m=html.match(/"generated": *"([^"]+)"/);
+    if(m&&new Date(m[1])>new Date(DATA.generated)){location.replace(location.pathname+'?r='+Date.now());return}
+    up.textContent='Already the latest — '+was.replace('Last updated ','updated ')+'. The bot publishes about every 15 min while the market is open.';
+  }catch(e){up.textContent='Refresh failed: '+e.message}
+  btn.disabled=false;setTimeout(()=>{if(!btn.disabled)up.textContent=was},9000);
+}
 if(DATA.errors.length){$('errbanner').style.display='block';$('errbanner').textContent='Some live data could not be loaded: '+DATA.errors.join(' · ')}
 if(DATA.account){const a=DATA.account,ch=a.equity-a.last_equity;$('acct').innerHTML=`<span>Account value <b>${m0(a.equity)}</b></span><span>Today <b class="${cls(ch)}">${money(ch,true,0)}</b></span><span>Cash <b>${m0(a.cash)}</b></span><span>Options buying power <b>${m0(a.bp)}</b></span>`}
 if(R.ENABLED===false)$('acct').innerHTML+='<span class="warn"><b class="warn">Bot is switched OFF in the rules</b></span>';
