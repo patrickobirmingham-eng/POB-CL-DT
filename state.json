@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1057500.13,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 599303.41,
   "trade_meta": {
     "APP": {
@@ -749,7 +749,10 @@
     "TRI",
     "VRTX"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "ADSK": "2026-10-28T15:41:06.028254-04:00",
+    "INTU": "2026-10-28T15:41:06.028254-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -758,6 +761,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
