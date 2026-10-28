@@ -39,7 +39,7 @@ EARNINGS_FILE = os.path.join(HERE, "spreads_earnings.json")
 PAPER_URL = "https://paper-api.alpaca.markets"
 
 TRADE_FIELDS = ["closed_at", "symbol", "sector", "short_strike", "long_strike", "expiration", "qty",
-                "opened_at", "delta_at_open", "credit", "close_cost", "pl", "reason", "id"]
+                "opened_at", "delta_at_open", "credit", "close_cost", "pl", "reason", "id", "stock_price"]
 
 
 def log(msg):
@@ -84,6 +84,15 @@ def event(st, kind, text):
 
 def append_trade(row):
     new = not os.path.exists(TRADES_FILE)
+    if not new:                         # older file without a newer column: rewrite it with the full header
+        with open(TRADES_FILE, newline="") as f:
+            r = csv.DictReader(f)
+            if r.fieldnames != TRADE_FIELDS:
+                old = list(r)
+                with open(TRADES_FILE, "w", newline="") as g:
+                    w = csv.DictWriter(g, fieldnames=TRADE_FIELDS)
+                    w.writeheader()
+                    w.writerows({k: o.get(k, "") or "" for k in TRADE_FIELDS} for o in old)
     with open(TRADES_FILE, "a", newline="") as f:
         w = csv.DictWriter(f, fieldnames=TRADE_FIELDS)
         if new:
@@ -403,7 +412,8 @@ def record_close(st, sp, close_px, reason, today_iso, qty=None):
                   "short_strike": sp["short_strike"], "long_strike": sp["long_strike"],
                   "expiration": sp["expiration"], "qty": qty, "opened_at": sp["opened_at"],
                   "delta_at_open": sp.get("delta", ""), "credit": sp["credit"], "close_cost": round(close_px, 2),
-                  "pl": pl, "reason": reason, "id": sp["id"]})
+                  "pl": pl, "reason": reason, "id": sp["id"],
+                  "stock_price": sp.get("last_price") or ""})
     if qty < sp["qty"]:
         sp["qty"] -= qty
     else:
