@@ -268,10 +268,22 @@ tr.total td{font-weight:700;border-top:2px solid var(--border-strong);border-bot
 tr.total:hover td{background:none}
 tr:hover td{background:var(--row-hover)}
 .sym{font-weight:650}
-.bar{position:relative;width:150px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(240,80,78,.35) 0,rgba(240,80,78,.35) 80%,rgba(34,197,94,.35) 80%,rgba(34,197,94,.35) 100%);display:inline-block;vertical-align:middle}
-.bar i{position:absolute;top:-3px;width:3px;height:14px;border-radius:2px;background:var(--text)}
-.bar b{position:absolute;top:-3px;left:80%;width:1px;height:14px;background:var(--faint)}
-.lbl{display:flex;justify-content:space-between;width:150px;font-size:10px;color:var(--faint);margin:2px auto 0}
+.sb{display:flex;align-items:center;gap:10px;justify-content:center}
+.sbb{min-width:76px;text-align:left}
+.sbw{width:120px}
+.bar{position:relative;display:block;width:120px;height:12px;border-radius:6px;background:var(--grid);box-sizing:border-box}
+.bar.hit{box-shadow:inset 0 0 0 1.5px var(--neg)}
+.bar .f{position:absolute;top:0;bottom:0;border-radius:6px}
+.bar .f.loss{background:linear-gradient(90deg,var(--neg),#e0703a 60%,var(--warn))}
+.bar .f.gain{background:linear-gradient(90deg,rgba(34,197,94,.45),var(--pos))}
+.bar b{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--faint)}
+.bar i{position:absolute;top:-4px;width:7px;height:20px;border-radius:4px;background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.4)}
+.lbl{position:relative;height:13px;width:120px;font-size:10px;color:var(--faint);margin-top:3px}
+.lbl span{position:absolute;top:0;white-space:nowrap}
+.sbv{text-align:left;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.sbv.mid{color:var(--warn)} .sbv.bad{color:#f07a3a}
+.pillx{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:800;letter-spacing:.3px;color:#fff;white-space:nowrap}
+.pillx.stop{background:var(--neg)} .pillx.tgt{background:var(--pos)}
 .tag{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:2px 6px;background:rgba(135,145,167,.15);color:var(--muted)}
 .tag.target{background:rgba(34,197,94,.15);color:var(--pos)}
 .tag.stop{background:rgba(240,80,78,.15);color:var(--neg)}
@@ -481,7 +493,14 @@ function sortable(id,cols,rows,render,q,foot){
 const totalRow=(cols,r,cells)=>'<tr class="total">'+cols.map((c,i)=>i===0?`<td class="l">Total (${r.length})</td>`:`<td>${cells[i]??''}</td>`).join('')+'</tr>';
 // position of the spread between its stop (left) and profit target (right)
 const prog=s=>(s.cr-s.px)/s.cr;
-function bar(s){const lo=-SL,hi=TP,x=Math.max(0,Math.min(100,(prog(s)-lo)/(hi-lo)*100)),z=(0-lo)/(hi-lo)*100;return `<span class="bar" style="background:linear-gradient(90deg,rgba(240,80,78,.35) 0,rgba(240,80,78,.35) ${z}%,rgba(34,197,94,.35) ${z}%,rgba(34,197,94,.35) 100%)"><b style="left:${z}%"></b><i style="left:calc(${x}% - 1px)"></i></span><div class="lbl"><span>stop</span><span>open</span><span>target</span></div>`}
+function bar(s){
+  // left half: open (no gain, no loss) -> stop; right half: open -> profit target. The fill runs from open to the marker
+  const lo=-SL,hi=TP,p=prog(s),z=50,x=Math.max(0,Math.min(100,p<0?50*(1-p/lo):50+50*p/hi)),r=roi(s);
+  const hit=p<=lo, tgt=p>=hi, loss=x<z;
+  const badge=hit?'<span class="pillx stop">STOP HIT</span>':tgt?'<span class="pillx tgt">TARGET</span>'
+    :`<span class="sbv ${r>=0?'pos':r>-50?'mid':'bad'}">${pctS(r)}</span>`;
+  return `<div class="sb"><div class="sbw"><span class="bar${hit?' hit':''}"><span class="f ${loss?'loss':'gain'}" style="left:${Math.min(x,z)}%;width:${Math.abs(x-z)}%"></span><b style="left:${z}%"></b><i style="left:calc(${x}% - 3.5px)"></i></span>`+
+    `<div class="lbl"><span style="left:0">stop</span><span style="left:${z}%;transform:translateX(-50%)">open</span><span style="right:0">target</span></div></div><span class="sbb">${badge}</span></div>`}
 const sym=s=>`<span class="sym">${esc(s.sym)}</span> <span class="muted">${esc(s.sec)}</span>`;
 // stock price, and how far it is above the short strike (the cushion)
 const px=s=>s.price==null?'<span class="muted">—</span>':`$${Number(s.price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}<div class="${s.price>s.sk*1.05?'muted':s.price>s.sk?'warn':'neg'}" style="font-size:12px">${((s.price/s.sk-1)*100).toFixed(1)}% above strike</div>`;
@@ -489,7 +508,7 @@ const px=s=>s.price==null?'<span class="muted">—</span>':`$${Number(s.price).t
 const roi=s=>s.credit?s.pl/s.credit*100:null, pctS=v=>v==null?'—':(v>=0?'+':'−')+Math.abs(v).toFixed(1)+'%';
 const openCols=[
  {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Stock price',key:'price'},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Expires',key:'e'},{t:'Qty',key:'q'},{t:'Delta at open',key:'d'},
- {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Stop ← → Target',sort:prog},{t:'Max loss',key:'ml'}];
+ {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Stop / Target',sort:prog},{t:'Max loss',key:'ml'}];
 const closedCols=[
  {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Closed',key:'c'},{t:'Expires',key:'e'},{t:'Days held',key:'days'},{t:'Qty',key:'q'},
  {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Why',key:'why'}];
@@ -529,7 +548,7 @@ function draw(){
   const risk=sum(openSp,s=>s.ml), by={};openSp.forEach(s=>{const k=s.sec.replace(' ETF','');by[k]=(by[k]||0)+1});
   $('risk').innerHTML=`<div style="font-size:22px;font-weight:650">${m0(risk)}</div><div class="muted" style="font-size:12px;margin-bottom:10px">of ${m0(MAXN*MAXL)} allowed (${MAXN} × ${m0(MAXL)})</div>`+(Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<div class="sector"><span>${esc(s)}</span><div class="track"><div class="fill ${n>=MAXSEC?'full':''}" style="width:${Math.min(100,n/MAXSEC*100)}%"></div></div><span class="muted">${n}/${MAXSEC}</span></div>`).join(''):'<div class="empty">No open spreads</div>');
 }
-$('opennote').textContent=`Click any column title to sort. The bar shows each spread between its stop (cost to close reaches ${1+SL}× the credit, left) and its profit target (${Math.round(TP*100)}% of the credit kept, right).`;
+$('opennote').textContent=`Click any column title to sort. Stop / Target: the middle is where the spread opened; the bar fills left toward the stop (cost to close reaches ${1+SL}× the credit) or right toward the profit target (${Math.round(TP*100)}% of the credit kept). The number is its ROI %.`;
 $('risknote').textContent=`Limits: ${MAXSEC} spreads per sector · ${R.MAX_PER_SYMBOL||2} per stock · ${MAXN} total · ${m0(MAXL)} max loss each · ${R.MAX_NEW_PER_DAY||5} new per day.`;
 ['from','to'].forEach(id=>$(id).onchange=()=>{$('range').value='custom';draw()});
 $('range').onchange=e=>{setRange(e.target.value);draw()};
