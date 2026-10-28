@@ -557,13 +557,16 @@ def run(broker, settings, dry=False, now=None):
                     continue
                 reason = "touched short strike (no roll for a credit)"
             # close
-            if reason == "target":      # mid, then halfway to the natural price, never above the target price
+            if reason == "target":      # mid, halfway, then the natural price, never above the target price
                 # (credit x (1 - TAKE_PROFIT_PCT)), so a target close always keeps the target profit. An
                 # unfilled order is cancelled next run and re-priced off the new mid; no need to chase.
                 # (Was capped at 75% of the credit: on 2026-10-20 a wide market closed UNH at $1.40 with
-                # the mid at $0.42, keeping 25% of the credit instead of the 50% target.)
-                half = cost + (max(cost, natural) - cost) / 2
-                limits = ladder(round(cost, 2), round(min(half, sp["credit"] * (1 - settings["TAKE_PROFIT_PCT"])), 2), 2)
+                # the mid at $0.42, keeping 25% of the credit instead of the 50% target. Until 2026-10-28 it
+                # also stopped at halfway even when the natural price was inside the target, e.g. AVGO
+                # natural ~$0.95 vs a $1.01 target sat unfilled at $0.86; paying the natural then still
+                # keeps the target profit and fills.)
+                cap = sp["credit"] * (1 - settings["TAKE_PROFIT_PCT"])
+                limits = ladder(round(cost, 2), round(min(max(cost, natural), cap), 2), 3)
             else:                       # stop / defensive closes: try mid, then halfway, then pay up to get out
                 # (paying the ask straight away cost a lot on wide markets, e.g. VLO 2026-10-28 at $12.40)
                 limits = ladder(round(cost, 2), round(max(cost, natural) + 0.05, 2), 3)
