@@ -327,7 +327,7 @@ tr:hover td{background:var(--row-hover)}
 .lbl{position:relative;height:13px;width:120px;font-size:10px;color:var(--faint);margin-top:3px}
 .lbl span{position:absolute;top:0;white-space:nowrap}
 .pillx{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:800;letter-spacing:.3px;color:#fff;white-space:nowrap}
-.pillx.stop{background:var(--neg)} .pillx.tgt{background:var(--pos)}
+.pillx.stop{background:var(--neg)} .pillx.tgt{background:var(--pos)} .pillx.hold{background:var(--warn)}
 .tag{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:2px 6px;background:rgba(135,145,167,.15);color:var(--muted)}
 .tag.target{background:rgba(34,197,94,.15);color:var(--pos)}
 .tag.stop{background:rgba(240,80,78,.15);color:var(--neg)}
@@ -456,7 +456,7 @@ const DATA=__DATA__;
 function themeLabel(){const l=document.documentElement.getAttribute('data-theme')==='light';document.getElementById('themeBtn').innerHTML=l?'&#9790; Dark':'&#9728; Light'}
 function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('orb-dashboard-theme',t)}catch(e){}themeLabel()}
 themeLabel();
-const R=DATA.rules, TP=R.TAKE_PROFIT_PCT||.5, SL=R.STOP_LOSS_MULT||2, MAXN=R.MAX_OPEN_SPREADS||20, MAXL=R.MAX_LOSS_PER_SPREAD||30000, MAXSEC=R.MAX_PER_SECTOR||5;
+const R=DATA.rules, TP=R.TAKE_PROFIT_PCT||.5, SL=R.STOP_LOSS_MULT||2, GATE=R.STOP_STOCK_GATE_PCT??null, MAXN=R.MAX_OPEN_SPREADS||20, MAXL=R.MAX_LOSS_PER_SPREAD||30000, MAXSEC=R.MAX_PER_SECTOR||5;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const money=(v,s=false,c=2)=>(v<0?'−':(s&&v>0?'+':''))+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:c,maximumFractionDigits:c});
@@ -553,8 +553,8 @@ const prog=s=>(s.cr-s.px)/s.cr;
 function bar(s){
   // left half: open (no gain, no loss) -> stop; right half: open -> profit target. The fill runs from open to the marker
   const lo=-SL,hi=TP,p=prog(s),z=50,x=Math.max(0,Math.min(100,p<0?50*(1-p/lo):50+50*p/hi));
-  const hit=p<=lo, tgt=p>=hi, loss=x<z;
-  const badge=hit?'<span class="pillx stop">STOP HIT</span>':tgt?'<span class="pillx tgt">TARGET</span>'
+  const past=p<=lo, far=past&&GATE!=null&&s.price!=null&&s.price>s.sk*(1+GATE), hit=past&&!far, tgt=p>=hi, loss=x<z;
+  const badge=hit?'<span class="pillx stop">STOP HIT</span>':far?`<span class="pillx hold" title="Cost to close is past the stop, but the stock is still more than ${Math.round(GATE*100)}% above the short strike, so the bot holds">HOLDING</span>`:tgt?'<span class="pillx tgt">TARGET</span>'
     :'';
   return `<div class="sb"><div class="sbw"><span class="bar${hit?' hit':''}"><span class="f ${loss?'loss':'gain'}" style="left:${Math.min(x,z)}%;width:${Math.abs(x-z)}%"></span><b style="left:${z}%"></b><i style="left:calc(${x}% - 3.5px)"></i></span>`+
     `<div class="lbl"><span style="left:0">stop</span><span style="left:${z}%;transform:translateX(-50%)">open</span><span style="right:0">target</span></div></div><span class="sbb">${badge}</span></div>`}
@@ -605,7 +605,7 @@ function draw(){
   const risk=sum(openSp,s=>s.ml), by={};openSp.forEach(s=>{const k=s.sec.replace(' ETF','');by[k]=(by[k]||0)+1});
   $('risk').innerHTML=`<div style="font-size:22px;font-weight:650">${m0(risk)}</div><div class="muted" style="font-size:12px;margin-bottom:10px">of ${m0(MAXN*MAXL)} allowed (${MAXN} × ${m0(MAXL)})</div>`+(Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<div class="sector"><span>${esc(s)}</span><div class="track"><div class="fill ${n>=MAXSEC?'full':''}" style="width:${Math.min(100,n/MAXSEC*100)}%"></div></div><span class="muted">${n}/${MAXSEC}</span></div>`).join(''):'<div class="empty">No open spreads</div>');
 }
-$('opennote').textContent=`Click any column title to sort. Stop / Target: the middle is where the spread opened; the bar fills left toward the stop (cost to close reaches ${1+SL}× the credit) or right toward the profit target (${Math.round(TP*100)}% of the credit kept).`;
+$('opennote').textContent=`Click any column title to sort. Stop / Target: the middle is where the spread opened; the bar fills left toward the stop (cost to close reaches ${1+SL}× the credit) or right toward the profit target (${Math.round(TP*100)}% of the credit kept).${GATE!=null?` The stop only fires while the stock is within ${Math.round(GATE*100)}% of the short strike (HOLDING = past the stop but the stock is still farther away).`:''}`;
 $('risknote').textContent=`Limits: ${MAXSEC} spreads per sector · ${R.MAX_PER_SYMBOL||2} per stock · ${MAXN} total · ${m0(MAXL)} max loss each · ${R.MAX_NEW_PER_DAY||5} new per day.`;
 ['from','to'].forEach(id=>$(id).onchange=()=>{$('range').value='custom';draw()});
 $('range').onchange=e=>{setRange(e.target.value);draw()};
