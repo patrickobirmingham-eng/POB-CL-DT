@@ -308,6 +308,23 @@ def quotes_ok(quotes, sp):
     return sb > 0 and sa > 0 and la > 0 and sa >= sb and la >= lb
 
 
+def plausible_move(sp, cost, price):
+    """False when the cost to close jumped further than the stock's move can explain (a spread's
+    value moves less than $1 per $1 of stock) plus room for volatility changes — a one-off bad
+    quote. 2026-10-28 14:00: COST went $3.35 -> $0.21 on a +$1.90 stock move, showed +90% ROI and
+    fired a target close. The same jump seen again on the next run is accepted as real."""
+    prev, prev_px = sp.get("last_cost"), sp.get("cost_price") or sp.get("last_price")
+    if prev is None or prev_px is None or price is None:
+        return True
+    if abs(cost - prev) <= abs(price - prev_px) + max(0.25, 0.3 * prev):
+        return True
+    sus = sp.get("suspect_cost")
+    if sus is not None and abs(cost - sus) <= max(0.10, 0.2 * sus):
+        return True                     # second run in a row at this level: it's real
+    sp["suspect_cost"] = round(cost, 2)
+    return False
+
+
 def decide(settings, sp, cost, price, today, valid=True):
     """Exit decision for an open spread: (action, reason) or (None, None).
 
@@ -495,8 +512,13 @@ def run(broker, settings, dry=False, now=None):
             # (2026-10-22 15:45: a wild long-leg quote put COST at -$1.26, which fired a "target"
             # close and showed +161% ROI on the dashboard). Keep the last good cost instead.
             valid = quotes_ok(qs, sp) and -0.005 <= cost <= sp["width"] + 0.005
+            if valid and not plausible_move(sp, cost, prices[sp["symbol"]]):
+                valid = False
+                log(f"{sp['symbol']}: cost ${cost:.2f} vs ${sp['last_cost']:.2f} last run is too big a jump for the "
+                    f"stock's move — treating as a bad quote unless the next run sees it too")
             if valid:
-                sp["last_cost"] = round(cost, 2)
+                sp["last_cost"], sp["cost_price"] = round(cost, 2), prices[sp["symbol"]]
+                sp.pop("suspect_cost", None)
             sp["last_price"], sp["last_checked"] = prices[sp["symbol"]], now.isoformat(timespec="seconds")
             action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today, valid)
             if not action:
