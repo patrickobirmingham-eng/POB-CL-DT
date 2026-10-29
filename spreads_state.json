@@ -14,11 +14,11 @@
       "credit": 3.95,
       "delta": 0.164,
       "opened_at": "2026-10-14",
-      "last_cost": 2.96,
-      "last_price": 952.61,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 3.23,
+      "last_price": 947.3,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 952.61
+      "cost_price": 947.3
     },
     "P-2026-11-20-110-094747": {
       "id": "P-2026-11-20-110-094747",
@@ -34,11 +34,11 @@
       "credit": 2.1,
       "delta": 0.19,
       "opened_at": "2026-10-15",
-      "last_cost": 1.51,
-      "last_price": 139.5,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.42,
+      "last_price": 139.91,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 139.5
+      "cost_price": 139.91
     },
     "ASML-2026-11-20-1450-094934": {
       "id": "ASML-2026-11-20-1450-094934",
@@ -54,11 +54,11 @@
       "credit": 3.4,
       "delta": 0.177,
       "opened_at": "2026-10-15",
-      "last_cost": 2.06,
-      "last_price": 1688.75,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 2.1,
+      "last_price": 1684.78,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 1688.75
+      "cost_price": 1684.78
     },
     "SOXX-2026-11-20-450-095019": {
       "id": "SOXX-2026-11-20-450-095019",
@@ -74,11 +74,11 @@
       "credit": 2.7,
       "delta": 0.19,
       "opened_at": "2026-10-15",
-      "last_cost": 2.02,
-      "last_price": 517.425,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.56,
+      "last_price": 516.55,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 517.425
+      "cost_price": 516.55
     },
     "DELL-2026-11-20-380-094831": {
       "id": "DELL-2026-11-20-380-094831",
@@ -94,11 +94,11 @@
       "credit": 2.4,
       "delta": 0.15,
       "opened_at": "2026-10-15",
-      "last_cost": 1.1,
-      "last_price": 486.54,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.16,
+      "last_price": 486.24,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 486.54
+      "cost_price": 486.24
     },
     "SMH-2026-11-20-490-095142": {
       "id": "SMH-2026-11-20-490-095142",
@@ -114,11 +114,11 @@
       "credit": 2.4,
       "delta": 0.158,
       "opened_at": "2026-10-16",
-      "last_cost": 1.43,
-      "last_price": 564.855,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.45,
+      "last_price": 563.89,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 564.855
+      "cost_price": 563.89
     },
     "ADBE-2026-11-20-225-100201": {
       "id": "ADBE-2026-11-20-225-100201",
@@ -134,11 +134,11 @@
       "credit": 1.41,
       "delta": 0.165,
       "opened_at": "2026-10-16",
-      "last_cost": 2.08,
-      "last_price": 245.115,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 2.01,
+      "last_price": 245.21,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 245.115
+      "cost_price": 245.21
     },
     "XOP-2026-11-20-180-100253": {
       "id": "XOP-2026-11-20-180-100253",
@@ -154,11 +154,11 @@
       "credit": 0.87,
       "delta": 0.181,
       "opened_at": "2026-10-16",
-      "last_cost": 0.7,
-      "last_price": 198.375,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 0.75,
+      "last_price": 198.51,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 198.375
+      "cost_price": 198.51
     },
     "TSM-2026-11-27-375-094901": {
       "id": "TSM-2026-11-27-375-094901",
@@ -175,10 +175,10 @@
       "delta": 0.146,
       "opened_at": "2026-10-19",
       "last_cost": 0.98,
-      "last_price": 435.4,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_price": 434.855,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 435.4
+      "cost_price": 434.855
     },
     "QQQ-2026-11-27-660-094944": {
       "id": "QQQ-2026-11-27-660-094944",
@@ -194,11 +194,11 @@
       "credit": 1.86,
       "delta": 0.149,
       "opened_at": "2026-10-19",
-      "last_cost": 1.53,
-      "last_price": 717.17,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.61,
+      "last_price": 716.26,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 717.17
+      "cost_price": 716.26
     },
     "TRV-2026-11-20-370-094824": {
       "id": "TRV-2026-11-20-370-094824",
@@ -214,11 +214,11 @@
       "credit": 1.45,
       "delta": 0.164,
       "opened_at": "2026-10-20",
-      "last_cost": 0.87,
-      "last_price": 398.34,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 0.85,
+      "last_price": 397.43,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 398.34
+      "cost_price": 397.43
     },
     "COST-2026-11-27-940-131604": {
       "id": "COST-2026-11-27-940-131604",
@@ -234,11 +234,11 @@
       "credit": 2.05,
       "delta": 0.174,
       "opened_at": "2026-10-20",
-      "last_cost": 2.7,
-      "last_price": 988.93,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 2.66,
+      "last_price": 989.65,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 988.93
+      "cost_price": 989.65
     },
     "META-2026-11-27-575-094748": {
       "id": "META-2026-11-27-575-094748",
@@ -254,11 +254,11 @@
       "credit": 2.45,
       "delta": 0.15,
       "opened_at": "2026-10-23",
-      "last_cost": 3.65,
-      "last_price": 628.655,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 3.68,
+      "last_price": 628.79,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 628.655
+      "cost_price": 628.79
     },
     "IBM-2026-12-04-230-102016": {
       "id": "IBM-2026-12-04-230-102016",
@@ -274,11 +274,11 @@
       "credit": 1.33,
       "delta": 0.184,
       "opened_at": "2026-10-28",
-      "last_cost": 1.69,
-      "last_price": 253.745,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.64,
+      "last_price": 253.84,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 253.745
+      "cost_price": 253.84
     },
     "SKHY-2026-12-04-135-104859": {
       "id": "SKHY-2026-12-04-135-104859",
@@ -294,11 +294,11 @@
       "credit": 1.1,
       "delta": 0.16,
       "opened_at": "2026-10-28",
-      "last_cost": 1.33,
-      "last_price": 164.58,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.41,
+      "last_price": 163.48,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 164.58
+      "cost_price": 163.48
     },
     "BE-2026-12-04-180-113331": {
       "id": "BE-2026-12-04-180-113331",
@@ -314,11 +314,11 @@
       "credit": 1.75,
       "delta": 0.16,
       "opened_at": "2026-10-28",
-      "last_cost": 1.99,
-      "last_price": 226.87,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 2.01,
+      "last_price": 226.17,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0,
-      "cost_price": 226.87
+      "cost_price": 226.17
     },
     "HOOD-2026-12-04-75-141745": {
       "id": "HOOD-2026-12-04-75-141745",
@@ -334,10 +334,10 @@
       "credit": 0.58,
       "delta": 0.138,
       "opened_at": "2026-10-28",
-      "last_cost": 0.52,
-      "cost_price": 91.9,
-      "last_price": 91.9,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 0.49,
+      "cost_price": 91.95,
+      "last_price": 91.95,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0
     },
     "ORCL-2026-12-04-125-150323": {
@@ -354,10 +354,10 @@
       "credit": 0.93,
       "delta": 0.153,
       "opened_at": "2026-10-28",
-      "last_cost": 1.74,
-      "cost_price": 140.715,
-      "last_price": 140.715,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.84,
+      "cost_price": 140.16,
+      "last_price": 140.16,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0
     },
     "FTNT-2026-12-04-120-111952": {
@@ -374,39 +374,39 @@
       "credit": 0.79,
       "delta": 0.17,
       "opened_at": "2026-10-29",
-      "last_cost": 1.18,
-      "cost_price": 136.27,
-      "last_price": 136.27,
-      "last_checked": "2026-10-29T11:30:49-04:00",
+      "last_cost": 1.09,
+      "cost_price": 136.56,
+      "last_price": 136.56,
+      "last_checked": "2026-10-29T11:45:42-04:00",
       "stop_hits": 0
     }
   },
   "pending": {
-    "122a360a-412f-466b-9952-6d5badc9d019": {
+    "89d3add1-7e4c-46cb-9506-422ed9c652ba": {
       "kind": "close",
       "spread_id": "DELL-2026-11-20-380-094831",
       "reason": "target",
-      "price": 1.105,
+      "price": 1.1600000000000001,
       "symbol": "DELL"
     },
-    "43b7c48f-9597-4314-b2b1-a2edb6601a72": {
+    "eafe4578-f2bd-4d12-8920-73111ab4725f": {
       "kind": "open",
       "spread": {
-        "id": "CRDO-2026-12-04-130-113233",
-        "symbol": "CRDO",
-        "sector": "AI",
-        "short": "CRDO261204P00130000",
-        "long": "CRDO261204P00115000",
-        "short_strike": 130.0,
-        "long_strike": 115.0,
-        "width": 15.0,
+        "id": "AVGO-2026-12-04-305-114723",
+        "symbol": "AVGO",
+        "sector": "Chips",
+        "short": "AVGO261204P00305000",
+        "long": "AVGO261204P00285000",
+        "short_strike": 305.0,
+        "long_strike": 285.0,
+        "width": 20.0,
         "expiration": "2026-12-04",
-        "qty": 23,
-        "credit": 2.5,
-        "delta": 0.149,
+        "qty": 17,
+        "credit": 2.28,
+        "delta": 0.154,
         "opened_at": "2026-10-29"
       },
-      "symbol": "CRDO"
+      "symbol": "AVGO"
     }
   },
   "day": "2026-10-29",
@@ -642,737 +642,737 @@
     {
       "symbol": "AAOI",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "AAPL",
       "reason": "earnings 2026-11-02 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ABBV",
       "reason": "earnings 2026-10-30 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ADBE",
       "reason": "good candidate (14% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ADI",
       "reason": "earnings 2026-11-24 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ADSK",
       "reason": "earnings 2026-11-24 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ALAB",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "AMAT",
       "reason": "earnings 2026-11-12 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "AMD",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "AMGN",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "AMR",
       "reason": "earnings 2026-11-06 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "AMZN",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ANET",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ARM",
       "reason": "earnings 2026-11-04 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ASML",
-      "reason": "options too thinly traded (mid credit $4.60, but only $-6.13 selling at the bid / buying at the ask)",
-      "at": "11:30"
-    },
-    {
-      "symbol": "AVGO",
-      "reason": "good candidate (11% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $4.75, but only $-5.65 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "AZN",
       "reason": "earnings 2026-10-30 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "BE",
-      "reason": "good candidate (13% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (14% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "BWET",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CAH",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CAT",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CBRS",
       "reason": "earnings 2026-11-12 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CDNS",
-      "reason": "options too thinly traded (mid credit $2.43, but only $-1.02 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "credit $0.06 under 5% of $20 width",
+      "at": "11:45"
     },
     {
       "symbol": "CEG",
       "reason": "earnings 2026-11-09 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CLS",
-      "reason": "options too thinly traded (mid credit $2.85, but only $1.45 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.63, but only $1.27 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "COHR",
       "reason": "earnings 2026-11-04 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "COIN",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "COST",
-      "reason": "options too thinly traded (mid credit $3.44, but only $-1.40 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.23, but only $-1.70 selling at the bid / buying at the ask)",
+      "at": "11:45"
+    },
+    {
+      "symbol": "CRDO",
+      "reason": "options too thinly traded (mid credit $2.73, but only $1.40 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "CRM",
       "reason": "earnings 2026-12-02 before expiration 2026-12-04",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CRWD",
-      "reason": "options too thinly traded (mid credit $2.70, but only $0.51 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.90, but only $0.73 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "CRWV",
       "reason": "earnings 2026-11-10 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CSCO",
       "reason": "earnings 2026-11-11 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "CVX",
       "reason": "earnings 2026-10-30 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "DAL",
       "reason": "options too thinly traded (mid credit $0.61, but only $-0.09 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "DDOG",
       "reason": "earnings 2026-11-04 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "DE",
       "reason": "earnings 2026-11-25 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "DIA",
-      "reason": "good candidate (6% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (5% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "EFA",
-      "reason": "credit $0.15 under 5% of $10 width",
-      "at": "11:30"
+      "reason": "credit $0.10 under 5% of $10 width",
+      "at": "11:45"
     },
     {
       "symbol": "ETN",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "FTNT",
-      "reason": "options too thinly traded (mid credit $1.10, but only $0.62 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.09, but only $0.62 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "GDX",
       "reason": "no strike with delta 0.12-0.2 on 2026-12-04",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "GE",
       "reason": "good candidate (10% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "GEV",
-      "reason": "options too thinly traded (mid credit $4.09, but only $-1.35 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $4.69, but only $-0.54 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "GILD",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "GLD",
       "reason": "good candidate (7% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "GLW",
-      "reason": "options too thinly traded (mid credit $1.79, but only $0.87 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.73, but only $0.94 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "GOOGL",
       "reason": "good candidate (8% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "GS",
-      "reason": "options too thinly traded (mid credit $4.08, but only $0.92 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $4.04, but only $1.22 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "HCA",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "HD",
       "reason": "earnings 2026-11-17 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "HOOD",
       "reason": "good candidate (13% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "HUBS",
       "reason": "earnings 2026-11-04 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "HUM",
       "reason": "earnings 2026-11-06 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "IBB",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "IBM",
-      "reason": "options too thinly traded (mid credit $1.41, but only $0.65 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.52, but only $0.87 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "IDCC",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "IDXX",
       "reason": "earnings 2026-11-02 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "IGV",
-      "reason": "options too thinly traded (mid credit $1.00, but only $0.30 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.04, but only $0.41 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "INTC",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "INTU",
       "reason": "earnings 2026-11-19 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "IREN",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ISRG",
-      "reason": "options too thinly traded (mid credit $2.97, but only $0.59 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.90, but only $0.60 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "IVV",
-      "reason": "options too thinly traded (mid credit $1.92, but only $-0.62 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.85, but only $-0.69 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "IWM",
       "reason": "good candidate (6% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "JBL",
-      "reason": "options too thinly traded (mid credit $2.08, but only $-0.50 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.08, but only $-0.54 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "JNJ",
-      "reason": "options too thinly traded (mid credit $1.29, but only $0.66 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.34, but only $0.66 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "JPM",
       "reason": "good candidate (8% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "KEYS",
       "reason": "earnings 2026-11-23 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "KLAC",
-      "reason": "options too thinly traded (mid credit $1.66, but only $0.50 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.72, but only $0.50 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "LITE",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "LLY",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "LMT",
-      "reason": "options too thinly traded (mid credit $3.74, but only $-2.22 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "credit $0.33 under 5% of $25 width",
+      "at": "11:45"
     },
     {
       "symbol": "LRCX",
-      "reason": "options too thinly traded (mid credit $2.28, but only $0.91 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.46, but only $1.37 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "LSCC",
       "reason": "earnings 2026-11-02 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MDB",
-      "reason": "options too thinly traded (mid credit $3.58, but only $-4.75 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.40, but only $-4.20 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "META",
       "reason": "good candidate (12% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MPC",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MPWR",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MRK",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MRNA",
       "reason": "earnings 2026-11-06 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MRVL",
       "reason": "earnings 2026-12-01 before expiration 2026-12-04",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MSFT",
       "reason": "good candidate (9% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MSTR",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "MU",
       "reason": "good candidate (14% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "NBIS",
       "reason": "earnings 2026-11-10 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "NET",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "NOW",
-      "reason": "good candidate (8% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (7% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "NTAP",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "NVDA",
       "reason": "earnings 2026-11-18 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "NVS",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "OIH",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "OKTA",
-      "reason": "options too thinly traded (mid credit $3.05, but only $0.70 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.38, but only $0.32 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "ONC",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "ORCL",
-      "reason": "good candidate (12% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (10% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "P",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "PANW",
       "reason": "earnings 2026-11-18 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "PEP",
-      "reason": "credit $0.34 under 5% of $12 width",
-      "at": "11:30"
+      "reason": "credit $0.32 under 5% of $12 width",
+      "at": "11:45"
     },
     {
       "symbol": "PG",
-      "reason": "credit $0.42 under 5% of $12 width",
-      "at": "11:30"
+      "reason": "credit $0.44 under 5% of $13 width",
+      "at": "11:45"
     },
     {
       "symbol": "PLTR",
       "reason": "earnings 2026-11-02 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "PSX",
-      "reason": "options too thinly traded (mid credit $2.75, but only $1.54 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.77, but only $1.41 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "QCOM",
       "reason": "earnings 2026-11-04 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "QQQ",
       "reason": "good candidate (8% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "RDDT",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "RKLB",
       "reason": "earnings 2026-11-09 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "RTX",
-      "reason": "options too thinly traded (mid credit $1.18, but only $0.45 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.19, but only $0.54 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "SAP",
       "reason": "credit $-0.52 under 5% of $15 width",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SHOP",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SHW",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SIMO",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SKHY",
       "reason": "good candidate (16% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SLV",
       "reason": "no strike with delta 0.12-0.2 on 2026-12-04",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SMCI",
       "reason": "earnings 2026-11-03 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SMH",
       "reason": "good candidate (12% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SNDK",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "SNOW",
-      "reason": "options too thinly traded (mid credit $3.19, but only $0.09 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.34, but only $0.19 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "SNPS",
-      "reason": "options too thinly traded (mid credit $3.94, but only $-3.38 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.78, but only $-3.32 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "SOXX",
-      "reason": "options too thinly traded (mid credit $3.14, but only $1.25 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.27, but only $1.30 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "SPY",
-      "reason": "good candidate (6% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (7% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "STX",
-      "reason": "options too thinly traded (mid credit $5.49, but only $0.59 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.66, but only $-1.38 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "TEAM",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "TER",
-      "reason": "options too thinly traded (mid credit $3.93, but only $0.21 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $4.75, but only $2.20 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "TRGP",
       "reason": "earnings 2026-11-05 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "TRV",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "TSLA",
       "reason": "good candidate (9% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "TSM",
       "reason": "good candidate (9% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "TTWO",
       "reason": "earnings 2026-11-09 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "TWLO",
       "reason": "earnings 2026-10-29 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "TXN",
-      "reason": "options too thinly traded (mid credit $3.18, but only $1.58 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.01, but only $1.40 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "UAL",
       "reason": "good candidate (11% of width) but today's limit is reached",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "UNH",
-      "reason": "good candidate (9% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (8% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "V",
-      "reason": "options too thinly traded (mid credit $1.67, but only $0.88 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "good candidate (7% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "VEEV",
       "reason": "earnings 2026-11-19 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "VLO",
-      "reason": "options too thinly traded (mid credit $3.70, but only $1.65 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.69, but only $1.59 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "VOO",
-      "reason": "options too thinly traded (mid credit $1.89, but only $-0.36 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.90, but only $-0.30 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "VRT",
-      "reason": "options too thinly traded (mid credit $2.06, but only $0.96 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $2.01, but only $0.98 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "VRTX",
       "reason": "earnings 2026-11-02 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "VST",
       "reason": "earnings 2026-11-06 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "VTI",
       "reason": "no options listed",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "WDAY",
       "reason": "earnings 2026-11-24 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "WDC",
-      "reason": "options too thinly traded (mid credit $3.54, but only $1.43 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $3.60, but only $1.64 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "WMT",
       "reason": "earnings 2026-11-19 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "XBI",
       "reason": "options too thinly traded (mid credit $1.34, but only $0.79 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "XLK",
-      "reason": "good candidate (8% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (6% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "XLV",
-      "reason": "good candidate (6% of width) but today's limit is reached",
-      "at": "11:30"
+      "reason": "good candidate (5% of width) but today's limit is reached",
+      "at": "11:45"
     },
     {
       "symbol": "XOM",
       "reason": "earnings 2026-10-30 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     },
     {
       "symbol": "XOP",
-      "reason": "options too thinly traded (mid credit $1.60, but only $0.76 selling at the bid / buying at the ask)",
-      "at": "11:30"
+      "reason": "options too thinly traded (mid credit $1.64, but only $0.75 selling at the bid / buying at the ask)",
+      "at": "11:45"
     },
     {
       "symbol": "ZS",
       "reason": "earnings 2026-11-24 before any 30-45 day expiration",
-      "at": "11:30"
+      "at": "11:45"
     }
   ]
 }
