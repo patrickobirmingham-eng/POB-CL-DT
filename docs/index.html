@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generated-at" content="1793281376">
+<meta name="generated-at" content="1793281465">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -359,8 +359,8 @@
     </div>
     <nav class="pagetabs" aria-label="Dashboards"><a class="on" href="index.html">Day Trading</a><a href="spreads.html">Credit Spreads</a></nav>
     <div id="topActions">
-      <div class="updated" id="updatedInfo" title="Last updated 2026-10-29 09:42 AM ET">
-        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Oct 29, </span><span class="upd-time">9:42 AM ET</span></span>
+      <div class="updated" id="updatedInfo" title="Last updated 2026-10-29 09:44 AM ET">
+        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Oct 29, </span><span class="upd-time">9:44 AM ET</span></span>
         <span id="refreshStatus" class="muted"></span>
       </div>
       <button id="refreshBtn" onclick="refreshDashboard()" title="Refresh" aria-label="Refresh">&#8635;<span class="btn-label"> Refresh</span></button>
@@ -398,10 +398,10 @@
 
     <div id="cardPop" role="tooltip"></div>
     <div class="cards">
-      <div class="card primary"><div class="label">Equity</div><div class="value">$1,057,679.73</div></div>
-      <div class="card"><div class="label">Cash</div><div class="value">$872,896.32</div></div>
-      <div class="card"><div class="label">Buying Power</div><div class="value">$4,008,978.81</div></div>
-      <div class="card"><div class="label">Open Positions</div><div class="value">2</div></div>
+      <div class="card primary"><div class="label">Equity</div><div class="value">$1,057,168.46</div></div>
+      <div class="card"><div class="label">Cash</div><div class="value">$772,605.58</div></div>
+      <div class="card"><div class="label">Buying Power</div><div class="value">$3,887,198.37</div></div>
+      <div class="card"><div class="label">Open Positions</div><div class="value">3</div></div>
       <div class="card pos-card has-pop" tabindex=0><div class="label">Realized P&amp;L</div><div class="value pos">$44,530.22</div><div class="card-pop"><table><tr><td><span class="pop-key qqq"></span>QQQ momentum</td><td class="num pos">$37,123.30</td><td class="num pop-pct">83.4%</td></tr><tr><td><span class="pop-key orb"></span>Day trading</td><td class="num pos">$7,406.92</td><td class="num pop-pct">16.6%</td></tr><tr class="pop-total"><td>Total</td><td class="num pos">$44,530.22</td><td class="num pop-pct">100.0%</td></tr></table><div class="pop-note">20 QQQ momentum and 150 day trading closed trades since 2026-09-23</div></div></div>
       <div class="card pos-card has-pop" tabindex=0><div class="label">Avg. Daily Profit</div><div class="value pos">$1,781.21</div><div class="card-pop"><table><tr><td><span class="pop-key qqq"></span>QQQ momentum</td><td class="num pos">$1,484.93</td><td class="num pop-pct">83.4%</td></tr><tr><td><span class="pop-key orb"></span>Day trading</td><td class="num pos">$296.28</td><td class="num pop-pct">16.6%</td></tr><tr class="pop-total"><td>Total</td><td class="num pos">$1,781.21</td><td class="num pop-pct">100.0%</td></tr></table><div class="pop-note">Each strategy's realized P&amp;L divided by the 25 trading days with closed trades since 2026-09-23</div></div></div>
       <div class="card pos-card has-pop" tabindex=0><div class="label">Est. Annual Realized P&amp;L</div><div class="value pos">$448,864.65</div><div class="card-pop"><table><tr><td><span class="pop-key qqq"></span>QQQ momentum</td><td class="num pos">$374,202.87</td><td class="num pop-pct">83.4%</td></tr><tr><td><span class="pop-key orb"></span>Day trading</td><td class="num pos">$74,661.78</td><td class="num pop-pct">16.6%</td></tr><tr class="pop-total"><td>Total</td><td class="num pos">$448,864.65</td><td class="num pop-pct">100.0%</td></tr></table><div class="pop-note">Avg. Daily Profit x 252 trading days a year</div></div></div>
@@ -414,15 +414,15 @@
     <div class="panel" id="momentumPanel">
       <div class="panel-head">
         <h2>QQQ Momentum Strategy — Concretum Bands</h2>
-        <span class="muted ai-summary" id="momAsOf">Today &middot; as of 9:42 am ET</span>
+        <span class="muted ai-summary" id="momAsOf">Today &middot; as of 9:43 am ET</span>
       </div>
       <div class="mom-status">
-        <div id="momQuote"><span class="label">QQQ</span> <strong>$714.65</strong> &middot; band $714.66 – $727.43 &middot; VWAP $713.60</div>
-        <div id="momZone"><span class="mom-badge neg">Below the band</span> breakout down (short signal at the next check)</div>
+        <div id="momQuote"><span class="label">QQQ</span> <strong>$714.82</strong> &middot; band $714.74 – $727.35 &middot; VWAP $713.67</div>
+        <div id="momZone"><span class="mom-badge">Inside the band</span> normal noise — no signal</div>
         <div><span class="label">Bot</span> <span id="momPos"><span class="mom-badge">FLAT</span> no position</span></div>
         <div class="muted">Size today: 1,078 shares (~$772,473.24) &middot; QQQ daily volatility 1.37%</div>
       </div>
-      <div class="table-scroll"><div class="chart-wrap mom-wrap" data-hover="{&quot;geo&quot;:[900,300,64,16,14,30,709.5827287942151,732.5488972248086],&quot;t&quot;:[&quot;09:30&quot;,&quot;09:31&quot;,&quot;09:32&quot;,&quot;09:33&quot;,&quot;09:34&quot;,&quot;09:35&quot;,&quot;09:36&quot;,&quot;09:37&quot;,&quot;09:38&quot;,&quot;09:39&quot;,&quot;09:40&quot;,&quot;09:41&quot;,&quot;09:42&quot;,&quot;09:43&quot;,&quot;09:44&quot;,&quot;09:45&quot;,&quot;09:46&quot;,&quot;09:47&quot;,&quot;09:48&quot;,&quot;09:49&quot;,&quot;09:50&quot;,&quot;09:51&quot;,&quot;09:52&quot;,&quot;09:53&quot;,&quot;09:54&quot;,&quot;09:55&quot;,&quot;09:56&quot;,&quot;09:57&quot;,&quot;09:58&quot;,&quot;09:59&quot;,&quot;10:00&quot;,&quot;10:01&quot;,&quot;10:02&quot;,&quot;10:03&quot;,&quot;10:04&quot;,&quot;10:05&quot;,&quot;10:06&quot;,&quot;10:07&quot;,&quot;10:08&quot;,&quot;10:09&quot;,&quot;10:10&quot;,&quot;10:11&quot;,&quot;10:12&quot;,&quot;10:13&quot;,&quot;10:14&quot;,&quot;10:15&quot;,&quot;10:16&quot;,&quot;10:17&quot;,&quot;10:18&quot;,&quot;10:19&quot;,&quot;10:20&quot;,&quot;10:21&quot;,&quot;10:22&quot;,&quot;10:23&quot;,&quot;10:24&quot;,&quot;10:25&quot;,&quot;10:26&quot;,&quot;10:27&quot;,&quot;10:28&quot;,&quot;10:29&quot;,&quot;10:30&quot;,&quot;10:31&quot;,&quot;10:32&quot;,&quot;10:33&quot;,&quot;10:34&quot;,&quot;10:35&quot;,&quot;10:36&quot;,&quot;10:37&quot;,&quot;10:38&quot;,&quot;10:39&quot;,&quot;10:40&quot;,&quot;10:41&quot;,&quot;10:42&quot;,&quot;10:43&quot;,&quot;10:44&quot;,&quot;10:45&quot;,&quot;10:46&quot;,&quot;10:47&quot;,&quot;10:48&quot;,&quot;10:49&quot;,&quot;10:50&quot;,&quot;10:51&quot;,&quot;10:52&quot;,&quot;10:53&quot;,&quot;10:54&quot;,&quot;10:55&quot;,&quot;10:56&quot;,&quot;10:57&quot;,&quot;10:58&quot;,&quot;10:59&quot;,&quot;11:00&quot;,&quot;11:01&quot;,&quot;11:02&quot;,&quot;11:03&quot;,&quot;11:04&quot;,&quot;11:05&quot;,&quot;11:06&quot;,&quot;11:07&quot;,&quot;11:08&quot;,&quot;11:09&quot;,&quot;11:10&quot;,&quot;11:11&quot;,&quot;11:12&quot;,&quot;11:13&quot;,&quot;11:14&quot;,&quot;11:15&quot;,&quot;11:16&quot;,&quot;11:17&quot;,&quot;11:18&quot;,&quot;11:19&quot;,&quot;11:20&quot;,&quot;11:21&quot;,&quot;11:22&quot;,&quot;11:23&quot;,&quot;11:24&quot;,&quot;11:25&quot;,&quot;11:26&quot;,&quot;11:27&quot;,&quot;11:28&quot;,&quot;11:29&quot;,&quot;11:30&quot;,&quot;11:31&quot;,&quot;11:32&quot;,&quot;11:33&quot;,&quot;11:34&quot;,&quot;11:35&quot;,&quot;11:36&quot;,&quot;11:37&quot;,&quot;11:38&quot;,&quot;11:39&quot;,&quot;11:40&quot;,&quot;11:41&quot;,&quot;11:42&quot;,&quot;11:43&quot;,&quot;11:44&quot;,&quot;11:45&quot;,&quot;11:46&quot;,&quot;11:47&quot;,&quot;11:48&quot;,&quot;11:49&quot;,&quot;11:50&quot;,&quot;11:51&quot;,&quot;11:52&quot;,&quot;11:53&quot;,&quot;11:54&quot;,&quot;11:55&quot;,&quot;11:56&quot;,&quot;11:57&quot;,&quot;11:58&quot;,&quot;11:59&quot;,&quot;12:00&quot;,&quot;12:01&quot;,&quot;12:02&quot;,&quot;12:03&quot;,&quot;12:04&quot;,&quot;12:05&quot;,&quot;12:06&quot;,&quot;12:07&quot;,&quot;12:08&quot;,&quot;12:09&quot;,&quot;12:10&quot;,&quot;12:11&quot;,&quot;12:12&quot;,&quot;12:13&quot;,&quot;12:14&quot;,&quot;12:15&quot;,&quot;12:16&quot;,&quot;12:17&quot;,&quot;12:18&quot;,&quot;12:19&quot;,&quot;12:20&quot;,&quot;12:21&quot;,&quot;12:22&quot;,&quot;12:23&quot;,&quot;12:24&quot;,&quot;12:25&quot;,&quot;12:26&quot;,&quot;12:27&quot;,&quot;12:28&quot;,&quot;12:29&quot;,&quot;12:30&quot;,&quot;12:31&quot;,&quot;12:32&quot;,&quot;12:33&quot;,&quot;12:34&quot;,&quot;12:35&quot;,&quot;12:36&quot;,&quot;12:37&quot;,&quot;12:38&quot;,&quot;12:39&quot;,&quot;12:40&quot;,&quot;12:41&quot;,&quot;12:42&quot;,&quot;12:43&quot;,&quot;12:44&quot;,&quot;12:45&quot;,&quot;12:46&quot;,&quot;12:47&quot;,&quot;12:48&quot;,&quot;12:49&quot;,&quot;12:50&quot;,&quot;12:51&quot;,&quot;12:52&quot;,&quot;12:53&quot;,&quot;12:54&quot;,&quot;12:55&quot;,&quot;12:56&quot;,&quot;12:57&quot;,&quot;12:58&quot;,&quot;12:59&quot;,&quot;13:00&quot;,&quot;13:01&quot;,&quot;13:02&quot;,&quot;13:03&quot;,&quot;13:04&quot;,&quot;13:05&quot;,&quot;13:06&quot;,&quot;13:07&quot;,&quot;13:08&quot;,&quot;13:09&quot;,&quot;13:10&quot;,&quot;13:11&quot;,&quot;13:12&quot;,&quot;13:13&quot;,&quot;13:14&quot;,&quot;13:15&quot;,&quot;13:16&quot;,&quot;13:17&quot;,&quot;13:18&quot;,&quot;13:19&quot;,&quot;13:20&quot;,&quot;13:21&quot;,&quot;13:22&quot;,&quot;13:23&quot;,&quot;13:24&quot;,&quot;13:25&quot;,&quot;13:26&quot;,&quot;13:27&quot;,&quot;13:28&quot;,&quot;13:29&quot;,&quot;13:30&quot;,&quot;13:31&quot;,&quot;13:32&quot;,&quot;13:33&quot;,&quot;13:34&quot;,&quot;13:35&quot;,&quot;13:36&quot;,&quot;13:37&quot;,&quot;13:38&quot;,&quot;13:39&quot;,&quot;13:40&quot;,&quot;13:41&quot;,&quot;13:42&quot;,&quot;13:43&quot;,&quot;13:44&quot;,&quot;13:45&quot;,&quot;13:46&quot;,&quot;13:47&quot;,&quot;13:48&quot;,&quot;13:49&quot;,&quot;13:50&quot;,&quot;13:51&quot;,&quot;13:52&quot;,&quot;13:53&quot;,&quot;13:54&quot;,&quot;13:55&quot;,&quot;13:56&quot;,&quot;13:57&quot;,&quot;13:58&quot;,&quot;13:59&quot;,&quot;14:00&quot;,&quot;14:01&quot;,&quot;14:02&quot;,&quot;14:03&quot;,&quot;14:04&quot;,&quot;14:05&quot;,&quot;14:06&quot;,&quot;14:07&quot;,&quot;14:08&quot;,&quot;14:09&quot;,&quot;14:10&quot;,&quot;14:11&quot;,&quot;14:12&quot;,&quot;14:13&quot;,&quot;14:14&quot;,&quot;14:15&quot;,&quot;14:16&quot;,&quot;14:17&quot;,&quot;14:18&quot;,&quot;14:19&quot;,&quot;14:20&quot;,&quot;14:21&quot;,&quot;14:22&quot;,&quot;14:23&quot;,&quot;14:24&quot;,&quot;14:25&quot;,&quot;14:26&quot;,&quot;14:27&quot;,&quot;14:28&quot;,&quot;14:29&quot;,&quot;14:30&quot;,&quot;14:31&quot;,&quot;14:32&quot;,&quot;14:33&quot;,&quot;14:34&quot;,&quot;14:35&quot;,&quot;14:36&quot;,&quot;14:37&quot;,&quot;14:38&quot;,&quot;14:39&quot;,&quot;14:40&quot;,&quot;14:41&quot;,&quot;14:42&quot;,&quot;14:43&quot;,&quot;14:44&quot;,&quot;14:45&quot;,&quot;14:46&quot;,&quot;14:47&quot;,&quot;14:48&quot;,&quot;14:49&quot;,&quot;14:50&quot;,&quot;14:51&quot;,&quot;14:52&quot;,&quot;14:53&quot;,&quot;14:54&quot;,&quot;14:55&quot;,&quot;14:56&quot;,&quot;14:57&quot;,&quot;14:58&quot;,&quot;14:59&quot;,&quot;15:00&quot;,&quot;15:01&quot;,&quot;15:02&quot;,&quot;15:03&quot;,&quot;15:04&quot;,&quot;15:05&quot;,&quot;15:06&quot;,&quot;15:07&quot;,&quot;15:08&quot;,&quot;15:09&quot;,&quot;15:10&quot;,&quot;15:11&quot;,&quot;15:12&quot;,&quot;15:13&quot;,&quot;15:14&quot;,&quot;15:15&quot;,&quot;15:16&quot;,&quot;15:17&quot;,&quot;15:18&quot;,&quot;15:19&quot;,&quot;15:20&quot;,&quot;15:21&quot;,&quot;15:22&quot;,&quot;15:23&quot;,&quot;15:24&quot;,&quot;15:25&quot;,&quot;15:26&quot;,&quot;15:27&quot;,&quot;15:28&quot;,&quot;15:29&quot;,&quot;15:30&quot;,&quot;15:31&quot;,&quot;15:32&quot;,&quot;15:33&quot;,&quot;15:34&quot;,&quot;15:35&quot;,&quot;15:36&quot;,&quot;15:37&quot;,&quot;15:38&quot;,&quot;15:39&quot;,&quot;15:40&quot;,&quot;15:41&quot;,&quot;15:42&quot;,&quot;15:43&quot;,&quot;15:44&quot;,&quot;15:45&quot;,&quot;15:46&quot;,&quot;15:47&quot;,&quot;15:48&quot;,&quot;15:49&quot;,&quot;15:50&quot;,&quot;15:51&quot;,&quot;15:52&quot;,&quot;15:53&quot;,&quot;15:54&quot;,&quot;15:55&quot;,&quot;15:56&quot;,&quot;15:57&quot;,&quot;15:58&quot;,&quot;15:59&quot;],&quot;p&quot;:[715.42,715.14,713.87,713.18,712.33,712.9,712.56,713.03,712.23,712.5,712.76,713.8,714.65,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],&quot;u&quot;:[725.84,726.19,726.16,726.26,726.19,726.31,726.34,726.63,726.83,726.88,727.05,727.24,727.43,727.35,727.3,727.21,727.15,727.37,727.45,727.22,727.23,727.4,727.33,727.43,727.37,727.36,727.18,727.4,727.34,727.38,727.37,727.43,727.51,727.5,727.33,727.42,727.46,727.7,727.64,727.73,727.97,728.03,727.83,727.68,727.81,727.8,727.82,727.84,727.81,727.89,727.97,728.12,728.09,728.09,728.03,728.04,728.05,728.08,728.24,728.27,728.22,728.28,728.18,728.18,728.09,728.18,728.22,728.23,728.36,728.59,728.71,728.83,728.74,728.63,728.75,728.75,728.85,728.95,728.92,728.97,728.95,729.11,729.19,729.2,729.2,729.37,729.32,729.32,729.34,729.25,729.37,729.42,729.41,729.39,729.51,729.66,729.75,729.78,729.84,729.79,729.78,729.89,729.69,729.75,729.81,729.87,729.81,729.68,729.74,729.72,729.72,729.69,729.8,729.72,729.78,729.85,729.78,729.9,729.87,729.97,729.8,729.82,729.82,729.77,729.84,729.85,729.91,729.97,729.91,729.81,730.0,730.0,729.91,729.89,729.97,729.87,729.86,729.95,729.91,730.02,729.91,729.98,729.86,729.93,729.99,729.91,729.98,730.03,730.07,730.13,730.17,730.19,730.16,730.13,730.02,730.04,730.11,729.99,730.04,729.99,730.03,730.01,730.03,730.03,729.91,729.91,729.95,729.85,729.88,729.84,729.81,729.82,729.86,729.87,729.91,729.84,729.79,729.8,729.86,729.87,729.92,730.05,729.98,730.09,730.14,730.22,730.24,730.1,730.09,730.19,730.1,730.16,730.15,730.1,730.16,730.15,730.13,730.1,730.13,730.14,730.24,730.14,730.1,729.96,729.91,730.05,730.01,730.01,729.98,729.94,729.98,730.01,730.0,730.07,730.24,730.31,730.35,730.35,730.35,730.36,730.3,730.36,730.4,730.4,730.44,730.53,730.56,730.6,730.58,730.61,730.64,730.62,730.62,730.59,730.52,730.57,730.58,730.58,730.53,730.53,730.48,730.52,730.49,730.48,730.38,730.49,730.55,730.55,730.53,730.56,730.6,730.54,730.58,730.51,730.54,730.6,730.61,730.59,730.66,730.64,730.67,730.74,730.68,730.71,730.71,730.83,730.76,730.86,730.86,730.85,730.9,730.99,730.86,730.82,730.88,730.94,731.0,730.9,730.89,730.93,730.92,730.85,730.76,730.7,730.77,730.83,730.82,730.82,730.82,730.78,730.78,730.77,730.76,730.74,730.72,730.76,730.83,730.83,730.83,730.81,730.91,730.96,730.94,730.8,730.84,730.81,730.86,730.76,730.74,730.68,730.72,730.75,730.76,730.79,730.61,730.66,730.63,730.66,730.67,730.58,730.61,730.63,730.75,730.76,730.74,730.88,730.79,730.79,730.77,730.73,730.81,730.75,730.75,730.84,730.84,730.89,731.09,731.03,730.98,731.02,731.05,731.02,731.03,730.94,730.87,730.97,731.06,731.14,731.09,730.96,730.86,730.86,730.93,730.83,730.93,730.95,730.95,730.91,730.81,730.74,730.82,730.91,730.95,731.01,730.97,731.06,731.09,731.23,731.14,731.2,731.13,731.17,731.14,731.14,731.19,731.27,731.32,731.24,731.16,731.18,730.88,730.83,730.81,730.87,730.76,730.64,730.7,730.78,730.78,730.76],&quot;l&quot;:[716.23,715.88,715.91,715.81,715.87,715.76,715.73,715.44,715.25,715.2,715.03,714.84,714.66,714.74,714.79,714.87,714.93,714.71,714.64,714.86,714.85,714.68,714.75,714.65,714.71,714.73,714.9,714.69,714.74,714.71,714.71,714.66,714.57,714.58,714.75,714.67,714.63,714.38,714.45,714.36,714.12,714.06,714.26,714.41,714.28,714.29,714.27,714.25,714.28,714.2,714.12,713.97,714.0,714.0,714.06,714.05,714.04,714.01,713.85,713.83,713.88,713.82,713.91,713.91,714.0,713.91,713.87,713.87,713.74,713.51,713.39,713.28,713.36,713.47,713.35,713.35,713.25,713.16,713.18,713.13,713.15,712.99,712.91,712.91,712.91,712.74,712.78,712.79,712.77,712.85,712.74,712.68,712.7,712.72,712.6,712.45,712.36,712.33,712.28,712.32,712.33,712.23,712.42,712.36,712.3,712.25,712.31,712.43,712.38,712.39,712.39,712.43,712.31,712.39,712.34,712.27,712.34,712.21,712.24,712.15,712.31,712.29,712.29,712.34,712.28,712.27,712.2,712.15,712.21,712.3,712.11,712.11,712.21,712.22,712.15,712.24,712.25,712.17,712.2,712.09,712.21,712.14,712.25,712.18,712.12,712.21,712.14,712.09,712.05,711.99,711.95,711.92,711.96,711.99,712.09,712.08,712.01,712.12,712.07,712.13,712.08,712.11,712.09,712.09,712.21,712.2,712.16,712.27,712.23,712.28,712.3,712.29,712.25,712.24,712.2,712.28,712.32,712.31,712.26,712.24,712.19,712.06,712.13,712.03,711.98,711.89,711.88,712.02,712.02,711.93,712.02,711.96,711.97,712.01,711.96,711.96,711.99,712.01,711.99,711.98,711.88,711.98,712.02,712.15,712.21,712.06,712.1,712.11,712.13,712.18,712.13,712.11,712.12,712.05,711.88,711.81,711.77,711.77,711.77,711.76,711.82,711.76,711.72,711.72,711.68,711.59,711.56,711.53,711.55,711.51,711.49,711.5,711.5,711.53,711.6,711.55,711.54,711.55,711.59,711.59,711.64,711.6,711.63,711.64,711.74,711.63,711.58,711.58,711.59,711.57,711.53,711.58,711.54,711.61,711.58,711.52,711.51,711.54,711.46,711.48,711.45,711.38,711.44,711.41,711.42,711.3,711.36,711.26,711.26,711.28,711.22,711.13,711.26,711.3,711.24,711.19,711.13,711.22,711.24,711.2,711.21,711.27,711.37,711.42,711.35,711.3,711.3,711.3,711.31,711.35,711.34,711.35,711.36,711.39,711.4,711.37,711.3,711.29,711.3,711.31,711.21,711.17,711.18,711.32,711.29,711.31,711.27,711.36,711.38,711.44,711.41,711.38,711.37,711.34,711.51,711.47,711.49,711.47,711.46,711.54,711.51,711.49,711.37,711.36,711.38,711.25,711.34,711.33,711.35,711.4,711.32,711.37,711.37,711.28,711.28,711.23,711.03,711.1,711.15,711.11,711.08,711.11,711.1,711.19,711.26,711.16,711.07,710.99,711.03,711.17,711.27,711.27,711.19,711.29,711.2,711.17,711.18,711.22,711.32,711.38,711.3,711.21,711.18,711.11,711.16,711.06,711.04,710.9,710.99,710.93,711.0,710.96,710.99,710.99,710.94,710.86,710.81,710.89,710.97,710.95,711.24,711.3,711.32,711.26,711.36,711.48,711.42,711.35,711.34,711.36],&quot;v&quot;:[715.84,715.71,715.23,714.53,714.19,713.92,713.78,713.73,713.53,713.49,713.45,713.45,713.6,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],&quot;f&quot;:[],&quot;date&quot;:&quot;2026-10-29&quot;,&quot;sym&quot;:&quot;QQQ&quot;,&quot;c&quot;:[[29,&quot;10:00&quot;],[59,&quot;10:30&quot;],[89,&quot;11:00&quot;],[119,&quot;11:30&quot;],[149,&quot;12:00&quot;],[179,&quot;12:30&quot;],[209,&quot;13:00&quot;],[239,&quot;13:30&quot;],[269,&quot;14:00&quot;],[299,&quot;14:30&quot;],[329,&quot;15:00&quot;],[359,&quot;15:30&quot;]]}"><svg viewBox="0 0 900 300" class="mom-chart" role="img" aria-label="QQQ price with Concretum Bands"><line class="pl-grid" x1="64" y1="270.0" x2="884" y2="270.0"/><text class="pl-axis" x="56" y="273.0" text-anchor="end">709.58</text><line class="pl-grid" x1="64" y1="206.0" x2="884" y2="206.0"/><text class="pl-axis" x="56" y="209.0" text-anchor="end">715.32</text><line class="pl-grid" x1="64" y1="142.0" x2="884" y2="142.0"/><text class="pl-axis" x="56" y="145.0" text-anchor="end">721.07</text><line class="pl-grid" x1="64" y1="78.0" x2="884" y2="78.0"/><text class="pl-axis" x="56" y="81.0" text-anchor="end">726.81</text><line class="pl-grid" x1="64" y1="14.0" x2="884" y2="14.0"/><text class="pl-axis" x="56" y="17.0" text-anchor="end">732.55</text><line class="mom-check" x1="125.1" y1="14" x2="125.1" y2="270"/><text class="pl-axis" x="125.1" y="286" text-anchor="middle">10am</text><line class="mom-check" x1="188.4" y1="14" x2="188.4" y2="270"/><line class="mom-check" x1="251.6" y1="14" x2="251.6" y2="270"/><text class="pl-axis" x="251.6" y="286" text-anchor="middle">11am</text><line class="mom-check" x1="314.8" y1="14" x2="314.8" y2="270"/><line class="mom-check" x1="378.1" y1="14" x2="378.1" y2="270"/><text class="pl-axis" x="378.1" y="286" text-anchor="middle">12pm</text><line class="mom-check" x1="441.3" y1="14" x2="441.3" y2="270"/><line class="mom-check" x1="504.6" y1="14" x2="504.6" y2="270"/><text class="pl-axis" x="504.6" y="286" text-anchor="middle">1pm</text><line class="mom-check" x1="567.8" y1="14" x2="567.8" y2="270"/><line class="mom-check" x1="631.0" y1="14" x2="631.0" y2="270"/><text class="pl-axis" x="631.0" y="286" text-anchor="middle">2pm</text><line class="mom-check" x1="694.3" y1="14" x2="694.3" y2="270"/><line class="mom-check" x1="757.5" y1="14" x2="757.5" y2="270"/><text class="pl-axis" x="757.5" y="286" text-anchor="middle">3pm</text><line class="mom-check" x1="820.8" y1="14" x2="820.8" y2="270"/><rect class="mom-hit" x="64" y="14" width="820" height="256"/><path class="mom-band" d="M64.0,88.8 L66.1,84.8 L68.2,85.2 L70.3,84.2 L72.4,84.8 L74.5,83.6 L76.6,83.2 L78.8,79.9 L80.9,77.8 L83.0,77.2 L85.1,75.3 L87.2,73.2 L89.3,71.1 L91.4,72.0 L93.5,72.6 L95.6,73.5 L97.7,74.2 L99.8,71.7 L101.9,70.9 L104.1,73.4 L106.2,73.3 L108.3,71.4 L110.4,72.2 L112.5,71.0 L114.6,71.7 L116.7,71.9 L118.8,73.9 L120.9,71.4 L123.0,72.1 L125.1,71.7 L127.2,71.7 L129.3,71.1 L131.5,70.1 L133.6,70.3 L135.7,72.1 L137.8,71.2 L139.9,70.7 L142.0,68.0 L144.1,68.7 L146.2,67.8 L148.3,65.0 L150.4,64.4 L152.5,66.6 L154.6,68.3 L156.8,66.9 L158.9,66.9 L161.0,66.7 L163.1,66.5 L165.2,66.9 L167.3,65.9 L169.4,65.0 L171.5,63.3 L173.6,63.7 L175.7,63.7 L177.8,64.4 L179.9,64.3 L182.0,64.1 L184.2,63.8 L186.3,62.0 L188.4,61.7 L190.5,62.3 L192.6,61.6 L194.7,62.7 L196.8,62.7 L198.9,63.7 L201.0,62.7 L203.1,62.2 L205.2,62.2 L207.3,60.7 L209.4,58.1 L211.6,56.8 L213.7,55.5 L215.8,56.4 L217.9,57.7 L220.0,56.4 L222.1,56.3 L224.2,55.2 L226.3,54.2 L228.4,54.4 L230.5,53.9 L232.6,54.1 L234.7,52.3 L236.9,51.4 L239.0,51.4 L241.1,51.3 L243.2,49.5 L245.3,49.9 L247.4,50.0 L249.5,49.8 L251.6,50.7 L253.7,49.4 L255.8,48.8 L257.9,49.0 L260.0,49.3 L262.1,47.9 L264.3,46.2 L266.4,45.2 L268.5,44.9 L270.6,44.2 L272.7,44.7 L274.8,44.9 L276.9,43.7 L279.0,45.9 L281.1,45.2 L283.2,44.5 L285.3,43.9 L287.4,44.6 L289.6,46.0 L291.7,45.3 L293.8,45.6 L295.9,45.5 L298.0,45.9 L300.1,44.6 L302.2,45.5 L304.3,44.9 L306.4,44.1 L308.5,44.9 L310.6,43.5 L312.7,43.8 L314.8,42.8 L317.0,44.6 L319.1,44.4 L321.2,44.4 L323.3,44.9 L325.4,44.2 L327.5,44.1 L329.6,43.4 L331.7,42.8 L333.8,43.5 L335.9,44.5 L338.0,42.4 L340.1,42.4 L342.3,43.4 L344.4,43.6 L346.5,42.8 L348.6,43.8 L350.7,44.0 L352.8,43.0 L354.9,43.4 L357.0,42.2 L359.1,43.4 L361.2,42.6 L363.3,43.9 L365.4,43.1 L367.5,42.5 L369.7,43.5 L371.8,42.7 L373.9,42.1 L376.0,41.6 L378.1,41.0 L380.2,40.6 L382.3,40.3 L384.4,40.6 L386.5,41.0 L388.6,42.2 L390.7,42.0 L392.8,41.2 L395.0,42.5 L397.1,41.9 L399.2,42.5 L401.3,42.0 L403.4,42.3 L405.5,42.1 L407.6,42.1 L409.7,43.5 L411.8,43.4 L413.9,42.9 L416.0,44.1 L418.1,43.7 L420.2,44.2 L422.4,44.5 L424.5,44.4 L426.6,44.0 L428.7,43.8 L430.8,43.4 L432.9,44.2 L435.0,44.7 L437.1,44.6 L439.2,44.0 L441.3,43.8 L443.4,43.3 L445.5,41.8 L447.7,42.6 L449.8,41.4 L451.9,40.8 L454.0,39.9 L456.1,39.7 L458.2,41.3 L460.3,41.4 L462.4,40.3 L464.5,41.3 L466.6,40.6 L468.7,40.8 L470.8,41.2 L472.9,40.6 L475.1,40.7 L477.2,41.0 L479.3,41.3 L481.4,41.0 L483.5,40.9 L485.6,39.7 L487.7,40.9 L489.8,41.3 L491.9,42.9 L494.0,43.4 L496.1,41.8 L498.2,42.3 L500.3,42.3 L502.5,42.6 L504.6,43.1 L506.7,42.6 L508.8,42.3 L510.9,42.5 L513.0,41.6 L515.1,39.7 L517.2,38.9 L519.3,38.5 L521.4,38.5 L523.5,38.5 L525.6,38.4 L527.8,39.0 L529.9,38.4 L532.0,37.9 L534.1,38.0 L536.2,37.5 L538.3,36.5 L540.4,36.1 L542.5,35.8 L544.6,36.0 L546.7,35.6 L548.8,35.3 L550.9,35.5 L553.0,35.5 L555.2,35.9 L557.3,36.6 L559.4,36.0 L561.5,35.9 L563.6,36.0 L565.7,36.5 L567.8,36.5 L569.9,37.0 L572.0,36.6 L574.1,37.0 L576.2,37.1 L578.3,38.2 L580.5,36.9 L582.6,36.3 L584.7,36.3 L586.8,36.5 L588.9,36.2 L591.0,35.8 L593.1,36.4 L595.2,35.9 L597.3,36.7 L599.4,36.4 L601.5,35.7 L603.6,35.6 L605.7,35.9 L607.9,35.1 L610.0,35.2 L612.1,34.9 L614.2,34.2 L616.3,34.8 L618.4,34.5 L620.5,34.5 L622.6,33.2 L624.7,33.9 L626.8,32.8 L628.9,32.8 L631.0,33.0 L633.2,32.3 L635.3,31.3 L637.4,32.8 L639.5,33.2 L641.6,32.6 L643.7,32.0 L645.8,31.3 L647.9,32.3 L650.0,32.5 L652.1,32.0 L654.2,32.2 L656.3,32.9 L658.4,34.0 L660.6,34.6 L662.7,33.8 L664.8,33.2 L666.9,33.2 L669.0,33.3 L671.1,33.3 L673.2,33.7 L675.3,33.7 L677.4,33.8 L679.5,33.9 L681.6,34.2 L683.7,34.4 L685.9,34.0 L688.0,33.2 L690.1,33.1 L692.2,33.2 L694.3,33.4 L696.4,32.2 L698.5,31.7 L700.6,31.9 L702.7,33.5 L704.8,33.1 L706.9,33.4 L709.0,32.9 L711.1,33.9 L713.3,34.1 L715.4,34.8 L717.5,34.4 L719.6,34.1 L721.7,34.0 L723.8,33.6 L725.9,35.6 L728.0,35.1 L730.1,35.4 L732.2,35.1 L734.3,35.0 L736.4,35.9 L738.6,35.6 L740.7,35.3 L742.8,34.0 L744.9,33.9 L747.0,34.1 L749.1,32.6 L751.2,33.6 L753.3,33.6 L755.4,33.8 L757.5,34.3 L759.6,33.4 L761.7,34.0 L763.8,34.0 L766.0,33.0 L768.1,33.0 L770.2,32.5 L772.3,30.2 L774.4,30.9 L776.5,31.5 L778.6,31.0 L780.7,30.8 L782.8,31.1 L784.9,30.9 L787.0,32.0 L789.1,32.7 L791.2,31.6 L793.4,30.6 L795.5,29.7 L797.6,30.2 L799.7,31.7 L801.8,32.8 L803.9,32.9 L806.0,32.0 L808.1,33.1 L810.2,32.0 L812.3,31.8 L814.4,31.8 L816.5,32.3 L818.7,33.4 L820.8,34.1 L822.9,33.3 L825.0,32.2 L827.1,31.8 L829.2,31.1 L831.3,31.6 L833.4,30.5 L835.5,30.3 L837.6,28.7 L839.7,29.7 L841.8,29.0 L843.9,29.8 L846.1,29.4 L848.2,29.7 L850.3,29.7 L852.4,29.1 L854.5,28.3 L856.6,27.7 L858.7,28.5 L860.8,29.5 L862.9,29.3 L865.0,32.6 L867.1,33.2 L869.2,33.4 L871.4,32.7 L873.5,33.9 L875.6,35.3 L877.7,34.6 L879.8,33.8 L881.9,33.7 L884.0,33.9 L884.0,250.2 L881.9,250.4 L879.8,250.3 L877.7,249.5 L875.6,248.8 L873.5,250.2 L871.4,251.3 L869.2,250.7 L867.1,250.9 L865.0,251.5 L862.9,254.7 L860.8,254.5 L858.7,255.5 L856.6,256.3 L854.5,255.7 L852.4,254.9 L850.3,254.3 L848.2,254.3 L846.1,254.6 L843.9,254.2 L841.8,255.0 L839.7,254.3 L837.6,255.3 L835.5,253.7 L833.4,253.5 L831.3,252.4 L829.2,252.9 L827.1,252.2 L825.0,251.8 L822.9,250.8 L820.8,250.0 L818.7,250.6 L816.5,251.7 L814.4,252.2 L812.3,252.3 L810.2,252.0 L808.1,250.9 L806.0,252.1 L803.9,251.2 L801.8,251.2 L799.7,252.3 L797.6,253.8 L795.5,254.4 L793.4,253.5 L791.2,252.4 L789.1,251.3 L787.0,252.1 L784.9,253.1 L782.8,253.0 L780.7,253.3 L778.6,253.0 L776.5,252.5 L774.4,253.1 L772.3,253.8 L770.2,251.6 L768.1,251.0 L766.0,251.0 L763.8,250.0 L761.7,250.0 L759.6,250.6 L757.5,249.8 L755.4,250.3 L753.3,250.5 L751.2,250.4 L749.1,251.4 L747.0,249.9 L744.9,250.1 L742.8,250.1 L740.7,248.8 L738.6,248.5 L736.4,248.2 L734.3,249.1 L732.2,249.0 L730.1,248.7 L728.0,249.0 L725.9,248.5 L723.8,250.5 L721.7,250.1 L719.6,250.0 L717.5,249.7 L715.4,249.3 L713.3,250.0 L711.1,250.2 L709.0,251.2 L706.9,250.7 L704.8,251.0 L702.7,250.6 L700.6,252.2 L698.5,252.4 L696.4,251.8 L694.3,250.7 L692.2,250.9 L690.1,250.9 L688.0,250.9 L685.9,250.1 L683.7,249.7 L681.6,249.9 L679.5,250.2 L677.4,250.3 L675.3,250.4 L673.2,250.3 L671.1,250.8 L669.0,250.8 L666.9,250.8 L664.8,250.9 L662.7,250.3 L660.6,249.5 L658.4,250.1 L656.3,251.2 L654.2,251.9 L652.1,252.0 L650.0,251.6 L647.9,251.7 L645.8,252.8 L643.7,252.1 L641.6,251.5 L639.5,250.8 L637.4,251.2 L635.3,252.7 L633.2,251.7 L631.0,251.1 L628.9,251.3 L626.8,251.3 L624.7,250.2 L622.6,250.9 L620.5,249.6 L618.4,249.6 L616.3,249.3 L614.2,249.9 L612.1,249.2 L610.0,248.9 L607.9,249.0 L605.7,248.2 L603.6,248.5 L601.5,248.4 L599.4,247.7 L597.3,247.4 L595.2,248.2 L593.1,247.7 L591.0,248.3 L588.9,247.9 L586.8,247.7 L584.7,247.8 L582.6,247.8 L580.5,247.2 L578.3,245.9 L576.2,247.0 L574.1,247.2 L572.0,247.5 L569.9,247.1 L567.8,247.6 L565.7,247.6 L563.6,248.1 L561.5,248.2 L559.4,248.1 L557.3,247.5 L555.2,248.2 L553.0,248.6 L550.9,248.6 L548.8,248.8 L546.7,248.5 L544.6,248.1 L542.5,248.3 L540.4,248.0 L538.3,247.6 L536.2,246.6 L534.1,246.2 L532.0,246.2 L529.9,245.7 L527.8,245.1 L525.6,245.8 L523.5,245.7 L521.4,245.7 L519.3,245.7 L517.2,245.2 L515.1,244.4 L513.0,242.5 L510.9,241.7 L508.8,241.8 L506.7,241.6 L504.6,241.1 L502.5,241.6 L500.3,241.9 L498.2,241.9 L496.1,242.4 L494.0,240.8 L491.9,241.3 L489.8,242.8 L487.7,243.3 L485.6,244.4 L483.5,243.3 L481.4,243.2 L479.3,242.9 L477.2,243.1 L475.1,243.5 L472.9,243.5 L470.8,242.9 L468.7,243.4 L466.6,243.6 L464.5,242.9 L462.4,243.9 L460.3,242.8 L458.2,242.8 L456.1,244.4 L454.0,244.2 L451.9,243.3 L449.8,242.7 L447.7,241.6 L445.5,242.3 L443.4,240.9 L441.3,240.4 L439.2,240.2 L437.1,239.6 L435.0,239.5 L432.9,240.0 L430.8,240.8 L428.7,240.4 L426.6,240.2 L424.5,239.8 L422.4,239.7 L420.2,240.0 L418.1,240.5 L416.0,240.1 L413.9,241.3 L411.8,240.8 L409.7,240.7 L407.6,242.1 L405.5,242.1 L403.4,241.9 L401.3,242.1 L399.2,241.6 L397.1,242.2 L395.0,241.7 L392.8,243.0 L390.7,242.2 L388.6,242.0 L386.5,243.2 L384.4,243.5 L382.3,243.9 L380.2,243.6 L378.1,243.2 L376.0,242.6 L373.9,242.1 L371.8,241.5 L369.7,240.7 L367.5,241.7 L365.4,241.0 L363.3,240.3 L361.2,241.5 L359.1,240.8 L357.0,242.0 L354.9,240.8 L352.8,241.2 L350.7,240.2 L348.6,240.4 L346.5,241.4 L344.4,240.6 L342.3,240.7 L340.1,241.8 L338.0,241.8 L335.9,239.7 L333.8,240.7 L331.7,241.4 L329.6,240.8 L327.5,240.1 L325.4,240.0 L323.3,239.3 L321.2,239.8 L319.1,239.8 L317.0,239.6 L314.8,241.4 L312.7,240.4 L310.6,240.7 L308.5,239.3 L306.4,240.1 L304.3,239.3 L302.2,238.7 L300.1,239.6 L298.0,238.3 L295.9,238.7 L293.8,238.7 L291.7,238.9 L289.6,238.2 L287.4,239.6 L285.3,240.3 L283.2,239.7 L281.1,239.1 L279.0,238.4 L276.9,240.5 L274.8,239.3 L272.7,239.5 L270.6,240.0 L268.5,239.4 L266.4,239.0 L264.3,238.0 L262.1,236.4 L260.0,235.0 L257.9,235.3 L255.8,235.4 L253.7,234.9 L251.6,233.5 L249.5,234.5 L247.4,234.3 L245.3,234.3 L243.2,234.8 L241.1,233.0 L239.0,232.9 L236.9,232.9 L234.7,232.0 L232.6,230.2 L230.5,230.5 L228.4,229.9 L226.3,230.2 L224.2,229.2 L222.1,228.0 L220.0,228.0 L217.9,226.6 L215.8,227.9 L213.7,228.8 L211.6,227.5 L209.4,226.3 L207.3,223.7 L205.2,222.2 L203.1,222.2 L201.0,221.8 L198.9,220.7 L196.8,221.7 L194.7,221.7 L192.6,222.8 L190.5,222.1 L188.4,222.7 L186.3,222.4 L184.2,220.6 L182.0,220.3 L179.9,220.2 L177.8,220.1 L175.7,220.7 L173.6,220.7 L171.5,221.1 L169.4,219.4 L167.3,218.5 L165.2,217.6 L163.1,218.0 L161.0,217.8 L158.9,217.6 L156.8,217.6 L154.6,216.2 L152.5,217.9 L150.4,220.0 L148.3,219.4 L146.2,216.7 L144.1,215.8 L142.0,216.5 L139.9,213.8 L137.8,213.3 L135.7,212.4 L133.6,214.3 L131.5,214.4 L129.3,213.4 L127.2,212.8 L125.1,212.9 L123.0,212.5 L120.9,213.1 L118.8,210.7 L116.7,212.7 L114.6,212.8 L112.5,213.5 L110.4,212.4 L108.3,213.2 L106.2,211.3 L104.1,211.2 L101.9,213.7 L99.8,212.8 L97.7,210.4 L95.6,211.1 L93.5,212.0 L91.4,212.6 L89.3,213.4 L87.2,211.4 L85.1,209.2 L83.0,207.4 L80.9,206.8 L78.8,204.7 L76.6,201.5 L74.5,201.1 L72.4,199.9 L70.3,200.5 L68.2,199.5 L66.1,199.9 L64.0,195.9 Z"/><path class="mom-bound" d="M64.0,88.8 L66.1,84.8 L68.2,85.2 L70.3,84.2 L72.4,84.8 L74.5,83.6 L76.6,83.2 L78.8,79.9 L80.9,77.8 L83.0,77.2 L85.1,75.3 L87.2,73.2 L89.3,71.1 L91.4,72.0 L93.5,72.6 L95.6,73.5 L97.7,74.2 L99.8,71.7 L101.9,70.9 L104.1,73.4 L106.2,73.3 L108.3,71.4 L110.4,72.2 L112.5,71.0 L114.6,71.7 L116.7,71.9 L118.8,73.9 L120.9,71.4 L123.0,72.1 L125.1,71.7 L127.2,71.7 L129.3,71.1 L131.5,70.1 L133.6,70.3 L135.7,72.1 L137.8,71.2 L139.9,70.7 L142.0,68.0 L144.1,68.7 L146.2,67.8 L148.3,65.0 L150.4,64.4 L152.5,66.6 L154.6,68.3 L156.8,66.9 L158.9,66.9 L161.0,66.7 L163.1,66.5 L165.2,66.9 L167.3,65.9 L169.4,65.0 L171.5,63.3 L173.6,63.7 L175.7,63.7 L177.8,64.4 L179.9,64.3 L182.0,64.1 L184.2,63.8 L186.3,62.0 L188.4,61.7 L190.5,62.3 L192.6,61.6 L194.7,62.7 L196.8,62.7 L198.9,63.7 L201.0,62.7 L203.1,62.2 L205.2,62.2 L207.3,60.7 L209.4,58.1 L211.6,56.8 L213.7,55.5 L215.8,56.4 L217.9,57.7 L220.0,56.4 L222.1,56.3 L224.2,55.2 L226.3,54.2 L228.4,54.4 L230.5,53.9 L232.6,54.1 L234.7,52.3 L236.9,51.4 L239.0,51.4 L241.1,51.3 L243.2,49.5 L245.3,49.9 L247.4,50.0 L249.5,49.8 L251.6,50.7 L253.7,49.4 L255.8,48.8 L257.9,49.0 L260.0,49.3 L262.1,47.9 L264.3,46.2 L266.4,45.2 L268.5,44.9 L270.6,44.2 L272.7,44.7 L274.8,44.9 L276.9,43.7 L279.0,45.9 L281.1,45.2 L283.2,44.5 L285.3,43.9 L287.4,44.6 L289.6,46.0 L291.7,45.3 L293.8,45.6 L295.9,45.5 L298.0,45.9 L300.1,44.6 L302.2,45.5 L304.3,44.9 L306.4,44.1 L308.5,44.9 L310.6,43.5 L312.7,43.8 L314.8,42.8 L317.0,44.6 L319.1,44.4 L321.2,44.4 L323.3,44.9 L325.4,44.2 L327.5,44.1 L329.6,43.4 L331.7,42.8 L333.8,43.5 L335.9,44.5 L338.0,42.4 L340.1,42.4 L342.3,43.4 L344.4,43.6 L346.5,42.8 L348.6,43.8 L350.7,44.0 L352.8,43.0 L354.9,43.4 L357.0,42.2 L359.1,43.4 L361.2,42.6 L363.3,43.9 L365.4,43.1 L367.5,42.5 L369.7,43.5 L371.8,42.7 L373.9,42.1 L376.0,41.6 L378.1,41.0 L380.2,40.6 L382.3,40.3 L384.4,40.6 L386.5,41.0 L388.6,42.2 L390.7,42.0 L392.8,41.2 L395.0,42.5 L397.1,41.9 L399.2,42.5 L401.3,42.0 L403.4,42.3 L405.5,42.1 L407.6,42.1 L409.7,43.5 L411.8,43.4 L413.9,42.9 L416.0,44.1 L418.1,43.7 L420.2,44.2 L422.4,44.5 L424.5,44.4 L426.6,44.0 L428.7,43.8 L430.8,43.4 L432.9,44.2 L435.0,44.7 L437.1,44.6 L439.2,44.0 L441.3,43.8 L443.4,43.3 L445.5,41.8 L447.7,42.6 L449.8,41.4 L451.9,40.8 L454.0,39.9 L456.1,39.7 L458.2,41.3 L460.3,41.4 L462.4,40.3 L464.5,41.3 L466.6,40.6 L468.7,40.8 L470.8,41.2 L472.9,40.6 L475.1,40.7 L477.2,41.0 L479.3,41.3 L481.4,41.0 L483.5,40.9 L485.6,39.7 L487.7,40.9 L489.8,41.3 L491.9,42.9 L494.0,43.4 L496.1,41.8 L498.2,42.3 L500.3,42.3 L502.5,42.6 L504.6,43.1 L506.7,42.6 L508.8,42.3 L510.9,42.5 L513.0,41.6 L515.1,39.7 L517.2,38.9 L519.3,38.5 L521.4,38.5 L523.5,38.5 L525.6,38.4 L527.8,39.0 L529.9,38.4 L532.0,37.9 L534.1,38.0 L536.2,37.5 L538.3,36.5 L540.4,36.1 L542.5,35.8 L544.6,36.0 L546.7,35.6 L548.8,35.3 L550.9,35.5 L553.0,35.5 L555.2,35.9 L557.3,36.6 L559.4,36.0 L561.5,35.9 L563.6,36.0 L565.7,36.5 L567.8,36.5 L569.9,37.0 L572.0,36.6 L574.1,37.0 L576.2,37.1 L578.3,38.2 L580.5,36.9 L582.6,36.3 L584.7,36.3 L586.8,36.5 L588.9,36.2 L591.0,35.8 L593.1,36.4 L595.2,35.9 L597.3,36.7 L599.4,36.4 L601.5,35.7 L603.6,35.6 L605.7,35.9 L607.9,35.1 L610.0,35.2 L612.1,34.9 L614.2,34.2 L616.3,34.8 L618.4,34.5 L620.5,34.5 L622.6,33.2 L624.7,33.9 L626.8,32.8 L628.9,32.8 L631.0,33.0 L633.2,32.3 L635.3,31.3 L637.4,32.8 L639.5,33.2 L641.6,32.6 L643.7,32.0 L645.8,31.3 L647.9,32.3 L650.0,32.5 L652.1,32.0 L654.2,32.2 L656.3,32.9 L658.4,34.0 L660.6,34.6 L662.7,33.8 L664.8,33.2 L666.9,33.2 L669.0,33.3 L671.1,33.3 L673.2,33.7 L675.3,33.7 L677.4,33.8 L679.5,33.9 L681.6,34.2 L683.7,34.4 L685.9,34.0 L688.0,33.2 L690.1,33.1 L692.2,33.2 L694.3,33.4 L696.4,32.2 L698.5,31.7 L700.6,31.9 L702.7,33.5 L704.8,33.1 L706.9,33.4 L709.0,32.9 L711.1,33.9 L713.3,34.1 L715.4,34.8 L717.5,34.4 L719.6,34.1 L721.7,34.0 L723.8,33.6 L725.9,35.6 L728.0,35.1 L730.1,35.4 L732.2,35.1 L734.3,35.0 L736.4,35.9 L738.6,35.6 L740.7,35.3 L742.8,34.0 L744.9,33.9 L747.0,34.1 L749.1,32.6 L751.2,33.6 L753.3,33.6 L755.4,33.8 L757.5,34.3 L759.6,33.4 L761.7,34.0 L763.8,34.0 L766.0,33.0 L768.1,33.0 L770.2,32.5 L772.3,30.2 L774.4,30.9 L776.5,31.5 L778.6,31.0 L780.7,30.8 L782.8,31.1 L784.9,30.9 L787.0,32.0 L789.1,32.7 L791.2,31.6 L793.4,30.6 L795.5,29.7 L797.6,30.2 L799.7,31.7 L801.8,32.8 L803.9,32.9 L806.0,32.0 L808.1,33.1 L810.2,32.0 L812.3,31.8 L814.4,31.8 L816.5,32.3 L818.7,33.4 L820.8,34.1 L822.9,33.3 L825.0,32.2 L827.1,31.8 L829.2,31.1 L831.3,31.6 L833.4,30.5 L835.5,30.3 L837.6,28.7 L839.7,29.7 L841.8,29.0 L843.9,29.8 L846.1,29.4 L848.2,29.7 L850.3,29.7 L852.4,29.1 L854.5,28.3 L856.6,27.7 L858.7,28.5 L860.8,29.5 L862.9,29.3 L865.0,32.6 L867.1,33.2 L869.2,33.4 L871.4,32.7 L873.5,33.9 L875.6,35.3 L877.7,34.6 L879.8,33.8 L881.9,33.7 L884.0,33.9"/><path class="mom-bound" d="M64.0,195.9 L66.1,199.9 L68.2,199.5 L70.3,200.5 L72.4,199.9 L74.5,201.1 L76.6,201.5 L78.8,204.7 L80.9,206.8 L83.0,207.4 L85.1,209.2 L87.2,211.4 L89.3,213.4 L91.4,212.6 L93.5,212.0 L95.6,211.1 L97.7,210.4 L99.8,212.8 L101.9,213.7 L104.1,211.2 L106.2,211.3 L108.3,213.2 L110.4,212.4 L112.5,213.5 L114.6,212.8 L116.7,212.7 L118.8,210.7 L120.9,213.1 L123.0,212.5 L125.1,212.9 L127.2,212.8 L129.3,213.4 L131.5,214.4 L133.6,214.3 L135.7,212.4 L137.8,213.3 L139.9,213.8 L142.0,216.5 L144.1,215.8 L146.2,216.7 L148.3,219.4 L150.4,220.0 L152.5,217.9 L154.6,216.2 L156.8,217.6 L158.9,217.6 L161.0,217.8 L163.1,218.0 L165.2,217.6 L167.3,218.5 L169.4,219.4 L171.5,221.1 L173.6,220.7 L175.7,220.7 L177.8,220.1 L179.9,220.2 L182.0,220.3 L184.2,220.6 L186.3,222.4 L188.4,222.7 L190.5,222.1 L192.6,222.8 L194.7,221.7 L196.8,221.7 L198.9,220.7 L201.0,221.8 L203.1,222.2 L205.2,222.2 L207.3,223.7 L209.4,226.3 L211.6,227.5 L213.7,228.8 L215.8,227.9 L217.9,226.6 L220.0,228.0 L222.1,228.0 L224.2,229.2 L226.3,230.2 L228.4,229.9 L230.5,230.5 L232.6,230.2 L234.7,232.0 L236.9,232.9 L239.0,232.9 L241.1,233.0 L243.2,234.8 L245.3,234.3 L247.4,234.3 L249.5,234.5 L251.6,233.5 L253.7,234.9 L255.8,235.4 L257.9,235.3 L260.0,235.0 L262.1,236.4 L264.3,238.0 L266.4,239.0 L268.5,239.4 L270.6,240.0 L272.7,239.5 L274.8,239.3 L276.9,240.5 L279.0,238.4 L281.1,239.1 L283.2,239.7 L285.3,240.3 L287.4,239.6 L289.6,238.2 L291.7,238.9 L293.8,238.7 L295.9,238.7 L298.0,238.3 L300.1,239.6 L302.2,238.7 L304.3,239.3 L306.4,240.1 L308.5,239.3 L310.6,240.7 L312.7,240.4 L314.8,241.4 L317.0,239.6 L319.1,239.8 L321.2,239.8 L323.3,239.3 L325.4,240.0 L327.5,240.1 L329.6,240.8 L331.7,241.4 L333.8,240.7 L335.9,239.7 L338.0,241.8 L340.1,241.8 L342.3,240.7 L344.4,240.6 L346.5,241.4 L348.6,240.4 L350.7,240.2 L352.8,241.2 L354.9,240.8 L357.0,242.0 L359.1,240.8 L361.2,241.5 L363.3,240.3 L365.4,241.0 L367.5,241.7 L369.7,240.7 L371.8,241.5 L373.9,242.1 L376.0,242.6 L378.1,243.2 L380.2,243.6 L382.3,243.9 L384.4,243.5 L386.5,243.2 L388.6,242.0 L390.7,242.2 L392.8,243.0 L395.0,241.7 L397.1,242.2 L399.2,241.6 L401.3,242.1 L403.4,241.9 L405.5,242.1 L407.6,242.1 L409.7,240.7 L411.8,240.8 L413.9,241.3 L416.0,240.1 L418.1,240.5 L420.2,240.0 L422.4,239.7 L424.5,239.8 L426.6,240.2 L428.7,240.4 L430.8,240.8 L432.9,240.0 L435.0,239.5 L437.1,239.6 L439.2,240.2 L441.3,240.4 L443.4,240.9 L445.5,242.3 L447.7,241.6 L449.8,242.7 L451.9,243.3 L454.0,244.2 L456.1,244.4 L458.2,242.8 L460.3,242.8 L462.4,243.9 L464.5,242.9 L466.6,243.6 L468.7,243.4 L470.8,242.9 L472.9,243.5 L475.1,243.5 L477.2,243.1 L479.3,242.9 L481.4,243.2 L483.5,243.3 L485.6,244.4 L487.7,243.3 L489.8,242.8 L491.9,241.3 L494.0,240.8 L496.1,242.4 L498.2,241.9 L500.3,241.9 L502.5,241.6 L504.6,241.1 L506.7,241.6 L508.8,241.8 L510.9,241.7 L513.0,242.5 L515.1,244.4 L517.2,245.2 L519.3,245.7 L521.4,245.7 L523.5,245.7 L525.6,245.8 L527.8,245.1 L529.9,245.7 L532.0,246.2 L534.1,246.2 L536.2,246.6 L538.3,247.6 L540.4,248.0 L542.5,248.3 L544.6,248.1 L546.7,248.5 L548.8,248.8 L550.9,248.6 L553.0,248.6 L555.2,248.2 L557.3,247.5 L559.4,248.1 L561.5,248.2 L563.6,248.1 L565.7,247.6 L567.8,247.6 L569.9,247.1 L572.0,247.5 L574.1,247.2 L576.2,247.0 L578.3,245.9 L580.5,247.2 L582.6,247.8 L584.7,247.8 L586.8,247.7 L588.9,247.9 L591.0,248.3 L593.1,247.7 L595.2,248.2 L597.3,247.4 L599.4,247.7 L601.5,248.4 L603.6,248.5 L605.7,248.2 L607.9,249.0 L610.0,248.9 L612.1,249.2 L614.2,249.9 L616.3,249.3 L618.4,249.6 L620.5,249.6 L622.6,250.9 L624.7,250.2 L626.8,251.3 L628.9,251.3 L631.0,251.1 L633.2,251.7 L635.3,252.7 L637.4,251.2 L639.5,250.8 L641.6,251.5 L643.7,252.1 L645.8,252.8 L647.9,251.7 L650.0,251.6 L652.1,252.0 L654.2,251.9 L656.3,251.2 L658.4,250.1 L660.6,249.5 L662.7,250.3 L664.8,250.9 L666.9,250.8 L669.0,250.8 L671.1,250.8 L673.2,250.3 L675.3,250.4 L677.4,250.3 L679.5,250.2 L681.6,249.9 L683.7,249.7 L685.9,250.1 L688.0,250.9 L690.1,250.9 L692.2,250.9 L694.3,250.7 L696.4,251.8 L698.5,252.4 L700.6,252.2 L702.7,250.6 L704.8,251.0 L706.9,250.7 L709.0,251.2 L711.1,250.2 L713.3,250.0 L715.4,249.3 L717.5,249.7 L719.6,250.0 L721.7,250.1 L723.8,250.5 L725.9,248.5 L728.0,249.0 L730.1,248.7 L732.2,249.0 L734.3,249.1 L736.4,248.2 L738.6,248.5 L740.7,248.8 L742.8,250.1 L744.9,250.1 L747.0,249.9 L749.1,251.4 L751.2,250.4 L753.3,250.5 L755.4,250.3 L757.5,249.8 L759.6,250.6 L761.7,250.0 L763.8,250.0 L766.0,251.0 L768.1,251.0 L770.2,251.6 L772.3,253.8 L774.4,253.1 L776.5,252.5 L778.6,253.0 L780.7,253.3 L782.8,253.0 L784.9,253.1 L787.0,252.1 L789.1,251.3 L791.2,252.4 L793.4,253.5 L795.5,254.4 L797.6,253.8 L799.7,252.3 L801.8,251.2 L803.9,251.2 L806.0,252.1 L808.1,250.9 L810.2,252.0 L812.3,252.3 L814.4,252.2 L816.5,251.7 L818.7,250.6 L820.8,250.0 L822.9,250.8 L825.0,251.8 L827.1,252.2 L829.2,252.9 L831.3,252.4 L833.4,253.5 L835.5,253.7 L837.6,255.3 L839.7,254.3 L841.8,255.0 L843.9,254.2 L846.1,254.6 L848.2,254.3 L850.3,254.3 L852.4,254.9 L854.5,255.7 L856.6,256.3 L858.7,255.5 L860.8,254.5 L862.9,254.7 L865.0,251.5 L867.1,250.9 L869.2,250.7 L871.4,251.3 L873.5,250.2 L875.6,248.8 L877.7,249.5 L879.8,250.3 L881.9,250.4 L884.0,250.2"/><path class="mom-vwap" d="M64.0,200.2 L66.1,201.7 L68.2,207.0 L70.3,214.8 L72.4,218.6 L74.5,221.6 L76.6,223.2 L78.8,223.7 L80.9,226.0 L83.0,226.5 L85.1,226.9 L87.2,226.9 L89.3,225.2"/><path class="mom-price" d="M64.0,204.9 L66.1,208.1 L68.2,222.2 L70.3,229.8 L72.4,239.4 L74.5,233.0 L76.6,236.8 L78.8,231.6 L80.9,240.5 L83.0,237.5 L85.1,234.6 L87.2,223.0 L89.3,213.5"/><g class="mom-hover" style="display:none"><line class="mom-guide" x1="0" y1="14" x2="0" y2="270"/><circle class="mom-dot price" r="4"/><circle class="mom-dot band up" r="3.5"/><circle class="mom-dot band lo" r="3.5"/><circle class="mom-dot vwap" r="3.5"/></g></svg><div class="mom-tip" style="display:none"></div></div></div>
+      <div class="table-scroll"><div class="chart-wrap mom-wrap" data-hover="{&quot;geo&quot;:[900,300,64,16,14,30,709.5827287942151,732.5488972248086],&quot;t&quot;:[&quot;09:30&quot;,&quot;09:31&quot;,&quot;09:32&quot;,&quot;09:33&quot;,&quot;09:34&quot;,&quot;09:35&quot;,&quot;09:36&quot;,&quot;09:37&quot;,&quot;09:38&quot;,&quot;09:39&quot;,&quot;09:40&quot;,&quot;09:41&quot;,&quot;09:42&quot;,&quot;09:43&quot;,&quot;09:44&quot;,&quot;09:45&quot;,&quot;09:46&quot;,&quot;09:47&quot;,&quot;09:48&quot;,&quot;09:49&quot;,&quot;09:50&quot;,&quot;09:51&quot;,&quot;09:52&quot;,&quot;09:53&quot;,&quot;09:54&quot;,&quot;09:55&quot;,&quot;09:56&quot;,&quot;09:57&quot;,&quot;09:58&quot;,&quot;09:59&quot;,&quot;10:00&quot;,&quot;10:01&quot;,&quot;10:02&quot;,&quot;10:03&quot;,&quot;10:04&quot;,&quot;10:05&quot;,&quot;10:06&quot;,&quot;10:07&quot;,&quot;10:08&quot;,&quot;10:09&quot;,&quot;10:10&quot;,&quot;10:11&quot;,&quot;10:12&quot;,&quot;10:13&quot;,&quot;10:14&quot;,&quot;10:15&quot;,&quot;10:16&quot;,&quot;10:17&quot;,&quot;10:18&quot;,&quot;10:19&quot;,&quot;10:20&quot;,&quot;10:21&quot;,&quot;10:22&quot;,&quot;10:23&quot;,&quot;10:24&quot;,&quot;10:25&quot;,&quot;10:26&quot;,&quot;10:27&quot;,&quot;10:28&quot;,&quot;10:29&quot;,&quot;10:30&quot;,&quot;10:31&quot;,&quot;10:32&quot;,&quot;10:33&quot;,&quot;10:34&quot;,&quot;10:35&quot;,&quot;10:36&quot;,&quot;10:37&quot;,&quot;10:38&quot;,&quot;10:39&quot;,&quot;10:40&quot;,&quot;10:41&quot;,&quot;10:42&quot;,&quot;10:43&quot;,&quot;10:44&quot;,&quot;10:45&quot;,&quot;10:46&quot;,&quot;10:47&quot;,&quot;10:48&quot;,&quot;10:49&quot;,&quot;10:50&quot;,&quot;10:51&quot;,&quot;10:52&quot;,&quot;10:53&quot;,&quot;10:54&quot;,&quot;10:55&quot;,&quot;10:56&quot;,&quot;10:57&quot;,&quot;10:58&quot;,&quot;10:59&quot;,&quot;11:00&quot;,&quot;11:01&quot;,&quot;11:02&quot;,&quot;11:03&quot;,&quot;11:04&quot;,&quot;11:05&quot;,&quot;11:06&quot;,&quot;11:07&quot;,&quot;11:08&quot;,&quot;11:09&quot;,&quot;11:10&quot;,&quot;11:11&quot;,&quot;11:12&quot;,&quot;11:13&quot;,&quot;11:14&quot;,&quot;11:15&quot;,&quot;11:16&quot;,&quot;11:17&quot;,&quot;11:18&quot;,&quot;11:19&quot;,&quot;11:20&quot;,&quot;11:21&quot;,&quot;11:22&quot;,&quot;11:23&quot;,&quot;11:24&quot;,&quot;11:25&quot;,&quot;11:26&quot;,&quot;11:27&quot;,&quot;11:28&quot;,&quot;11:29&quot;,&quot;11:30&quot;,&quot;11:31&quot;,&quot;11:32&quot;,&quot;11:33&quot;,&quot;11:34&quot;,&quot;11:35&quot;,&quot;11:36&quot;,&quot;11:37&quot;,&quot;11:38&quot;,&quot;11:39&quot;,&quot;11:40&quot;,&quot;11:41&quot;,&quot;11:42&quot;,&quot;11:43&quot;,&quot;11:44&quot;,&quot;11:45&quot;,&quot;11:46&quot;,&quot;11:47&quot;,&quot;11:48&quot;,&quot;11:49&quot;,&quot;11:50&quot;,&quot;11:51&quot;,&quot;11:52&quot;,&quot;11:53&quot;,&quot;11:54&quot;,&quot;11:55&quot;,&quot;11:56&quot;,&quot;11:57&quot;,&quot;11:58&quot;,&quot;11:59&quot;,&quot;12:00&quot;,&quot;12:01&quot;,&quot;12:02&quot;,&quot;12:03&quot;,&quot;12:04&quot;,&quot;12:05&quot;,&quot;12:06&quot;,&quot;12:07&quot;,&quot;12:08&quot;,&quot;12:09&quot;,&quot;12:10&quot;,&quot;12:11&quot;,&quot;12:12&quot;,&quot;12:13&quot;,&quot;12:14&quot;,&quot;12:15&quot;,&quot;12:16&quot;,&quot;12:17&quot;,&quot;12:18&quot;,&quot;12:19&quot;,&quot;12:20&quot;,&quot;12:21&quot;,&quot;12:22&quot;,&quot;12:23&quot;,&quot;12:24&quot;,&quot;12:25&quot;,&quot;12:26&quot;,&quot;12:27&quot;,&quot;12:28&quot;,&quot;12:29&quot;,&quot;12:30&quot;,&quot;12:31&quot;,&quot;12:32&quot;,&quot;12:33&quot;,&quot;12:34&quot;,&quot;12:35&quot;,&quot;12:36&quot;,&quot;12:37&quot;,&quot;12:38&quot;,&quot;12:39&quot;,&quot;12:40&quot;,&quot;12:41&quot;,&quot;12:42&quot;,&quot;12:43&quot;,&quot;12:44&quot;,&quot;12:45&quot;,&quot;12:46&quot;,&quot;12:47&quot;,&quot;12:48&quot;,&quot;12:49&quot;,&quot;12:50&quot;,&quot;12:51&quot;,&quot;12:52&quot;,&quot;12:53&quot;,&quot;12:54&quot;,&quot;12:55&quot;,&quot;12:56&quot;,&quot;12:57&quot;,&quot;12:58&quot;,&quot;12:59&quot;,&quot;13:00&quot;,&quot;13:01&quot;,&quot;13:02&quot;,&quot;13:03&quot;,&quot;13:04&quot;,&quot;13:05&quot;,&quot;13:06&quot;,&quot;13:07&quot;,&quot;13:08&quot;,&quot;13:09&quot;,&quot;13:10&quot;,&quot;13:11&quot;,&quot;13:12&quot;,&quot;13:13&quot;,&quot;13:14&quot;,&quot;13:15&quot;,&quot;13:16&quot;,&quot;13:17&quot;,&quot;13:18&quot;,&quot;13:19&quot;,&quot;13:20&quot;,&quot;13:21&quot;,&quot;13:22&quot;,&quot;13:23&quot;,&quot;13:24&quot;,&quot;13:25&quot;,&quot;13:26&quot;,&quot;13:27&quot;,&quot;13:28&quot;,&quot;13:29&quot;,&quot;13:30&quot;,&quot;13:31&quot;,&quot;13:32&quot;,&quot;13:33&quot;,&quot;13:34&quot;,&quot;13:35&quot;,&quot;13:36&quot;,&quot;13:37&quot;,&quot;13:38&quot;,&quot;13:39&quot;,&quot;13:40&quot;,&quot;13:41&quot;,&quot;13:42&quot;,&quot;13:43&quot;,&quot;13:44&quot;,&quot;13:45&quot;,&quot;13:46&quot;,&quot;13:47&quot;,&quot;13:48&quot;,&quot;13:49&quot;,&quot;13:50&quot;,&quot;13:51&quot;,&quot;13:52&quot;,&quot;13:53&quot;,&quot;13:54&quot;,&quot;13:55&quot;,&quot;13:56&quot;,&quot;13:57&quot;,&quot;13:58&quot;,&quot;13:59&quot;,&quot;14:00&quot;,&quot;14:01&quot;,&quot;14:02&quot;,&quot;14:03&quot;,&quot;14:04&quot;,&quot;14:05&quot;,&quot;14:06&quot;,&quot;14:07&quot;,&quot;14:08&quot;,&quot;14:09&quot;,&quot;14:10&quot;,&quot;14:11&quot;,&quot;14:12&quot;,&quot;14:13&quot;,&quot;14:14&quot;,&quot;14:15&quot;,&quot;14:16&quot;,&quot;14:17&quot;,&quot;14:18&quot;,&quot;14:19&quot;,&quot;14:20&quot;,&quot;14:21&quot;,&quot;14:22&quot;,&quot;14:23&quot;,&quot;14:24&quot;,&quot;14:25&quot;,&quot;14:26&quot;,&quot;14:27&quot;,&quot;14:28&quot;,&quot;14:29&quot;,&quot;14:30&quot;,&quot;14:31&quot;,&quot;14:32&quot;,&quot;14:33&quot;,&quot;14:34&quot;,&quot;14:35&quot;,&quot;14:36&quot;,&quot;14:37&quot;,&quot;14:38&quot;,&quot;14:39&quot;,&quot;14:40&quot;,&quot;14:41&quot;,&quot;14:42&quot;,&quot;14:43&quot;,&quot;14:44&quot;,&quot;14:45&quot;,&quot;14:46&quot;,&quot;14:47&quot;,&quot;14:48&quot;,&quot;14:49&quot;,&quot;14:50&quot;,&quot;14:51&quot;,&quot;14:52&quot;,&quot;14:53&quot;,&quot;14:54&quot;,&quot;14:55&quot;,&quot;14:56&quot;,&quot;14:57&quot;,&quot;14:58&quot;,&quot;14:59&quot;,&quot;15:00&quot;,&quot;15:01&quot;,&quot;15:02&quot;,&quot;15:03&quot;,&quot;15:04&quot;,&quot;15:05&quot;,&quot;15:06&quot;,&quot;15:07&quot;,&quot;15:08&quot;,&quot;15:09&quot;,&quot;15:10&quot;,&quot;15:11&quot;,&quot;15:12&quot;,&quot;15:13&quot;,&quot;15:14&quot;,&quot;15:15&quot;,&quot;15:16&quot;,&quot;15:17&quot;,&quot;15:18&quot;,&quot;15:19&quot;,&quot;15:20&quot;,&quot;15:21&quot;,&quot;15:22&quot;,&quot;15:23&quot;,&quot;15:24&quot;,&quot;15:25&quot;,&quot;15:26&quot;,&quot;15:27&quot;,&quot;15:28&quot;,&quot;15:29&quot;,&quot;15:30&quot;,&quot;15:31&quot;,&quot;15:32&quot;,&quot;15:33&quot;,&quot;15:34&quot;,&quot;15:35&quot;,&quot;15:36&quot;,&quot;15:37&quot;,&quot;15:38&quot;,&quot;15:39&quot;,&quot;15:40&quot;,&quot;15:41&quot;,&quot;15:42&quot;,&quot;15:43&quot;,&quot;15:44&quot;,&quot;15:45&quot;,&quot;15:46&quot;,&quot;15:47&quot;,&quot;15:48&quot;,&quot;15:49&quot;,&quot;15:50&quot;,&quot;15:51&quot;,&quot;15:52&quot;,&quot;15:53&quot;,&quot;15:54&quot;,&quot;15:55&quot;,&quot;15:56&quot;,&quot;15:57&quot;,&quot;15:58&quot;,&quot;15:59&quot;],&quot;p&quot;:[715.42,715.14,713.87,713.18,712.33,712.9,712.56,713.03,712.23,712.5,712.76,713.8,714.65,714.82,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],&quot;u&quot;:[725.84,726.19,726.16,726.26,726.19,726.31,726.34,726.63,726.83,726.88,727.05,727.24,727.43,727.35,727.3,727.21,727.15,727.37,727.45,727.22,727.23,727.4,727.33,727.43,727.37,727.36,727.18,727.4,727.34,727.38,727.37,727.43,727.51,727.5,727.33,727.42,727.46,727.7,727.64,727.73,727.97,728.03,727.83,727.68,727.81,727.8,727.82,727.84,727.81,727.89,727.97,728.12,728.09,728.09,728.03,728.04,728.05,728.08,728.24,728.27,728.22,728.28,728.18,728.18,728.09,728.18,728.22,728.23,728.36,728.59,728.71,728.83,728.74,728.63,728.75,728.75,728.85,728.95,728.92,728.97,728.95,729.11,729.19,729.2,729.2,729.37,729.32,729.32,729.34,729.25,729.37,729.42,729.41,729.39,729.51,729.66,729.75,729.78,729.84,729.79,729.78,729.89,729.69,729.75,729.81,729.87,729.81,729.68,729.74,729.72,729.72,729.69,729.8,729.72,729.78,729.85,729.78,729.9,729.87,729.97,729.8,729.82,729.82,729.77,729.84,729.85,729.91,729.97,729.91,729.81,730.0,730.0,729.91,729.89,729.97,729.87,729.86,729.95,729.91,730.02,729.91,729.98,729.86,729.93,729.99,729.91,729.98,730.03,730.07,730.13,730.17,730.19,730.16,730.13,730.02,730.04,730.11,729.99,730.04,729.99,730.03,730.01,730.03,730.03,729.91,729.91,729.95,729.85,729.88,729.84,729.81,729.82,729.86,729.87,729.91,729.84,729.79,729.8,729.86,729.87,729.92,730.05,729.98,730.09,730.14,730.22,730.24,730.1,730.09,730.19,730.1,730.16,730.15,730.1,730.16,730.15,730.13,730.1,730.13,730.14,730.24,730.14,730.1,729.96,729.91,730.05,730.01,730.01,729.98,729.94,729.98,730.01,730.0,730.07,730.24,730.31,730.35,730.35,730.35,730.36,730.3,730.36,730.4,730.4,730.44,730.53,730.56,730.6,730.58,730.61,730.64,730.62,730.62,730.59,730.52,730.57,730.58,730.58,730.53,730.53,730.48,730.52,730.49,730.48,730.38,730.49,730.55,730.55,730.53,730.56,730.6,730.54,730.58,730.51,730.54,730.6,730.61,730.59,730.66,730.64,730.67,730.74,730.68,730.71,730.71,730.83,730.76,730.86,730.86,730.85,730.9,730.99,730.86,730.82,730.88,730.94,731.0,730.9,730.89,730.93,730.92,730.85,730.76,730.7,730.77,730.83,730.82,730.82,730.82,730.78,730.78,730.77,730.76,730.74,730.72,730.76,730.83,730.83,730.83,730.81,730.91,730.96,730.94,730.8,730.84,730.81,730.86,730.76,730.74,730.68,730.72,730.75,730.76,730.79,730.61,730.66,730.63,730.66,730.67,730.58,730.61,730.63,730.75,730.76,730.74,730.88,730.79,730.79,730.77,730.73,730.81,730.75,730.75,730.84,730.84,730.89,731.09,731.03,730.98,731.02,731.05,731.02,731.03,730.94,730.87,730.97,731.06,731.14,731.09,730.96,730.86,730.86,730.93,730.83,730.93,730.95,730.95,730.91,730.81,730.74,730.82,730.91,730.95,731.01,730.97,731.06,731.09,731.23,731.14,731.2,731.13,731.17,731.14,731.14,731.19,731.27,731.32,731.24,731.16,731.18,730.88,730.83,730.81,730.87,730.76,730.64,730.7,730.78,730.78,730.76],&quot;l&quot;:[716.23,715.88,715.91,715.81,715.87,715.76,715.73,715.44,715.25,715.2,715.03,714.84,714.66,714.74,714.79,714.87,714.93,714.71,714.64,714.86,714.85,714.68,714.75,714.65,714.71,714.73,714.9,714.69,714.74,714.71,714.71,714.66,714.57,714.58,714.75,714.67,714.63,714.38,714.45,714.36,714.12,714.06,714.26,714.41,714.28,714.29,714.27,714.25,714.28,714.2,714.12,713.97,714.0,714.0,714.06,714.05,714.04,714.01,713.85,713.83,713.88,713.82,713.91,713.91,714.0,713.91,713.87,713.87,713.74,713.51,713.39,713.28,713.36,713.47,713.35,713.35,713.25,713.16,713.18,713.13,713.15,712.99,712.91,712.91,712.91,712.74,712.78,712.79,712.77,712.85,712.74,712.68,712.7,712.72,712.6,712.45,712.36,712.33,712.28,712.32,712.33,712.23,712.42,712.36,712.3,712.25,712.31,712.43,712.38,712.39,712.39,712.43,712.31,712.39,712.34,712.27,712.34,712.21,712.24,712.15,712.31,712.29,712.29,712.34,712.28,712.27,712.2,712.15,712.21,712.3,712.11,712.11,712.21,712.22,712.15,712.24,712.25,712.17,712.2,712.09,712.21,712.14,712.25,712.18,712.12,712.21,712.14,712.09,712.05,711.99,711.95,711.92,711.96,711.99,712.09,712.08,712.01,712.12,712.07,712.13,712.08,712.11,712.09,712.09,712.21,712.2,712.16,712.27,712.23,712.28,712.3,712.29,712.25,712.24,712.2,712.28,712.32,712.31,712.26,712.24,712.19,712.06,712.13,712.03,711.98,711.89,711.88,712.02,712.02,711.93,712.02,711.96,711.97,712.01,711.96,711.96,711.99,712.01,711.99,711.98,711.88,711.98,712.02,712.15,712.21,712.06,712.1,712.11,712.13,712.18,712.13,712.11,712.12,712.05,711.88,711.81,711.77,711.77,711.77,711.76,711.82,711.76,711.72,711.72,711.68,711.59,711.56,711.53,711.55,711.51,711.49,711.5,711.5,711.53,711.6,711.55,711.54,711.55,711.59,711.59,711.64,711.6,711.63,711.64,711.74,711.63,711.58,711.58,711.59,711.57,711.53,711.58,711.54,711.61,711.58,711.52,711.51,711.54,711.46,711.48,711.45,711.38,711.44,711.41,711.42,711.3,711.36,711.26,711.26,711.28,711.22,711.13,711.26,711.3,711.24,711.19,711.13,711.22,711.24,711.2,711.21,711.27,711.37,711.42,711.35,711.3,711.3,711.3,711.31,711.35,711.34,711.35,711.36,711.39,711.4,711.37,711.3,711.29,711.3,711.31,711.21,711.17,711.18,711.32,711.29,711.31,711.27,711.36,711.38,711.44,711.41,711.38,711.37,711.34,711.51,711.47,711.49,711.47,711.46,711.54,711.51,711.49,711.37,711.36,711.38,711.25,711.34,711.33,711.35,711.4,711.32,711.37,711.37,711.28,711.28,711.23,711.03,711.1,711.15,711.11,711.08,711.11,711.1,711.19,711.26,711.16,711.07,710.99,711.03,711.17,711.27,711.27,711.19,711.29,711.2,711.17,711.18,711.22,711.32,711.38,711.3,711.21,711.18,711.11,711.16,711.06,711.04,710.9,710.99,710.93,711.0,710.96,710.99,710.99,710.94,710.86,710.81,710.89,710.97,710.95,711.24,711.3,711.32,711.26,711.36,711.48,711.42,711.35,711.34,711.36],&quot;v&quot;:[715.84,715.71,715.23,714.53,714.19,713.92,713.78,713.73,713.53,713.49,713.45,713.45,713.6,713.67,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],&quot;f&quot;:[],&quot;date&quot;:&quot;2026-10-29&quot;,&quot;sym&quot;:&quot;QQQ&quot;,&quot;c&quot;:[[29,&quot;10:00&quot;],[59,&quot;10:30&quot;],[89,&quot;11:00&quot;],[119,&quot;11:30&quot;],[149,&quot;12:00&quot;],[179,&quot;12:30&quot;],[209,&quot;13:00&quot;],[239,&quot;13:30&quot;],[269,&quot;14:00&quot;],[299,&quot;14:30&quot;],[329,&quot;15:00&quot;],[359,&quot;15:30&quot;]]}"><svg viewBox="0 0 900 300" class="mom-chart" role="img" aria-label="QQQ price with Concretum Bands"><line class="pl-grid" x1="64" y1="270.0" x2="884" y2="270.0"/><text class="pl-axis" x="56" y="273.0" text-anchor="end">709.58</text><line class="pl-grid" x1="64" y1="206.0" x2="884" y2="206.0"/><text class="pl-axis" x="56" y="209.0" text-anchor="end">715.32</text><line class="pl-grid" x1="64" y1="142.0" x2="884" y2="142.0"/><text class="pl-axis" x="56" y="145.0" text-anchor="end">721.07</text><line class="pl-grid" x1="64" y1="78.0" x2="884" y2="78.0"/><text class="pl-axis" x="56" y="81.0" text-anchor="end">726.81</text><line class="pl-grid" x1="64" y1="14.0" x2="884" y2="14.0"/><text class="pl-axis" x="56" y="17.0" text-anchor="end">732.55</text><line class="mom-check" x1="125.1" y1="14" x2="125.1" y2="270"/><text class="pl-axis" x="125.1" y="286" text-anchor="middle">10am</text><line class="mom-check" x1="188.4" y1="14" x2="188.4" y2="270"/><line class="mom-check" x1="251.6" y1="14" x2="251.6" y2="270"/><text class="pl-axis" x="251.6" y="286" text-anchor="middle">11am</text><line class="mom-check" x1="314.8" y1="14" x2="314.8" y2="270"/><line class="mom-check" x1="378.1" y1="14" x2="378.1" y2="270"/><text class="pl-axis" x="378.1" y="286" text-anchor="middle">12pm</text><line class="mom-check" x1="441.3" y1="14" x2="441.3" y2="270"/><line class="mom-check" x1="504.6" y1="14" x2="504.6" y2="270"/><text class="pl-axis" x="504.6" y="286" text-anchor="middle">1pm</text><line class="mom-check" x1="567.8" y1="14" x2="567.8" y2="270"/><line class="mom-check" x1="631.0" y1="14" x2="631.0" y2="270"/><text class="pl-axis" x="631.0" y="286" text-anchor="middle">2pm</text><line class="mom-check" x1="694.3" y1="14" x2="694.3" y2="270"/><line class="mom-check" x1="757.5" y1="14" x2="757.5" y2="270"/><text class="pl-axis" x="757.5" y="286" text-anchor="middle">3pm</text><line class="mom-check" x1="820.8" y1="14" x2="820.8" y2="270"/><rect class="mom-hit" x="64" y="14" width="820" height="256"/><path class="mom-band" d="M64.0,88.8 L66.1,84.8 L68.2,85.2 L70.3,84.2 L72.4,84.8 L74.5,83.6 L76.6,83.2 L78.8,79.9 L80.9,77.8 L83.0,77.2 L85.1,75.3 L87.2,73.2 L89.3,71.1 L91.4,72.0 L93.5,72.6 L95.6,73.5 L97.7,74.2 L99.8,71.7 L101.9,70.9 L104.1,73.4 L106.2,73.3 L108.3,71.4 L110.4,72.2 L112.5,71.0 L114.6,71.7 L116.7,71.9 L118.8,73.9 L120.9,71.4 L123.0,72.1 L125.1,71.7 L127.2,71.7 L129.3,71.1 L131.5,70.1 L133.6,70.3 L135.7,72.1 L137.8,71.2 L139.9,70.7 L142.0,68.0 L144.1,68.7 L146.2,67.8 L148.3,65.0 L150.4,64.4 L152.5,66.6 L154.6,68.3 L156.8,66.9 L158.9,66.9 L161.0,66.7 L163.1,66.5 L165.2,66.9 L167.3,65.9 L169.4,65.0 L171.5,63.3 L173.6,63.7 L175.7,63.7 L177.8,64.4 L179.9,64.3 L182.0,64.1 L184.2,63.8 L186.3,62.0 L188.4,61.7 L190.5,62.3 L192.6,61.6 L194.7,62.7 L196.8,62.7 L198.9,63.7 L201.0,62.7 L203.1,62.2 L205.2,62.2 L207.3,60.7 L209.4,58.1 L211.6,56.8 L213.7,55.5 L215.8,56.4 L217.9,57.7 L220.0,56.4 L222.1,56.3 L224.2,55.2 L226.3,54.2 L228.4,54.4 L230.5,53.9 L232.6,54.1 L234.7,52.3 L236.9,51.4 L239.0,51.4 L241.1,51.3 L243.2,49.5 L245.3,49.9 L247.4,50.0 L249.5,49.8 L251.6,50.7 L253.7,49.4 L255.8,48.8 L257.9,49.0 L260.0,49.3 L262.1,47.9 L264.3,46.2 L266.4,45.2 L268.5,44.9 L270.6,44.2 L272.7,44.7 L274.8,44.9 L276.9,43.7 L279.0,45.9 L281.1,45.2 L283.2,44.5 L285.3,43.9 L287.4,44.6 L289.6,46.0 L291.7,45.3 L293.8,45.6 L295.9,45.5 L298.0,45.9 L300.1,44.6 L302.2,45.5 L304.3,44.9 L306.4,44.1 L308.5,44.9 L310.6,43.5 L312.7,43.8 L314.8,42.8 L317.0,44.6 L319.1,44.4 L321.2,44.4 L323.3,44.9 L325.4,44.2 L327.5,44.1 L329.6,43.4 L331.7,42.8 L333.8,43.5 L335.9,44.5 L338.0,42.4 L340.1,42.4 L342.3,43.4 L344.4,43.6 L346.5,42.8 L348.6,43.8 L350.7,44.0 L352.8,43.0 L354.9,43.4 L357.0,42.2 L359.1,43.4 L361.2,42.6 L363.3,43.9 L365.4,43.1 L367.5,42.5 L369.7,43.5 L371.8,42.7 L373.9,42.1 L376.0,41.6 L378.1,41.0 L380.2,40.6 L382.3,40.3 L384.4,40.6 L386.5,41.0 L388.6,42.2 L390.7,42.0 L392.8,41.2 L395.0,42.5 L397.1,41.9 L399.2,42.5 L401.3,42.0 L403.4,42.3 L405.5,42.1 L407.6,42.1 L409.7,43.5 L411.8,43.4 L413.9,42.9 L416.0,44.1 L418.1,43.7 L420.2,44.2 L422.4,44.5 L424.5,44.4 L426.6,44.0 L428.7,43.8 L430.8,43.4 L432.9,44.2 L435.0,44.7 L437.1,44.6 L439.2,44.0 L441.3,43.8 L443.4,43.3 L445.5,41.8 L447.7,42.6 L449.8,41.4 L451.9,40.8 L454.0,39.9 L456.1,39.7 L458.2,41.3 L460.3,41.4 L462.4,40.3 L464.5,41.3 L466.6,40.6 L468.7,40.8 L470.8,41.2 L472.9,40.6 L475.1,40.7 L477.2,41.0 L479.3,41.3 L481.4,41.0 L483.5,40.9 L485.6,39.7 L487.7,40.9 L489.8,41.3 L491.9,42.9 L494.0,43.4 L496.1,41.8 L498.2,42.3 L500.3,42.3 L502.5,42.6 L504.6,43.1 L506.7,42.6 L508.8,42.3 L510.9,42.5 L513.0,41.6 L515.1,39.7 L517.2,38.9 L519.3,38.5 L521.4,38.5 L523.5,38.5 L525.6,38.4 L527.8,39.0 L529.9,38.4 L532.0,37.9 L534.1,38.0 L536.2,37.5 L538.3,36.5 L540.4,36.1 L542.5,35.8 L544.6,36.0 L546.7,35.6 L548.8,35.3 L550.9,35.5 L553.0,35.5 L555.2,35.9 L557.3,36.6 L559.4,36.0 L561.5,35.9 L563.6,36.0 L565.7,36.5 L567.8,36.5 L569.9,37.0 L572.0,36.6 L574.1,37.0 L576.2,37.1 L578.3,38.2 L580.5,36.9 L582.6,36.3 L584.7,36.3 L586.8,36.5 L588.9,36.2 L591.0,35.8 L593.1,36.4 L595.2,35.9 L597.3,36.7 L599.4,36.4 L601.5,35.7 L603.6,35.6 L605.7,35.9 L607.9,35.1 L610.0,35.2 L612.1,34.9 L614.2,34.2 L616.3,34.8 L618.4,34.5 L620.5,34.5 L622.6,33.2 L624.7,33.9 L626.8,32.8 L628.9,32.8 L631.0,33.0 L633.2,32.3 L635.3,31.3 L637.4,32.8 L639.5,33.2 L641.6,32.6 L643.7,32.0 L645.8,31.3 L647.9,32.3 L650.0,32.5 L652.1,32.0 L654.2,32.2 L656.3,32.9 L658.4,34.0 L660.6,34.6 L662.7,33.8 L664.8,33.2 L666.9,33.2 L669.0,33.3 L671.1,33.3 L673.2,33.7 L675.3,33.7 L677.4,33.8 L679.5,33.9 L681.6,34.2 L683.7,34.4 L685.9,34.0 L688.0,33.2 L690.1,33.1 L692.2,33.2 L694.3,33.4 L696.4,32.2 L698.5,31.7 L700.6,31.9 L702.7,33.5 L704.8,33.1 L706.9,33.4 L709.0,32.9 L711.1,33.9 L713.3,34.1 L715.4,34.8 L717.5,34.4 L719.6,34.1 L721.7,34.0 L723.8,33.6 L725.9,35.6 L728.0,35.1 L730.1,35.4 L732.2,35.1 L734.3,35.0 L736.4,35.9 L738.6,35.6 L740.7,35.3 L742.8,34.0 L744.9,33.9 L747.0,34.1 L749.1,32.6 L751.2,33.6 L753.3,33.6 L755.4,33.8 L757.5,34.3 L759.6,33.4 L761.7,34.0 L763.8,34.0 L766.0,33.0 L768.1,33.0 L770.2,32.5 L772.3,30.2 L774.4,30.9 L776.5,31.5 L778.6,31.0 L780.7,30.8 L782.8,31.1 L784.9,30.9 L787.0,32.0 L789.1,32.7 L791.2,31.6 L793.4,30.6 L795.5,29.7 L797.6,30.2 L799.7,31.7 L801.8,32.8 L803.9,32.9 L806.0,32.0 L808.1,33.1 L810.2,32.0 L812.3,31.8 L814.4,31.8 L816.5,32.3 L818.7,33.4 L820.8,34.1 L822.9,33.3 L825.0,32.2 L827.1,31.8 L829.2,31.1 L831.3,31.6 L833.4,30.5 L835.5,30.3 L837.6,28.7 L839.7,29.7 L841.8,29.0 L843.9,29.8 L846.1,29.4 L848.2,29.7 L850.3,29.7 L852.4,29.1 L854.5,28.3 L856.6,27.7 L858.7,28.5 L860.8,29.5 L862.9,29.3 L865.0,32.6 L867.1,33.2 L869.2,33.4 L871.4,32.7 L873.5,33.9 L875.6,35.3 L877.7,34.6 L879.8,33.8 L881.9,33.7 L884.0,33.9 L884.0,250.2 L881.9,250.4 L879.8,250.3 L877.7,249.5 L875.6,248.8 L873.5,250.2 L871.4,251.3 L869.2,250.7 L867.1,250.9 L865.0,251.5 L862.9,254.7 L860.8,254.5 L858.7,255.5 L856.6,256.3 L854.5,255.7 L852.4,254.9 L850.3,254.3 L848.2,254.3 L846.1,254.6 L843.9,254.2 L841.8,255.0 L839.7,254.3 L837.6,255.3 L835.5,253.7 L833.4,253.5 L831.3,252.4 L829.2,252.9 L827.1,252.2 L825.0,251.8 L822.9,250.8 L820.8,250.0 L818.7,250.6 L816.5,251.7 L814.4,252.2 L812.3,252.3 L810.2,252.0 L808.1,250.9 L806.0,252.1 L803.9,251.2 L801.8,251.2 L799.7,252.3 L797.6,253.8 L795.5,254.4 L793.4,253.5 L791.2,252.4 L789.1,251.3 L787.0,252.1 L784.9,253.1 L782.8,253.0 L780.7,253.3 L778.6,253.0 L776.5,252.5 L774.4,253.1 L772.3,253.8 L770.2,251.6 L768.1,251.0 L766.0,251.0 L763.8,250.0 L761.7,250.0 L759.6,250.6 L757.5,249.8 L755.4,250.3 L753.3,250.5 L751.2,250.4 L749.1,251.4 L747.0,249.9 L744.9,250.1 L742.8,250.1 L740.7,248.8 L738.6,248.5 L736.4,248.2 L734.3,249.1 L732.2,249.0 L730.1,248.7 L728.0,249.0 L725.9,248.5 L723.8,250.5 L721.7,250.1 L719.6,250.0 L717.5,249.7 L715.4,249.3 L713.3,250.0 L711.1,250.2 L709.0,251.2 L706.9,250.7 L704.8,251.0 L702.7,250.6 L700.6,252.2 L698.5,252.4 L696.4,251.8 L694.3,250.7 L692.2,250.9 L690.1,250.9 L688.0,250.9 L685.9,250.1 L683.7,249.7 L681.6,249.9 L679.5,250.2 L677.4,250.3 L675.3,250.4 L673.2,250.3 L671.1,250.8 L669.0,250.8 L666.9,250.8 L664.8,250.9 L662.7,250.3 L660.6,249.5 L658.4,250.1 L656.3,251.2 L654.2,251.9 L652.1,252.0 L650.0,251.6 L647.9,251.7 L645.8,252.8 L643.7,252.1 L641.6,251.5 L639.5,250.8 L637.4,251.2 L635.3,252.7 L633.2,251.7 L631.0,251.1 L628.9,251.3 L626.8,251.3 L624.7,250.2 L622.6,250.9 L620.5,249.6 L618.4,249.6 L616.3,249.3 L614.2,249.9 L612.1,249.2 L610.0,248.9 L607.9,249.0 L605.7,248.2 L603.6,248.5 L601.5,248.4 L599.4,247.7 L597.3,247.4 L595.2,248.2 L593.1,247.7 L591.0,248.3 L588.9,247.9 L586.8,247.7 L584.7,247.8 L582.6,247.8 L580.5,247.2 L578.3,245.9 L576.2,247.0 L574.1,247.2 L572.0,247.5 L569.9,247.1 L567.8,247.6 L565.7,247.6 L563.6,248.1 L561.5,248.2 L559.4,248.1 L557.3,247.5 L555.2,248.2 L553.0,248.6 L550.9,248.6 L548.8,248.8 L546.7,248.5 L544.6,248.1 L542.5,248.3 L540.4,248.0 L538.3,247.6 L536.2,246.6 L534.1,246.2 L532.0,246.2 L529.9,245.7 L527.8,245.1 L525.6,245.8 L523.5,245.7 L521.4,245.7 L519.3,245.7 L517.2,245.2 L515.1,244.4 L513.0,242.5 L510.9,241.7 L508.8,241.8 L506.7,241.6 L504.6,241.1 L502.5,241.6 L500.3,241.9 L498.2,241.9 L496.1,242.4 L494.0,240.8 L491.9,241.3 L489.8,242.8 L487.7,243.3 L485.6,244.4 L483.5,243.3 L481.4,243.2 L479.3,242.9 L477.2,243.1 L475.1,243.5 L472.9,243.5 L470.8,242.9 L468.7,243.4 L466.6,243.6 L464.5,242.9 L462.4,243.9 L460.3,242.8 L458.2,242.8 L456.1,244.4 L454.0,244.2 L451.9,243.3 L449.8,242.7 L447.7,241.6 L445.5,242.3 L443.4,240.9 L441.3,240.4 L439.2,240.2 L437.1,239.6 L435.0,239.5 L432.9,240.0 L430.8,240.8 L428.7,240.4 L426.6,240.2 L424.5,239.8 L422.4,239.7 L420.2,240.0 L418.1,240.5 L416.0,240.1 L413.9,241.3 L411.8,240.8 L409.7,240.7 L407.6,242.1 L405.5,242.1 L403.4,241.9 L401.3,242.1 L399.2,241.6 L397.1,242.2 L395.0,241.7 L392.8,243.0 L390.7,242.2 L388.6,242.0 L386.5,243.2 L384.4,243.5 L382.3,243.9 L380.2,243.6 L378.1,243.2 L376.0,242.6 L373.9,242.1 L371.8,241.5 L369.7,240.7 L367.5,241.7 L365.4,241.0 L363.3,240.3 L361.2,241.5 L359.1,240.8 L357.0,242.0 L354.9,240.8 L352.8,241.2 L350.7,240.2 L348.6,240.4 L346.5,241.4 L344.4,240.6 L342.3,240.7 L340.1,241.8 L338.0,241.8 L335.9,239.7 L333.8,240.7 L331.7,241.4 L329.6,240.8 L327.5,240.1 L325.4,240.0 L323.3,239.3 L321.2,239.8 L319.1,239.8 L317.0,239.6 L314.8,241.4 L312.7,240.4 L310.6,240.7 L308.5,239.3 L306.4,240.1 L304.3,239.3 L302.2,238.7 L300.1,239.6 L298.0,238.3 L295.9,238.7 L293.8,238.7 L291.7,238.9 L289.6,238.2 L287.4,239.6 L285.3,240.3 L283.2,239.7 L281.1,239.1 L279.0,238.4 L276.9,240.5 L274.8,239.3 L272.7,239.5 L270.6,240.0 L268.5,239.4 L266.4,239.0 L264.3,238.0 L262.1,236.4 L260.0,235.0 L257.9,235.3 L255.8,235.4 L253.7,234.9 L251.6,233.5 L249.5,234.5 L247.4,234.3 L245.3,234.3 L243.2,234.8 L241.1,233.0 L239.0,232.9 L236.9,232.9 L234.7,232.0 L232.6,230.2 L230.5,230.5 L228.4,229.9 L226.3,230.2 L224.2,229.2 L222.1,228.0 L220.0,228.0 L217.9,226.6 L215.8,227.9 L213.7,228.8 L211.6,227.5 L209.4,226.3 L207.3,223.7 L205.2,222.2 L203.1,222.2 L201.0,221.8 L198.9,220.7 L196.8,221.7 L194.7,221.7 L192.6,222.8 L190.5,222.1 L188.4,222.7 L186.3,222.4 L184.2,220.6 L182.0,220.3 L179.9,220.2 L177.8,220.1 L175.7,220.7 L173.6,220.7 L171.5,221.1 L169.4,219.4 L167.3,218.5 L165.2,217.6 L163.1,218.0 L161.0,217.8 L158.9,217.6 L156.8,217.6 L154.6,216.2 L152.5,217.9 L150.4,220.0 L148.3,219.4 L146.2,216.7 L144.1,215.8 L142.0,216.5 L139.9,213.8 L137.8,213.3 L135.7,212.4 L133.6,214.3 L131.5,214.4 L129.3,213.4 L127.2,212.8 L125.1,212.9 L123.0,212.5 L120.9,213.1 L118.8,210.7 L116.7,212.7 L114.6,212.8 L112.5,213.5 L110.4,212.4 L108.3,213.2 L106.2,211.3 L104.1,211.2 L101.9,213.7 L99.8,212.8 L97.7,210.4 L95.6,211.1 L93.5,212.0 L91.4,212.6 L89.3,213.4 L87.2,211.4 L85.1,209.2 L83.0,207.4 L80.9,206.8 L78.8,204.7 L76.6,201.5 L74.5,201.1 L72.4,199.9 L70.3,200.5 L68.2,199.5 L66.1,199.9 L64.0,195.9 Z"/><path class="mom-bound" d="M64.0,88.8 L66.1,84.8 L68.2,85.2 L70.3,84.2 L72.4,84.8 L74.5,83.6 L76.6,83.2 L78.8,79.9 L80.9,77.8 L83.0,77.2 L85.1,75.3 L87.2,73.2 L89.3,71.1 L91.4,72.0 L93.5,72.6 L95.6,73.5 L97.7,74.2 L99.8,71.7 L101.9,70.9 L104.1,73.4 L106.2,73.3 L108.3,71.4 L110.4,72.2 L112.5,71.0 L114.6,71.7 L116.7,71.9 L118.8,73.9 L120.9,71.4 L123.0,72.1 L125.1,71.7 L127.2,71.7 L129.3,71.1 L131.5,70.1 L133.6,70.3 L135.7,72.1 L137.8,71.2 L139.9,70.7 L142.0,68.0 L144.1,68.7 L146.2,67.8 L148.3,65.0 L150.4,64.4 L152.5,66.6 L154.6,68.3 L156.8,66.9 L158.9,66.9 L161.0,66.7 L163.1,66.5 L165.2,66.9 L167.3,65.9 L169.4,65.0 L171.5,63.3 L173.6,63.7 L175.7,63.7 L177.8,64.4 L179.9,64.3 L182.0,64.1 L184.2,63.8 L186.3,62.0 L188.4,61.7 L190.5,62.3 L192.6,61.6 L194.7,62.7 L196.8,62.7 L198.9,63.7 L201.0,62.7 L203.1,62.2 L205.2,62.2 L207.3,60.7 L209.4,58.1 L211.6,56.8 L213.7,55.5 L215.8,56.4 L217.9,57.7 L220.0,56.4 L222.1,56.3 L224.2,55.2 L226.3,54.2 L228.4,54.4 L230.5,53.9 L232.6,54.1 L234.7,52.3 L236.9,51.4 L239.0,51.4 L241.1,51.3 L243.2,49.5 L245.3,49.9 L247.4,50.0 L249.5,49.8 L251.6,50.7 L253.7,49.4 L255.8,48.8 L257.9,49.0 L260.0,49.3 L262.1,47.9 L264.3,46.2 L266.4,45.2 L268.5,44.9 L270.6,44.2 L272.7,44.7 L274.8,44.9 L276.9,43.7 L279.0,45.9 L281.1,45.2 L283.2,44.5 L285.3,43.9 L287.4,44.6 L289.6,46.0 L291.7,45.3 L293.8,45.6 L295.9,45.5 L298.0,45.9 L300.1,44.6 L302.2,45.5 L304.3,44.9 L306.4,44.1 L308.5,44.9 L310.6,43.5 L312.7,43.8 L314.8,42.8 L317.0,44.6 L319.1,44.4 L321.2,44.4 L323.3,44.9 L325.4,44.2 L327.5,44.1 L329.6,43.4 L331.7,42.8 L333.8,43.5 L335.9,44.5 L338.0,42.4 L340.1,42.4 L342.3,43.4 L344.4,43.6 L346.5,42.8 L348.6,43.8 L350.7,44.0 L352.8,43.0 L354.9,43.4 L357.0,42.2 L359.1,43.4 L361.2,42.6 L363.3,43.9 L365.4,43.1 L367.5,42.5 L369.7,43.5 L371.8,42.7 L373.9,42.1 L376.0,41.6 L378.1,41.0 L380.2,40.6 L382.3,40.3 L384.4,40.6 L386.5,41.0 L388.6,42.2 L390.7,42.0 L392.8,41.2 L395.0,42.5 L397.1,41.9 L399.2,42.5 L401.3,42.0 L403.4,42.3 L405.5,42.1 L407.6,42.1 L409.7,43.5 L411.8,43.4 L413.9,42.9 L416.0,44.1 L418.1,43.7 L420.2,44.2 L422.4,44.5 L424.5,44.4 L426.6,44.0 L428.7,43.8 L430.8,43.4 L432.9,44.2 L435.0,44.7 L437.1,44.6 L439.2,44.0 L441.3,43.8 L443.4,43.3 L445.5,41.8 L447.7,42.6 L449.8,41.4 L451.9,40.8 L454.0,39.9 L456.1,39.7 L458.2,41.3 L460.3,41.4 L462.4,40.3 L464.5,41.3 L466.6,40.6 L468.7,40.8 L470.8,41.2 L472.9,40.6 L475.1,40.7 L477.2,41.0 L479.3,41.3 L481.4,41.0 L483.5,40.9 L485.6,39.7 L487.7,40.9 L489.8,41.3 L491.9,42.9 L494.0,43.4 L496.1,41.8 L498.2,42.3 L500.3,42.3 L502.5,42.6 L504.6,43.1 L506.7,42.6 L508.8,42.3 L510.9,42.5 L513.0,41.6 L515.1,39.7 L517.2,38.9 L519.3,38.5 L521.4,38.5 L523.5,38.5 L525.6,38.4 L527.8,39.0 L529.9,38.4 L532.0,37.9 L534.1,38.0 L536.2,37.5 L538.3,36.5 L540.4,36.1 L542.5,35.8 L544.6,36.0 L546.7,35.6 L548.8,35.3 L550.9,35.5 L553.0,35.5 L555.2,35.9 L557.3,36.6 L559.4,36.0 L561.5,35.9 L563.6,36.0 L565.7,36.5 L567.8,36.5 L569.9,37.0 L572.0,36.6 L574.1,37.0 L576.2,37.1 L578.3,38.2 L580.5,36.9 L582.6,36.3 L584.7,36.3 L586.8,36.5 L588.9,36.2 L591.0,35.8 L593.1,36.4 L595.2,35.9 L597.3,36.7 L599.4,36.4 L601.5,35.7 L603.6,35.6 L605.7,35.9 L607.9,35.1 L610.0,35.2 L612.1,34.9 L614.2,34.2 L616.3,34.8 L618.4,34.5 L620.5,34.5 L622.6,33.2 L624.7,33.9 L626.8,32.8 L628.9,32.8 L631.0,33.0 L633.2,32.3 L635.3,31.3 L637.4,32.8 L639.5,33.2 L641.6,32.6 L643.7,32.0 L645.8,31.3 L647.9,32.3 L650.0,32.5 L652.1,32.0 L654.2,32.2 L656.3,32.9 L658.4,34.0 L660.6,34.6 L662.7,33.8 L664.8,33.2 L666.9,33.2 L669.0,33.3 L671.1,33.3 L673.2,33.7 L675.3,33.7 L677.4,33.8 L679.5,33.9 L681.6,34.2 L683.7,34.4 L685.9,34.0 L688.0,33.2 L690.1,33.1 L692.2,33.2 L694.3,33.4 L696.4,32.2 L698.5,31.7 L700.6,31.9 L702.7,33.5 L704.8,33.1 L706.9,33.4 L709.0,32.9 L711.1,33.9 L713.3,34.1 L715.4,34.8 L717.5,34.4 L719.6,34.1 L721.7,34.0 L723.8,33.6 L725.9,35.6 L728.0,35.1 L730.1,35.4 L732.2,35.1 L734.3,35.0 L736.4,35.9 L738.6,35.6 L740.7,35.3 L742.8,34.0 L744.9,33.9 L747.0,34.1 L749.1,32.6 L751.2,33.6 L753.3,33.6 L755.4,33.8 L757.5,34.3 L759.6,33.4 L761.7,34.0 L763.8,34.0 L766.0,33.0 L768.1,33.0 L770.2,32.5 L772.3,30.2 L774.4,30.9 L776.5,31.5 L778.6,31.0 L780.7,30.8 L782.8,31.1 L784.9,30.9 L787.0,32.0 L789.1,32.7 L791.2,31.6 L793.4,30.6 L795.5,29.7 L797.6,30.2 L799.7,31.7 L801.8,32.8 L803.9,32.9 L806.0,32.0 L808.1,33.1 L810.2,32.0 L812.3,31.8 L814.4,31.8 L816.5,32.3 L818.7,33.4 L820.8,34.1 L822.9,33.3 L825.0,32.2 L827.1,31.8 L829.2,31.1 L831.3,31.6 L833.4,30.5 L835.5,30.3 L837.6,28.7 L839.7,29.7 L841.8,29.0 L843.9,29.8 L846.1,29.4 L848.2,29.7 L850.3,29.7 L852.4,29.1 L854.5,28.3 L856.6,27.7 L858.7,28.5 L860.8,29.5 L862.9,29.3 L865.0,32.6 L867.1,33.2 L869.2,33.4 L871.4,32.7 L873.5,33.9 L875.6,35.3 L877.7,34.6 L879.8,33.8 L881.9,33.7 L884.0,33.9"/><path class="mom-bound" d="M64.0,195.9 L66.1,199.9 L68.2,199.5 L70.3,200.5 L72.4,199.9 L74.5,201.1 L76.6,201.5 L78.8,204.7 L80.9,206.8 L83.0,207.4 L85.1,209.2 L87.2,211.4 L89.3,213.4 L91.4,212.6 L93.5,212.0 L95.6,211.1 L97.7,210.4 L99.8,212.8 L101.9,213.7 L104.1,211.2 L106.2,211.3 L108.3,213.2 L110.4,212.4 L112.5,213.5 L114.6,212.8 L116.7,212.7 L118.8,210.7 L120.9,213.1 L123.0,212.5 L125.1,212.9 L127.2,212.8 L129.3,213.4 L131.5,214.4 L133.6,214.3 L135.7,212.4 L137.8,213.3 L139.9,213.8 L142.0,216.5 L144.1,215.8 L146.2,216.7 L148.3,219.4 L150.4,220.0 L152.5,217.9 L154.6,216.2 L156.8,217.6 L158.9,217.6 L161.0,217.8 L163.1,218.0 L165.2,217.6 L167.3,218.5 L169.4,219.4 L171.5,221.1 L173.6,220.7 L175.7,220.7 L177.8,220.1 L179.9,220.2 L182.0,220.3 L184.2,220.6 L186.3,222.4 L188.4,222.7 L190.5,222.1 L192.6,222.8 L194.7,221.7 L196.8,221.7 L198.9,220.7 L201.0,221.8 L203.1,222.2 L205.2,222.2 L207.3,223.7 L209.4,226.3 L211.6,227.5 L213.7,228.8 L215.8,227.9 L217.9,226.6 L220.0,228.0 L222.1,228.0 L224.2,229.2 L226.3,230.2 L228.4,229.9 L230.5,230.5 L232.6,230.2 L234.7,232.0 L236.9,232.9 L239.0,232.9 L241.1,233.0 L243.2,234.8 L245.3,234.3 L247.4,234.3 L249.5,234.5 L251.6,233.5 L253.7,234.9 L255.8,235.4 L257.9,235.3 L260.0,235.0 L262.1,236.4 L264.3,238.0 L266.4,239.0 L268.5,239.4 L270.6,240.0 L272.7,239.5 L274.8,239.3 L276.9,240.5 L279.0,238.4 L281.1,239.1 L283.2,239.7 L285.3,240.3 L287.4,239.6 L289.6,238.2 L291.7,238.9 L293.8,238.7 L295.9,238.7 L298.0,238.3 L300.1,239.6 L302.2,238.7 L304.3,239.3 L306.4,240.1 L308.5,239.3 L310.6,240.7 L312.7,240.4 L314.8,241.4 L317.0,239.6 L319.1,239.8 L321.2,239.8 L323.3,239.3 L325.4,240.0 L327.5,240.1 L329.6,240.8 L331.7,241.4 L333.8,240.7 L335.9,239.7 L338.0,241.8 L340.1,241.8 L342.3,240.7 L344.4,240.6 L346.5,241.4 L348.6,240.4 L350.7,240.2 L352.8,241.2 L354.9,240.8 L357.0,242.0 L359.1,240.8 L361.2,241.5 L363.3,240.3 L365.4,241.0 L367.5,241.7 L369.7,240.7 L371.8,241.5 L373.9,242.1 L376.0,242.6 L378.1,243.2 L380.2,243.6 L382.3,243.9 L384.4,243.5 L386.5,243.2 L388.6,242.0 L390.7,242.2 L392.8,243.0 L395.0,241.7 L397.1,242.2 L399.2,241.6 L401.3,242.1 L403.4,241.9 L405.5,242.1 L407.6,242.1 L409.7,240.7 L411.8,240.8 L413.9,241.3 L416.0,240.1 L418.1,240.5 L420.2,240.0 L422.4,239.7 L424.5,239.8 L426.6,240.2 L428.7,240.4 L430.8,240.8 L432.9,240.0 L435.0,239.5 L437.1,239.6 L439.2,240.2 L441.3,240.4 L443.4,240.9 L445.5,242.3 L447.7,241.6 L449.8,242.7 L451.9,243.3 L454.0,244.2 L456.1,244.4 L458.2,242.8 L460.3,242.8 L462.4,243.9 L464.5,242.9 L466.6,243.6 L468.7,243.4 L470.8,242.9 L472.9,243.5 L475.1,243.5 L477.2,243.1 L479.3,242.9 L481.4,243.2 L483.5,243.3 L485.6,244.4 L487.7,243.3 L489.8,242.8 L491.9,241.3 L494.0,240.8 L496.1,242.4 L498.2,241.9 L500.3,241.9 L502.5,241.6 L504.6,241.1 L506.7,241.6 L508.8,241.8 L510.9,241.7 L513.0,242.5 L515.1,244.4 L517.2,245.2 L519.3,245.7 L521.4,245.7 L523.5,245.7 L525.6,245.8 L527.8,245.1 L529.9,245.7 L532.0,246.2 L534.1,246.2 L536.2,246.6 L538.3,247.6 L540.4,248.0 L542.5,248.3 L544.6,248.1 L546.7,248.5 L548.8,248.8 L550.9,248.6 L553.0,248.6 L555.2,248.2 L557.3,247.5 L559.4,248.1 L561.5,248.2 L563.6,248.1 L565.7,247.6 L567.8,247.6 L569.9,247.1 L572.0,247.5 L574.1,247.2 L576.2,247.0 L578.3,245.9 L580.5,247.2 L582.6,247.8 L584.7,247.8 L586.8,247.7 L588.9,247.9 L591.0,248.3 L593.1,247.7 L595.2,248.2 L597.3,247.4 L599.4,247.7 L601.5,248.4 L603.6,248.5 L605.7,248.2 L607.9,249.0 L610.0,248.9 L612.1,249.2 L614.2,249.9 L616.3,249.3 L618.4,249.6 L620.5,249.6 L622.6,250.9 L624.7,250.2 L626.8,251.3 L628.9,251.3 L631.0,251.1 L633.2,251.7 L635.3,252.7 L637.4,251.2 L639.5,250.8 L641.6,251.5 L643.7,252.1 L645.8,252.8 L647.9,251.7 L650.0,251.6 L652.1,252.0 L654.2,251.9 L656.3,251.2 L658.4,250.1 L660.6,249.5 L662.7,250.3 L664.8,250.9 L666.9,250.8 L669.0,250.8 L671.1,250.8 L673.2,250.3 L675.3,250.4 L677.4,250.3 L679.5,250.2 L681.6,249.9 L683.7,249.7 L685.9,250.1 L688.0,250.9 L690.1,250.9 L692.2,250.9 L694.3,250.7 L696.4,251.8 L698.5,252.4 L700.6,252.2 L702.7,250.6 L704.8,251.0 L706.9,250.7 L709.0,251.2 L711.1,250.2 L713.3,250.0 L715.4,249.3 L717.5,249.7 L719.6,250.0 L721.7,250.1 L723.8,250.5 L725.9,248.5 L728.0,249.0 L730.1,248.7 L732.2,249.0 L734.3,249.1 L736.4,248.2 L738.6,248.5 L740.7,248.8 L742.8,250.1 L744.9,250.1 L747.0,249.9 L749.1,251.4 L751.2,250.4 L753.3,250.5 L755.4,250.3 L757.5,249.8 L759.6,250.6 L761.7,250.0 L763.8,250.0 L766.0,251.0 L768.1,251.0 L770.2,251.6 L772.3,253.8 L774.4,253.1 L776.5,252.5 L778.6,253.0 L780.7,253.3 L782.8,253.0 L784.9,253.1 L787.0,252.1 L789.1,251.3 L791.2,252.4 L793.4,253.5 L795.5,254.4 L797.6,253.8 L799.7,252.3 L801.8,251.2 L803.9,251.2 L806.0,252.1 L808.1,250.9 L810.2,252.0 L812.3,252.3 L814.4,252.2 L816.5,251.7 L818.7,250.6 L820.8,250.0 L822.9,250.8 L825.0,251.8 L827.1,252.2 L829.2,252.9 L831.3,252.4 L833.4,253.5 L835.5,253.7 L837.6,255.3 L839.7,254.3 L841.8,255.0 L843.9,254.2 L846.1,254.6 L848.2,254.3 L850.3,254.3 L852.4,254.9 L854.5,255.7 L856.6,256.3 L858.7,255.5 L860.8,254.5 L862.9,254.7 L865.0,251.5 L867.1,250.9 L869.2,250.7 L871.4,251.3 L873.5,250.2 L875.6,248.8 L877.7,249.5 L879.8,250.3 L881.9,250.4 L884.0,250.2"/><path class="mom-vwap" d="M64.0,200.2 L66.1,201.7 L68.2,207.0 L70.3,214.8 L72.4,218.6 L74.5,221.6 L76.6,223.2 L78.8,223.7 L80.9,226.0 L83.0,226.5 L85.1,226.9 L87.2,226.9 L89.3,225.2 L91.4,224.4"/><path class="mom-price" d="M64.0,204.9 L66.1,208.1 L68.2,222.2 L70.3,229.8 L72.4,239.4 L74.5,233.0 L76.6,236.8 L78.8,231.6 L80.9,240.5 L83.0,237.5 L85.1,234.6 L87.2,223.0 L89.3,213.5 L91.4,211.6"/><g class="mom-hover" style="display:none"><line class="mom-guide" x1="0" y1="14" x2="0" y2="270"/><circle class="mom-dot price" r="4"/><circle class="mom-dot band up" r="3.5"/><circle class="mom-dot band lo" r="3.5"/><circle class="mom-dot vwap" r="3.5"/></g></svg><div class="mom-tip" style="display:none"></div></div></div>
       <div class="mom-legend">
         <span><i class="sw price"></i>QQQ price</span><span><i class="sw band"></i>Concretum Bands (noise area)</span>
         <span><i class="sw vwap"></i>VWAP</span><span><i class="sw check"></i>30-min checks</span>
@@ -968,16 +968,54 @@ Day trading: -$308.11</title></rect></g>
         </tr></thead>
         <tbody>
             <tr>
-              <td data-value="2026-10-29T09:42:54.055207-04:00">2026-10-29 09:42 AM</td>
+              <td data-value="2026-10-29T09:44:22.186543-04:00">2026-10-29 09:44 AM</td>
+              <td data-value="ADSK">ADSK</td>
+              <td data-value="Autodesk, Inc. Common Stock">Autodesk, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="418.000000">418</td>
+              <td data-value="new">new</td>
+              <td class="num" data-value="239.360000">$239.36</td>
+              <td class="num" data-value="-238.260000">-$238.26</td>
+              <td class="num" data-value="239.930000">$239.93</td>
+              <td class="num neg" data-value="-0.570000">-$0.57</td>
+              <td class="num" data-value="246.290000">$246.29</td>
+              <td class="num pos" data-value="6.360000">$6.36</td>
+              <td class="num pos" data-value="2658.480000">$2,658.48</td>
+              <td class="num pos" data-value="2.650773">+2.65%</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+            </tr>
+            <tr>
+              <td data-value="2026-10-29T09:44:21.118859-04:00">2026-10-29 09:44 AM</td>
+              <td data-value="ADSK">ADSK</td>
+              <td data-value="Autodesk, Inc. Common Stock">Autodesk, Inc. Common Stock</td>
+              <td class="neg" data-value="sell">SELL</td>
+              <td class="num" data-value="418.000000">418</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="239.360000">$239.36</td>
+              <td class="num" data-value="-238.260000">-$238.26</td>
+              <td class="num" data-value="239.930000">$239.93</td>
+              <td class="num neg" data-value="-0.570000">-$0.57</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="235.640000">$235.64</td>
+              <td class="num neg" data-value="-1793.220000">-$1,793.22</td>
+              <td class="num neg" data-value="-1.788022">-1.79%</td>
+            </tr>
+            <tr>
+              <td data-value="2026-10-29T09:42:54.055208-04:00">2026-10-29 09:42 AM</td>
               <td data-value="STX">STX</td>
               <td data-value="Seagate Technology Holdings PLC Ordinary Shares (Ireland)">Seagate Technology Holdings PLC Ordinary Shares (Ireland)</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="145.000000">145</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="688.710000">$688.71</td>
-              <td class="num" data-value="105.850000">$105.85</td>
+              <td class="num" data-value="686.115000">$686.12</td>
+              <td class="num" data-value="-270.425000">-$270.43</td>
               <td class="num" data-value="687.980000">$687.98</td>
-              <td class="num pos" data-value="0.730000">$0.73</td>
+              <td class="num neg" data-value="-1.865000">-$1.87</td>
               <td class="num" data-value="712.710000">$712.71</td>
               <td class="num pos" data-value="24.730000">$24.73</td>
               <td class="num pos" data-value="3585.850000">$3,585.85</td>
@@ -987,16 +1025,16 @@ Day trading: -$308.11</title></rect></g>
               <td class="num " data-value="">—</td>
             </tr>
             <tr>
-              <td data-value="2026-10-29T09:42:53.479740-04:00">2026-10-29 09:42 AM</td>
+              <td data-value="2026-10-29T09:42:53.479741-04:00">2026-10-29 09:42 AM</td>
               <td data-value="STX">STX</td>
               <td data-value="Seagate Technology Holdings PLC Ordinary Shares (Ireland)">Seagate Technology Holdings PLC Ordinary Shares (Ireland)</td>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="145.000000">145</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="688.710000">$688.71</td>
-              <td class="num" data-value="105.850000">$105.85</td>
+              <td class="num" data-value="686.115000">$686.12</td>
+              <td class="num" data-value="-270.425000">-$270.43</td>
               <td class="num" data-value="687.980000">$687.98</td>
-              <td class="num pos" data-value="0.730000">$0.73</td>
+              <td class="num neg" data-value="-1.865000">-$1.87</td>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
@@ -1012,10 +1050,10 @@ Day trading: -$308.11</title></rect></g>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="327.000000">327</td>
               <td data-value="new">new</td>
-              <td class="num" data-value="260.155000">$260.15</td>
-              <td class="num" data-value="544.455000">$544.45</td>
+              <td class="num" data-value="260.085000">$260.08</td>
+              <td class="num" data-value="521.565000">$521.56</td>
               <td class="num" data-value="258.490000">$258.49</td>
-              <td class="num pos" data-value="1.665000">$1.66</td>
+              <td class="num pos" data-value="1.595000">$1.59</td>
               <td class="num" data-value="274.400000">$274.40</td>
               <td class="num pos" data-value="15.910000">$15.91</td>
               <td class="num pos" data-value="5202.570000">$5,202.57</td>
@@ -1031,10 +1069,10 @@ Day trading: -$308.11</title></rect></g>
               <td class="neg" data-value="sell">SELL</td>
               <td class="num" data-value="327.000000">327</td>
               <td data-value="held">held</td>
-              <td class="num" data-value="260.155000">$260.15</td>
-              <td class="num" data-value="544.455000">$544.45</td>
+              <td class="num" data-value="260.085000">$260.08</td>
+              <td class="num" data-value="521.565000">$521.56</td>
               <td class="num" data-value="258.490000">$258.49</td>
-              <td class="num pos" data-value="1.665000">$1.66</td>
+              <td class="num pos" data-value="1.595000">$1.59</td>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
@@ -1051,16 +1089,16 @@ Day trading: -$308.11</title></rect></g>
               <td></td>
               <td></td>
               <td></td>
-              <td class="num pos">$1,300.61</td>
+              <td class="num pos">$25.76</td>
               <td></td>
               <td></td>
               <td></td>
               <td></td>
-              <td class="num pos">$8,788.42</td>
-              <td class="num pos">+4.77%</td>
+              <td class="num pos">$11,446.90</td>
+              <td class="num pos">+4.02%</td>
               <td></td>
-              <td class="num neg">-$4,371.11</td>
-              <td class="num ">-2.37%</td>
+              <td class="num neg">-$6,164.33</td>
+              <td class="num ">-2.17%</td>
             </tr></tbody>
       </table>
       </div>
@@ -1086,32 +1124,46 @@ Day trading: -$308.11</title></rect></g>
         </tr></thead>
         <tbody>
             <tr>
+              <td data-value="ADSK">ADSK</td>
+              <td data-value="Autodesk, Inc. Common Stock">Autodesk, Inc. Common Stock</td>
+              <td class="num" data-value="418.000000">418</td>
+              <td class="num" data-value="239.220000">$239.22</td>
+              <td class="num" data-value="239.930000">$239.93</td>
+              <td class="num" data-value="100290.740000">$100,290.74</td>
+              <td class="num" data-value="99993.960000">$99,993.96</td>
+              <td class="num neg" data-value="-296.780000">-$296.78</td>
+              <td class="num neg" data-value="-0.296000">-0.30%</td>
+              <td class="num neg" data-value="-3.160000">-$3.16</td>
+              <td class="num neg" data-value="-1.304000">-1.30%</td>
+              <td class="num neg" data-value="-1320.880000">-$1,320.88</td>
+            </tr>
+            <tr>
               <td data-value="CRWD">CRWD</td>
               <td data-value="CrowdStrike Holdings, Inc. Class A Common Stock">CrowdStrike Holdings, Inc. Class A Common Stock</td>
               <td class="num" data-value="327.000000">327</td>
-              <td class="num" data-value="260.190000">$260.19</td>
+              <td class="num" data-value="260.095000">$260.10</td>
               <td class="num" data-value="258.490000">$258.49</td>
               <td class="num" data-value="84526.230000">$84,526.23</td>
-              <td class="num" data-value="85082.130000">$85,082.13</td>
-              <td class="num pos" data-value="555.900000">$555.90</td>
-              <td class="num pos" data-value="0.658000">+0.66%</td>
-              <td class="num neg" data-value="-6.470000">-$6.47</td>
-              <td class="num neg" data-value="-2.426000">-2.43%</td>
-              <td class="num neg" data-value="-2115.690000">-$2,115.69</td>
+              <td class="num" data-value="85051.065000">$85,051.07</td>
+              <td class="num pos" data-value="524.835000">$524.84</td>
+              <td class="num pos" data-value="0.621000">+0.62%</td>
+              <td class="num neg" data-value="-6.565000">-$6.56</td>
+              <td class="num neg" data-value="-2.462000">-2.46%</td>
+              <td class="num neg" data-value="-2146.755000">-$2,146.75</td>
             </tr>
             <tr>
               <td data-value="STX">STX</td>
               <td data-value="Seagate Technology Holdings PLC Ordinary Shares (Ireland)">Seagate Technology Holdings PLC Ordinary Shares (Ireland)</td>
               <td class="num" data-value="145.000000">145</td>
-              <td class="num" data-value="687.595000">$687.60</td>
+              <td class="num" data-value="686.330000">$686.33</td>
               <td class="num" data-value="687.980000">$687.98</td>
               <td class="num" data-value="99757.100000">$99,757.10</td>
-              <td class="num" data-value="99701.275000">$99,701.27</td>
-              <td class="num neg" data-value="-55.825000">-$55.83</td>
-              <td class="num neg" data-value="-0.056000">-0.06%</td>
-              <td class="num neg" data-value="-10.375000">-$10.38</td>
-              <td class="num neg" data-value="-1.486000">-1.49%</td>
-              <td class="num neg" data-value="-1504.375000">-$1,504.38</td>
+              <td class="num" data-value="99517.850000">$99,517.85</td>
+              <td class="num neg" data-value="-239.250000">-$239.25</td>
+              <td class="num neg" data-value="-0.240000">-0.24%</td>
+              <td class="num neg" data-value="-11.640000">-$11.64</td>
+              <td class="num neg" data-value="-1.668000">-1.67%</td>
+              <td class="num neg" data-value="-1687.800000">-$1,687.80</td>
             </tr>
             <tr class="totals-row">
               <td>Total</td>
@@ -1119,13 +1171,13 @@ Day trading: -$308.11</title></rect></g>
               <td></td>
               <td></td>
               <td></td>
-              <td class="num">$184,283.33</td>
-              <td class="num">$184,783.40</td>
-              <td class="num pos">$500.07</td>
+              <td class="num">$284,574.07</td>
+              <td class="num">$284,562.88</td>
+              <td class="num neg">-$11.19</td>
               <td></td>
               <td></td>
               <td></td>
-              <td class="num neg">-$3,620.07</td>
+              <td class="num neg">-$5,155.43</td>
             </tr></tbody>
       </table>
       </div>
@@ -1156,7 +1208,46 @@ Day trading: -$308.11</title></rect></g>
         </tr></thead>
         <tbody>
             <tr data-status="new">
-              <td data-value="2026-10-29T09:42:54.055207-04:00">2026-10-29 09:42 AM</td>
+              <td data-value="2026-10-29T09:44:22.186543-04:00">2026-10-29 09:44 AM</td>
+              <td data-value="ADSK">ADSK</td>
+              <td data-value="Autodesk, Inc. Common Stock">Autodesk, Inc. Common Stock</td>
+              <td class="act-open" data-value="sell">SELL</td>
+              <td class="num" data-value="418.000000">418</td>
+              <td data-value="new">new</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="239.360000">$239.36</td>
+            </tr>
+            <tr data-status="filled">
+              <td data-value="2026-10-29T09:44:21.133834-04:00">2026-10-29 09:44 AM</td>
+              <td data-value="ADSK">ADSK</td>
+              <td data-value="Autodesk, Inc. Common Stock">Autodesk, Inc. Common Stock</td>
+              <td class="act-open" data-value="open_long">Buy &middot; open long</td>
+              <td class="num" data-value="418.000000">418</td>
+              <td data-value="filled">filled</td>
+              <td class="num" data-value="239.930000">$239.93</td>
+              <td class="num" data-value="">—</td>
+              <td class="num neg" data-value="-238.260000">-$238.26 <span class="muted pl-note">open</span></td>
+              <td class="num neg" data-value="-0.237569">-0.24%</td>
+              <td class="num" data-value="239.360000">$239.36</td>
+            </tr>
+            <tr data-status="held">
+              <td data-value="2026-10-29T09:44:21.118859-04:00">2026-10-29 09:44 AM</td>
+              <td data-value="ADSK">ADSK</td>
+              <td data-value="Autodesk, Inc. Common Stock">Autodesk, Inc. Common Stock</td>
+              <td class="act-open" data-value="sell">SELL</td>
+              <td class="num" data-value="418.000000">418</td>
+              <td data-value="held">held</td>
+              <td class="num" data-value="">—</td>
+              <td class="num" data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num " data-value="">—</td>
+              <td class="num" data-value="239.360000">$239.36</td>
+            </tr>
+            <tr data-status="new">
+              <td data-value="2026-10-29T09:42:54.055208-04:00">2026-10-29 09:42 AM</td>
               <td data-value="STX">STX</td>
               <td data-value="Seagate Technology Holdings PLC Ordinary Shares (Ireland)">Seagate Technology Holdings PLC Ordinary Shares (Ireland)</td>
               <td class="act-open" data-value="sell">SELL</td>
@@ -1166,10 +1257,10 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="688.710000">$688.71</td>
+              <td class="num" data-value="686.115000">$686.12</td>
             </tr>
             <tr data-status="filled">
-              <td data-value="2026-10-29T09:42:53.494490-04:00">2026-10-29 09:42 AM</td>
+              <td data-value="2026-10-29T09:42:53.494491-04:00">2026-10-29 09:42 AM</td>
               <td data-value="STX">STX</td>
               <td data-value="Seagate Technology Holdings PLC Ordinary Shares (Ireland)">Seagate Technology Holdings PLC Ordinary Shares (Ireland)</td>
               <td class="act-open" data-value="open_long">Buy &middot; open long</td>
@@ -1177,12 +1268,12 @@ Day trading: -$308.11</title></rect></g>
               <td data-value="filled">filled</td>
               <td class="num" data-value="687.980000">$687.98</td>
               <td class="num" data-value="">—</td>
-              <td class="num pos" data-value="105.850000">$105.85 <span class="muted pl-note">open</span></td>
-              <td class="num pos" data-value="0.106108">+0.11%</td>
-              <td class="num" data-value="688.710000">$688.71</td>
+              <td class="num neg" data-value="-270.425000">-$270.43 <span class="muted pl-note">open</span></td>
+              <td class="num neg" data-value="-0.271083">-0.27%</td>
+              <td class="num" data-value="686.115000">$686.12</td>
             </tr>
             <tr data-status="held">
-              <td data-value="2026-10-29T09:42:53.479740-04:00">2026-10-29 09:42 AM</td>
+              <td data-value="2026-10-29T09:42:53.479741-04:00">2026-10-29 09:42 AM</td>
               <td data-value="STX">STX</td>
               <td data-value="Seagate Technology Holdings PLC Ordinary Shares (Ireland)">Seagate Technology Holdings PLC Ordinary Shares (Ireland)</td>
               <td class="act-open" data-value="sell">SELL</td>
@@ -1192,7 +1283,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="688.710000">$688.71</td>
+              <td class="num" data-value="686.115000">$686.12</td>
             </tr>
             <tr data-status="new">
               <td data-value="2026-10-29T09:42:18.046011-04:00">2026-10-29 09:42 AM</td>
@@ -1205,7 +1296,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="260.155000">$260.15</td>
+              <td class="num" data-value="260.085000">$260.08</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-29T09:42:16.247469-04:00">2026-10-29 09:42 AM</td>
@@ -1216,9 +1307,9 @@ Day trading: -$308.11</title></rect></g>
               <td data-value="filled">filled</td>
               <td class="num" data-value="258.490000">$258.49</td>
               <td class="num" data-value="">—</td>
-              <td class="num pos" data-value="544.455000">$544.45 <span class="muted pl-note">open</span></td>
-              <td class="num pos" data-value="0.644125">+0.64%</td>
-              <td class="num" data-value="260.155000">$260.15</td>
+              <td class="num pos" data-value="521.565000">$521.56 <span class="muted pl-note">open</span></td>
+              <td class="num pos" data-value="0.617045">+0.62%</td>
+              <td class="num" data-value="260.085000">$260.08</td>
             </tr>
             <tr data-status="held">
               <td data-value="2026-10-29T09:42:16.094935-04:00">2026-10-29 09:42 AM</td>
@@ -1231,7 +1322,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="260.155000">$260.15</td>
+              <td class="num" data-value="260.085000">$260.08</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T15:45:14.215356-04:00">2026-10-28 03:45 PM</td>
@@ -1244,7 +1335,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="242.603980">$242.60</td>
               <td class="num neg" data-value="-512.519760">-$512.52</td>
               <td class="num neg" data-value="-0.512762">-0.51%</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T15:41:06.383335-04:00">2026-10-28 03:41 PM</td>
@@ -1257,7 +1348,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="329.000000">$329.00</td>
               <td class="num neg" data-value="-342.390000">-$342.39</td>
               <td class="num neg" data-value="-0.343465">-0.34%</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-10-28T15:41:06.245692-04:00">2026-10-28 03:41 PM</td>
@@ -1270,7 +1361,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:36:02.417853-04:00">2026-10-28 03:36 PM</td>
@@ -1283,7 +1374,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:36:02.292664-04:00">2026-10-28 03:36 PM</td>
@@ -1296,7 +1387,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:30:58.566549-04:00">2026-10-28 03:30 PM</td>
@@ -1309,7 +1400,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:30:58.439150-04:00">2026-10-28 03:30 PM</td>
@@ -1322,7 +1413,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:25:54.777885-04:00">2026-10-28 03:25 PM</td>
@@ -1335,7 +1426,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:25:54.653553-04:00">2026-10-28 03:25 PM</td>
@@ -1348,7 +1439,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:20:51.012631-04:00">2026-10-28 03:20 PM</td>
@@ -1361,7 +1452,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:20:50.857119-04:00">2026-10-28 03:20 PM</td>
@@ -1374,7 +1465,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:15:46.859763-04:00">2026-10-28 03:15 PM</td>
@@ -1387,7 +1478,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:15:46.709339-04:00">2026-10-28 03:15 PM</td>
@@ -1400,7 +1491,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:10:42.907966-04:00">2026-10-28 03:10 PM</td>
@@ -1413,7 +1504,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:10:42.788448-04:00">2026-10-28 03:10 PM</td>
@@ -1426,7 +1517,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:05:39.139052-04:00">2026-10-28 03:05 PM</td>
@@ -1439,7 +1530,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:05:39.035764-04:00">2026-10-28 03:05 PM</td>
@@ -1452,7 +1543,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:00:35.208764-04:00">2026-10-28 03:00 PM</td>
@@ -1465,7 +1556,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T15:00:35.087538-04:00">2026-10-28 03:00 PM</td>
@@ -1478,7 +1569,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T14:55:13.664498-04:00">2026-10-28 02:55 PM</td>
@@ -1491,7 +1582,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T14:55:13.542244-04:00">2026-10-28 02:55 PM</td>
@@ -1504,7 +1595,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T14:50:09.861066-04:00">2026-10-28 02:50 PM</td>
@@ -1517,7 +1608,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T14:50:09.622012-04:00">2026-10-28 02:50 PM</td>
@@ -1530,7 +1621,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-10-28T10:06:54.629612-04:00">2026-10-28 10:06 AM</td>
@@ -1543,7 +1634,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="544.260000">$544.26</td>
+              <td class="num" data-value="542.195000">$542.20</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T10:01:54.644838-04:00">2026-10-28 10:01 AM</td>
@@ -1569,7 +1660,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="261.420000">$261.42</td>
               <td class="num neg" data-value="-1472.720067">-$1,472.72</td>
               <td class="num neg" data-value="-1.478619">-1.48%</td>
-              <td class="num" data-value="257.380000">$257.38</td>
+              <td class="num" data-value="258.440000">$258.44</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-10-28T09:49:20.029645-04:00">2026-10-28 09:49 AM</td>
@@ -1621,7 +1712,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T09:44:13.364608-04:00">2026-10-28 09:44 AM</td>
@@ -1634,7 +1725,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value=""><span class="muted pl-note">closed &ndash; see close row</span></td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-10-28T09:44:13.354590-04:00">2026-10-28 09:44 AM</td>
@@ -1647,7 +1738,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="239.230000">$239.23</td>
+              <td class="num" data-value="239.360000">$239.36</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T09:43:23.693006-04:00">2026-10-28 09:43 AM</td>
@@ -1660,7 +1751,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T09:43:23.319129-04:00">2026-10-28 09:43 AM</td>
@@ -1673,7 +1764,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value=""><span class="muted pl-note">closed &ndash; see close row</span></td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="canceled">
               <td data-value="2026-10-28T09:43:23.220923-04:00">2026-10-28 09:43 AM</td>
@@ -1686,7 +1777,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="330.080000">$330.08</td>
+              <td class="num" data-value="330.110000">$330.11</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T09:42:51.317567-04:00">2026-10-28 09:42 AM</td>
@@ -1699,7 +1790,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="520.913073">$520.91</td>
               <td class="num pos" data-value="1635.249984">$1,635.25</td>
               <td class="num pos" data-value="1.635000">+1.63%</td>
-              <td class="num" data-value="544.260000">$544.26</td>
+              <td class="num" data-value="542.195000">$542.20</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T09:42:48.744907-04:00">2026-10-28 09:42 AM</td>
@@ -1712,7 +1803,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value=""><span class="muted pl-note">closed &ndash; see close row</span></td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="544.260000">$544.26</td>
+              <td class="num" data-value="542.195000">$542.20</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-10-28T09:42:48.739158-04:00">2026-10-28 09:42 AM</td>
@@ -1725,7 +1816,7 @@ Day trading: -$308.11</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="544.260000">$544.26</td>
+              <td class="num" data-value="542.195000">$542.20</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-10-28T09:42:33.377196-04:00">2026-10-28 09:42 AM</td>
@@ -1765,45 +1856,6 @@ Day trading: -$308.11</title></rect></g>
               <td class="num " data-value="">—</td>
               <td class="num " data-value="">—</td>
               <td class="num" data-value="115.625000">$115.62</td>
-            </tr>
-            <tr data-status="canceled">
-              <td data-value="2026-10-28T09:42:17.160689-04:00">2026-10-28 09:42 AM</td>
-              <td data-value="APP">APP</td>
-              <td data-value="Applovin Corporation Class A Common Stock">Applovin Corporation Class A Common Stock</td>
-              <td class="act-open" data-value="sell">SELL</td>
-              <td class="num" data-value="381.000000">381</td>
-              <td data-value="canceled">canceled</td>
-              <td class="num" data-value="">—</td>
-              <td class="num" data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num " data-value="">—</td>
-              <td class="num" data-value="257.380000">$257.38</td>
-            </tr>
-            <tr data-status="filled">
-              <td data-value="2026-10-28T09:42:15.860798-04:00">2026-10-28 09:42 AM</td>
-              <td data-value="APP">APP</td>
-              <td data-value="Applovin Corporation Class A Common Stock">Applovin Corporation Class A Common Stock</td>
-              <td class="act-open" data-value="open_long">Buy &middot; open long</td>
-              <td class="num" data-value="381.000000">381</td>
-              <td data-value="filled">filled</td>
-              <td class="num" data-value="261.420000">$261.42</td>
-              <td class="num" data-value="">—</td>
-              <td class="num " data-value=""><span class="muted pl-note">closed &ndash; see close row</span></td>
-              <td class="num " data-value="">—</td>
-              <td class="num" data-value="257.380000">$257.38</td>
-            </tr>
-            <tr data-status="filled">
-              <td data-value="2026-10-27T15:45:28.200915-04:00">2026-10-27 03:45 PM</td>
-              <td data-value="SNDK">SNDK</td>
-              <td data-value="Sandisk Corporation Common Stock">Sandisk Corporation Common Stock</td>
-              <td class="act-close" data-value="close_long">Sell &middot; close long</td>
-              <td class="num" data-value="68.000000">68</td>
-              <td data-value="filled">filled</td>
-              <td class="num" data-value="1304.900000">$1,304.90</td>
-              <td class="num" data-value="1298.270294">$1,298.27</td>
-              <td class="num pos" data-value="450.820008">$450.82</td>
-              <td class="num pos" data-value="0.510657">+0.51%</td>
-              <td class="num" data-value="1354.640000">$1,354.64</td>
             </tr></tbody>
       </table>
       </div>
@@ -3780,7 +3832,7 @@ Day trading: -$308.11</title></rect></g>
     <div class="panel">
       <div class="panel-head">
         <h2>AI Trade Filter Decisions</h2>
-        <span class="muted ai-summary">Mode: <strong>shadow</strong> &middot; Today: 0 confirmed, 2 vetoed</span>
+        <span class="muted ai-summary">Mode: <strong>shadow</strong> &middot; Today: 0 confirmed, 3 vetoed</span>
       </div>
       <div class="table-scroll">
       <table id="aiTable">
@@ -3798,6 +3850,19 @@ Day trading: -$308.11</title></rect></g>
           <th>Reasoning</th>
         </tr></thead>
         <tbody>
+            <tr>
+              <td data-value="2026-10-29T09:44:21-04:00">2026-10-29 09:44 AM</td>
+              <td data-value="ADSK">ADSK</td>
+              <td data-value="long">LONG</td>
+              <td class="num" data-value="239.190000">$239.19</td>
+              <td class="neg" data-value="VETO"><strong>VETO</strong></td>
+              <td class="num" data-value="0.300000">0.3</td>
+              <td class="num" data-value="0.250000">x0.25</td>
+              <td class="num" data-value="1.000000">1.0R</td>
+              <td data-value="AI · shadow">AI · shadow</td>
+              <td class="num " data-value="">—</td>
+              <td class="reason">The entry sits just under the prior day's low (239.445) and today's session high, and the prior close at 242.45 is below the +1R level of 242.74, all on a gap-down day with QQQ falling.</td>
+            </tr>
             <tr>
               <td data-value="2026-10-29T09:42:53-04:00">2026-10-29 09:42 AM</td>
               <td data-value="STX">STX</td>
@@ -5084,19 +5149,6 @@ Day trading: -$308.11</title></rect></g>
               <td data-value="AI · shadow">AI · shadow</td>
               <td class="num " data-value="">—</td>
               <td class="reason">Today's total volume is running below a normal pace for the open (3.9% of the prior day's volume, though early bars are usually heavier), the entry is already 0.6% above the OR high and closed at the bar's low just under the session high, and QQQ is falling, so the picture is too mixed to confirm.</td>
-            </tr>
-            <tr>
-              <td data-value="2026-10-07T09:47:24-04:00">2026-10-07 09:47 AM</td>
-              <td data-value="DXCM">DXCM</td>
-              <td data-value="long">LONG</td>
-              <td class="num" data-value="85.400000">$85.40</td>
-              <td class="neg" data-value="VETO"><strong>VETO</strong></td>
-              <td class="num" data-value="0.330000">0.33</td>
-              <td class="num" data-value="0.250000">x0.25</td>
-              <td class="num" data-value="1.000000">1.0R</td>
-              <td data-value="AI · shadow">AI · shadow</td>
-              <td class="num " data-value="">—</td>
-              <td class="reason">The prior day's high at 86.75 sits just below the +1R level of 86.86, cumulative volume is running well under a normal early-session pace, and QQQ is falling, so the breakout is not clean enough to trade.</td>
             </tr></tbody>
       </table>
       </div>
@@ -5383,7 +5435,7 @@ Day trading: ${bar.getAttribute('data-orb')}`;
     // real bot session, so they still only refresh via the normal pipeline.
     const REFRESH_ENDPOINT = 'https://stunster.com/orb-refresh.php';
     // What each order did (open/close, entry price, realized P&L) as of this build.
-    const ORDER_OUTCOMES = {"known": {"ac57a384-4e6d-4b38-a9a7-8f44eb6e4dae": {"open_qty": 0.0, "kind": "open_long"}, "ca0cc774-808d-4006-96f8-ef958d6e269e": {"open_qty": 0.0, "kind": "open_long"}, "a9118635-4746-40d9-82e2-3bf1024cecb8": {"open_qty": 0.0, "kind": "open_long"}, "694bf654-5d27-4ecc-aced-bb6b208c8107": {"open_qty": 0.0, "kind": "open_short"}, "61540851-2bcf-4820-b95a-63bf87eecfdb": {"open_qty": 0.0, "kind": "close_long", "entry": 34.83, "pl": 200.4800000000008, "closed_qty": 2864.0, "gain": 0.20097616996841888}, "62f3a248-b143-4f66-8fbf-36be8f2e27f0": {"open_qty": 0.0, "kind": "close_long", "entry": 342.6, "pl": 2403.449663999988, "closed_qty": 292.0, "gain": 2.4025078809106706}, "1f4045ff-3253-410e-a2b5-20f49a0761ee": {"open_qty": 0.0, "kind": "close_long", "entry": 299.86979, "pl": 1270.7599679999864, "closed_qty": 333.0, "gain": 1.2725843440247713}, "f76b559a-bbd1-410d-a9d4-fdf3aae6ff28": {"open_qty": 0.0, "kind": "close_long", "entry": 261.41, "pl": 3163.020053999995, "closed_qty": 383.0, "gain": 3.1592280325924738}, "751c249c-1b0e-45b4-b891-e68481347eae": {"open_qty": 0.0, "kind": "close_short", "entry": 709.289455, "pl": 8353.250399999939, "closed_qty": 1265.0, "gain": 0.9309824012539355}, "b9b2e866-dcd8-49df-a9a8-67c34fbf6b0d": {"open_qty": 0.0, "kind": "open_long"}, "96e02736-fb62-4ce4-be10-62b85d407468": {"open_qty": 0.0, "kind": "open_long"}, "4eb08984-527a-4066-a77c-58df2341cf8d": {"open_qty": 0.0, "kind": "open_long"}, "ee70b608-3b2b-4996-8bde-babe75919fec": {"open_qty": 0.0, "kind": "open_long"}, "a7036c74-8418-453f-ac23-38f3bba38351": {"open_qty": 0.0, "kind": "open_long"}, "184c2b40-0d9b-46f6-acd0-8e7af352290e": {"open_qty": 0.0, "kind": "open_long"}, "5844e269-93b2-421e-8431-d4decf389ed9": {"open_qty": 0.0, "kind": "close_long", "entry": 374.65624, "pl": -1842.6897300000057, "closed_qty": 266.0, "gain": -1.8490029686947216}, "8dccb85f-a188-4a5a-8320-ce3a3708dac9": {"open_qty": 0.0, "kind": "close_long", "entry": 217.42, "pl": -1941.1999999999994, "closed_qty": 460.0, "gain": -1.940943795419004}, "782cda11-52ec-44b4-999f-bcf38730fa3f": {"open_qty": 0.0, "kind": "close_long", "entry": 54.05, "pl": 1912.8696750000022, "closed_qty": 1851.0, "gain": 1.911979648473638}, "397d5fff-d41d-4d64-9f4e-b3e3e5196ad7": {"open_qty": 0.0, "kind": "open_long"}, "de8c2784-7ccf-48df-984c-a7aecd31dd16": {"open_qty": 0.0, "kind": "close_long", "entry": 708.454465, "pl": -901.3502850000785, "closed_qty": 1149.0, "gain": -0.11072906428786053}, "6a48f85c-7407-4902-87ea-6f22f03adc60": {"open_qty": 0.0, "kind": "open_long"}, "5a2c2ee0-1935-4856-9e05-c29feb82b4ea": {"open_qty": 0.0, "kind": "close_long", "entry": 708.54, "pl": -2137.140000000016, "closed_qty": 1149.0, "gain": -0.26251164366161595}, "237c91ce-0fdc-40f2-a4c0-56f63aedd213": {"open_qty": 0.0, "kind": "close_long", "entry": 324.665714, "pl": -322.0799119999924, "closed_qty": 308.0, "gain": -0.3220894461310366}, "cc9f671b-87fe-45a2-9543-568dd0ac503c": {"open_qty": 0.0, "kind": "close_long", "entry": 380.09, "pl": -593.9999650000003, "closed_qty": 263.0, "gain": -0.594215843615986}, "89232111-4e6b-4dd3-ada9-8f512ba75e40": {"open_qty": 0.0, "kind": "close_long", "entry": 162.087532, "pl": -1676.019918000004, "closed_qty": 474.0, "gain": -2.181479942578192}, "7e6a5f88-55d2-40f1-b14f-999cd1ca07e9": {"open_qty": 0.0, "kind": "open_long"}, "188f3a3b-b563-466a-8d55-f3318e76adb0": {"open_qty": 0.0, "kind": "open_long"}, "e939095b-905a-489e-a902-6bd45219f4ac": {"open_qty": 0.0, "kind": "open_long"}, "d4ffe7e4-d71c-4895-8c77-f7f77f202d0d": {"open_qty": 0.0, "kind": "open_long"}, "afde03fd-c501-4547-9fb6-a7bb6f59f51a": {"open_qty": 0.0, "kind": "open_long"}, "851f7881-5cde-4be1-97db-fbad9c5df613": {"open_qty": 0.0, "kind": "open_long"}, "e29233cc-efca-4e9e-a5bd-93ddbfc79e74": {"open_qty": 0.0, "kind": "close_long", "entry": 259.117454, "pl": -1211.769790000004, "closed_qty": 385.0, "gain": -1.21468235790863}, "1fcd44f9-c70a-4fd9-9c60-7d0f60f24aa5": {"open_qty": 0.0, "kind": "close_long", "entry": 314.04, "pl": -1846.0300680000096, "closed_qty": 318.0, "gain": -1.848530760412696}, "4d3bed76-88c4-41f2-85eb-c863b7af376f": {"open_qty": 0.0, "kind": "open_long"}, "77ef5217-8669-4744-add5-cc1bf6eb80bb": {"open_qty": 0.0, "kind": "close_long", "entry": 44.6, "pl": -568.1181510000071, "closed_qty": 2241.0, "gain": -0.5684103139013523}, "145330e1-17ca-441d-811e-8cd2f1915a29": {"open_qty": 0.0, "kind": "close_long", "entry": 90.78, "pl": -30.970034000008624, "closed_qty": 1103.0, "gain": -0.030929720202696433}, "57598ada-3351-4342-ae1f-462c56133d82": {"open_qty": 0.0, "kind": "close_long", "entry": 396.9, "pl": -793.7999999999943, "closed_qty": 252.0, "gain": -0.7936507936507881}, "cf88bc50-f576-401c-8b0c-b4cc2e95950b": {"open_qty": 0.0, "kind": "close_long", "entry": 783.998817, "pl": 3740.709983999995, "closed_qty": 93.0, "gain": 5.130452639445749}, "489cdd0a-33e8-4c18-80a8-3c095c3367ff": {"open_qty": 0.0, "kind": "close_long", "entry": 709.81, "pl": 4389.519760000101, "closed_qty": 1180.0, "gain": 0.5240743297502269}, "7f6ede53-1df2-40f0-bc27-218b3078e5ab": {"open_qty": 0.0, "kind": "open_long"}, "5c757c9e-2b64-423d-ab58-4c8d96396616": {"open_qty": 0.0, "kind": "open_long"}, "a1cbb70c-c092-43ad-bba6-98f66754878c": {"open_qty": 0.0, "kind": "open_long"}, "c1523390-0fb7-4dee-9c38-b9895ee4ab49": {"open_qty": 0.0, "kind": "open_long"}, "8e4e7210-afff-4cd2-ab4d-b8468bce2c6e": {"open_qty": 0.0, "kind": "open_long"}, "7d21fce4-1e3a-4a66-82b0-cf5e141bd588": {"open_qty": 0.0, "kind": "open_long"}, "ff4e075c-a1ab-450a-b161-fa7a1a47e083": {"open_qty": 0.0, "kind": "close_long", "entry": 141.04, "pl": -1358.7199999999848, "closed_qty": 704.0, "gain": -1.368406125921709}, "289caf3b-bde8-4ab2-be40-9df4bbfb6c2c": {"open_qty": 0.0, "kind": "close_long", "entry": 1194.979286, "pl": -1549.6600559999943, "closed_qty": 84.0, "gain": -1.543820400582235}, "a1ca6961-590a-4e80-b03f-b34b05dd2ef0": {"open_qty": 0.0, "kind": "open_long"}, "a00aa5e0-1fd1-44c9-ad0f-ea0de7ad3167": {"open_qty": 0.0, "kind": "close_long", "entry": 271.62, "pl": 4511.679999999997, "closed_qty": 368.0, "gain": 4.513658788012661}, "6174189b-9cff-4314-9ad1-f139ca8d827f": {"open_qty": 0.0, "kind": "close_long", "entry": 718.986936, "pl": 1861.3500639999686, "closed_qty": 1126.0, "gain": 0.2299157213059532}, "6baa3efb-a9c4-40fc-98b7-58b413c04175": {"open_qty": 0.0, "kind": "open_long"}, "1d9f7eaf-b1f4-434c-a2e9-a2806ef1a002": {"open_qty": 0.0, "kind": "close_long", "entry": 416.1, "pl": 1831.199999999999, "closed_qty": 240.0, "gain": 1.8336938236000953}, "603213cd-6f57-4ab6-a7d4-be330d94a197": {"open_qty": 0.0, "kind": "close_long", "entry": 240.599855, "pl": 1587.6399060000003, "closed_qty": 414.0, "gain": 1.5938825067039217}, "560329e9-12b9-435d-b71e-ccdc83a3f29c": {"open_qty": 0.0, "kind": "close_long", "entry": 1298.270294, "pl": 450.8200080000115, "closed_qty": 68.0, "gain": 0.510656835532599}, "2c77da8d-26c2-43a8-a42e-4f7a0ab6aeb9": {"open_qty": 0.0, "kind": "close_long", "entry": 721.293463, "pl": 1657.4597950000361, "closed_qty": 1135.0, "gain": 0.2024580943692861}, "222ecfa2-aa39-4ce6-9078-320243dfd360": {"open_qty": 0.0, "kind": "open_long"}, "ebd371f2-b3f2-48ee-b084-312bb46a3c9c": {"open_qty": 0.0, "kind": "open_long"}, "5636eda3-a9fd-423e-90ce-faf97b2490ca": {"open_qty": 0.0, "kind": "open_long"}, "d86940dc-0af8-4d52-869b-76d369a01085": {"open_qty": 0.0, "kind": "open_long"}, "146a5cc5-393d-4fd2-a908-cf5242a2d778": {"open_qty": 0.0, "kind": "open_long"}, "1b8a24e8-a970-42d8-9b4b-02411dcef0a8": {"open_qty": 0.0, "kind": "open_long"}, "3fb36e45-b34c-4304-9795-dbd95893abe7": {"open_qty": 0.0, "kind": "close_long", "entry": 261.42, "pl": -1472.7200670000018, "closed_qty": 381.0, "gain": -1.4786194629332128}, "40ba26b0-1819-4a98-a902-090f5f66aacb": {"open_qty": 0.0, "kind": "close_long", "entry": 108.69, "pl": -605.8799999999969, "closed_qty": 918.0, "gain": -0.6072315760419511}, "cedb2001-d77c-4228-941a-8252478a743b": {"open_qty": 0.0, "kind": "close_long", "entry": 116.62, "pl": 990.1499999999927, "closed_qty": 861.0, "gain": 0.9861087292059608}, "cc955156-7b37-429b-82a2-69bfc00f7ed3": {"open_qty": 0.0, "kind": "close_long", "entry": 520.913073, "pl": 1635.24998399998, "closed_qty": 192.0, "gain": 1.6349996652896244}, "6de1512c-d460-473b-8606-9ecaafbe6507": {"open_qty": 0.0, "kind": "close_long", "entry": 329.0, "pl": -342.3899999999986, "closed_qty": 303.0, "gain": -0.3434650455927038}, "b503fc28-e8d2-40e2-a355-0e00860c8602": {"open_qty": 0.0, "kind": "close_long", "entry": 242.60398, "pl": -512.5197599999973, "closed_qty": 412.0, "gain": -0.5127615795915604}, "d9e02976-fe99-49fd-8e50-b97041caeac6": {"open_qty": 327.0, "kind": "open_long"}, "4c565491-3c24-486d-8fdd-eded559b6fef": {"open_qty": 145.0, "kind": "open_long"}}, "lots": {"CRWD": [[327.0, 258.49, "d9e02976-fe99-49fd-8e50-b97041caeac6"]], "STX": [[145.0, 687.98, "4c565491-3c24-486d-8fdd-eded559b6fef"]]}};
+    const ORDER_OUTCOMES = {"known": {"ca0cc774-808d-4006-96f8-ef958d6e269e": {"open_qty": 0.0, "kind": "open_long"}, "a9118635-4746-40d9-82e2-3bf1024cecb8": {"open_qty": 0.0, "kind": "open_long"}, "694bf654-5d27-4ecc-aced-bb6b208c8107": {"open_qty": 0.0, "kind": "open_short"}, "61540851-2bcf-4820-b95a-63bf87eecfdb": {"open_qty": 0.0, "kind": "close_long", "entry": 34.83, "pl": 200.4800000000008, "closed_qty": 2864.0, "gain": 0.20097616996841888}, "62f3a248-b143-4f66-8fbf-36be8f2e27f0": {"open_qty": 0.0, "kind": "close_long", "entry": 342.6, "pl": 2403.449663999988, "closed_qty": 292.0, "gain": 2.4025078809106706}, "1f4045ff-3253-410e-a2b5-20f49a0761ee": {"open_qty": 0.0, "kind": "close_long", "entry": 299.86979, "pl": 1270.7599679999864, "closed_qty": 333.0, "gain": 1.2725843440247713}, "751c249c-1b0e-45b4-b891-e68481347eae": {"open_qty": 0.0, "kind": "close_short", "entry": 709.289455, "pl": 8353.250399999939, "closed_qty": 1265.0, "gain": 0.9309824012539355}, "b9b2e866-dcd8-49df-a9a8-67c34fbf6b0d": {"open_qty": 0.0, "kind": "open_long"}, "96e02736-fb62-4ce4-be10-62b85d407468": {"open_qty": 0.0, "kind": "open_long"}, "4eb08984-527a-4066-a77c-58df2341cf8d": {"open_qty": 0.0, "kind": "open_long"}, "ee70b608-3b2b-4996-8bde-babe75919fec": {"open_qty": 0.0, "kind": "open_long"}, "a7036c74-8418-453f-ac23-38f3bba38351": {"open_qty": 0.0, "kind": "open_long"}, "184c2b40-0d9b-46f6-acd0-8e7af352290e": {"open_qty": 0.0, "kind": "open_long"}, "5844e269-93b2-421e-8431-d4decf389ed9": {"open_qty": 0.0, "kind": "close_long", "entry": 374.65624, "pl": -1842.6897300000057, "closed_qty": 266.0, "gain": -1.8490029686947216}, "8dccb85f-a188-4a5a-8320-ce3a3708dac9": {"open_qty": 0.0, "kind": "close_long", "entry": 217.42, "pl": -1941.1999999999994, "closed_qty": 460.0, "gain": -1.940943795419004}, "782cda11-52ec-44b4-999f-bcf38730fa3f": {"open_qty": 0.0, "kind": "close_long", "entry": 54.05, "pl": 1912.8696750000022, "closed_qty": 1851.0, "gain": 1.911979648473638}, "397d5fff-d41d-4d64-9f4e-b3e3e5196ad7": {"open_qty": 0.0, "kind": "open_long"}, "de8c2784-7ccf-48df-984c-a7aecd31dd16": {"open_qty": 0.0, "kind": "close_long", "entry": 708.454465, "pl": -901.3502850000785, "closed_qty": 1149.0, "gain": -0.11072906428786053}, "6a48f85c-7407-4902-87ea-6f22f03adc60": {"open_qty": 0.0, "kind": "open_long"}, "5a2c2ee0-1935-4856-9e05-c29feb82b4ea": {"open_qty": 0.0, "kind": "close_long", "entry": 708.54, "pl": -2137.140000000016, "closed_qty": 1149.0, "gain": -0.26251164366161595}, "237c91ce-0fdc-40f2-a4c0-56f63aedd213": {"open_qty": 0.0, "kind": "close_long", "entry": 324.665714, "pl": -322.0799119999924, "closed_qty": 308.0, "gain": -0.3220894461310366}, "cc9f671b-87fe-45a2-9543-568dd0ac503c": {"open_qty": 0.0, "kind": "close_long", "entry": 380.09, "pl": -593.9999650000003, "closed_qty": 263.0, "gain": -0.594215843615986}, "89232111-4e6b-4dd3-ada9-8f512ba75e40": {"open_qty": 0.0, "kind": "close_long", "entry": 162.087532, "pl": -1676.019918000004, "closed_qty": 474.0, "gain": -2.181479942578192}, "7e6a5f88-55d2-40f1-b14f-999cd1ca07e9": {"open_qty": 0.0, "kind": "open_long"}, "188f3a3b-b563-466a-8d55-f3318e76adb0": {"open_qty": 0.0, "kind": "open_long"}, "e939095b-905a-489e-a902-6bd45219f4ac": {"open_qty": 0.0, "kind": "open_long"}, "d4ffe7e4-d71c-4895-8c77-f7f77f202d0d": {"open_qty": 0.0, "kind": "open_long"}, "afde03fd-c501-4547-9fb6-a7bb6f59f51a": {"open_qty": 0.0, "kind": "open_long"}, "851f7881-5cde-4be1-97db-fbad9c5df613": {"open_qty": 0.0, "kind": "open_long"}, "e29233cc-efca-4e9e-a5bd-93ddbfc79e74": {"open_qty": 0.0, "kind": "close_long", "entry": 259.117454, "pl": -1211.769790000004, "closed_qty": 385.0, "gain": -1.21468235790863}, "1fcd44f9-c70a-4fd9-9c60-7d0f60f24aa5": {"open_qty": 0.0, "kind": "close_long", "entry": 314.04, "pl": -1846.0300680000096, "closed_qty": 318.0, "gain": -1.848530760412696}, "4d3bed76-88c4-41f2-85eb-c863b7af376f": {"open_qty": 0.0, "kind": "open_long"}, "77ef5217-8669-4744-add5-cc1bf6eb80bb": {"open_qty": 0.0, "kind": "close_long", "entry": 44.6, "pl": -568.1181510000071, "closed_qty": 2241.0, "gain": -0.5684103139013523}, "145330e1-17ca-441d-811e-8cd2f1915a29": {"open_qty": 0.0, "kind": "close_long", "entry": 90.78, "pl": -30.970034000008624, "closed_qty": 1103.0, "gain": -0.030929720202696433}, "57598ada-3351-4342-ae1f-462c56133d82": {"open_qty": 0.0, "kind": "close_long", "entry": 396.9, "pl": -793.7999999999943, "closed_qty": 252.0, "gain": -0.7936507936507881}, "cf88bc50-f576-401c-8b0c-b4cc2e95950b": {"open_qty": 0.0, "kind": "close_long", "entry": 783.998817, "pl": 3740.709983999995, "closed_qty": 93.0, "gain": 5.130452639445749}, "489cdd0a-33e8-4c18-80a8-3c095c3367ff": {"open_qty": 0.0, "kind": "close_long", "entry": 709.81, "pl": 4389.519760000101, "closed_qty": 1180.0, "gain": 0.5240743297502269}, "7f6ede53-1df2-40f0-bc27-218b3078e5ab": {"open_qty": 0.0, "kind": "open_long"}, "5c757c9e-2b64-423d-ab58-4c8d96396616": {"open_qty": 0.0, "kind": "open_long"}, "a1cbb70c-c092-43ad-bba6-98f66754878c": {"open_qty": 0.0, "kind": "open_long"}, "c1523390-0fb7-4dee-9c38-b9895ee4ab49": {"open_qty": 0.0, "kind": "open_long"}, "8e4e7210-afff-4cd2-ab4d-b8468bce2c6e": {"open_qty": 0.0, "kind": "open_long"}, "7d21fce4-1e3a-4a66-82b0-cf5e141bd588": {"open_qty": 0.0, "kind": "open_long"}, "ff4e075c-a1ab-450a-b161-fa7a1a47e083": {"open_qty": 0.0, "kind": "close_long", "entry": 141.04, "pl": -1358.7199999999848, "closed_qty": 704.0, "gain": -1.368406125921709}, "289caf3b-bde8-4ab2-be40-9df4bbfb6c2c": {"open_qty": 0.0, "kind": "close_long", "entry": 1194.979286, "pl": -1549.6600559999943, "closed_qty": 84.0, "gain": -1.543820400582235}, "a1ca6961-590a-4e80-b03f-b34b05dd2ef0": {"open_qty": 0.0, "kind": "open_long"}, "a00aa5e0-1fd1-44c9-ad0f-ea0de7ad3167": {"open_qty": 0.0, "kind": "close_long", "entry": 271.62, "pl": 4511.679999999997, "closed_qty": 368.0, "gain": 4.513658788012661}, "6174189b-9cff-4314-9ad1-f139ca8d827f": {"open_qty": 0.0, "kind": "close_long", "entry": 718.986936, "pl": 1861.3500639999686, "closed_qty": 1126.0, "gain": 0.2299157213059532}, "6baa3efb-a9c4-40fc-98b7-58b413c04175": {"open_qty": 0.0, "kind": "open_long"}, "1d9f7eaf-b1f4-434c-a2e9-a2806ef1a002": {"open_qty": 0.0, "kind": "close_long", "entry": 416.1, "pl": 1831.199999999999, "closed_qty": 240.0, "gain": 1.8336938236000953}, "603213cd-6f57-4ab6-a7d4-be330d94a197": {"open_qty": 0.0, "kind": "close_long", "entry": 240.599855, "pl": 1587.6399060000003, "closed_qty": 414.0, "gain": 1.5938825067039217}, "560329e9-12b9-435d-b71e-ccdc83a3f29c": {"open_qty": 0.0, "kind": "close_long", "entry": 1298.270294, "pl": 450.8200080000115, "closed_qty": 68.0, "gain": 0.510656835532599}, "2c77da8d-26c2-43a8-a42e-4f7a0ab6aeb9": {"open_qty": 0.0, "kind": "close_long", "entry": 721.293463, "pl": 1657.4597950000361, "closed_qty": 1135.0, "gain": 0.2024580943692861}, "222ecfa2-aa39-4ce6-9078-320243dfd360": {"open_qty": 0.0, "kind": "open_long"}, "ebd371f2-b3f2-48ee-b084-312bb46a3c9c": {"open_qty": 0.0, "kind": "open_long"}, "5636eda3-a9fd-423e-90ce-faf97b2490ca": {"open_qty": 0.0, "kind": "open_long"}, "d86940dc-0af8-4d52-869b-76d369a01085": {"open_qty": 0.0, "kind": "open_long"}, "146a5cc5-393d-4fd2-a908-cf5242a2d778": {"open_qty": 0.0, "kind": "open_long"}, "1b8a24e8-a970-42d8-9b4b-02411dcef0a8": {"open_qty": 0.0, "kind": "open_long"}, "3fb36e45-b34c-4304-9795-dbd95893abe7": {"open_qty": 0.0, "kind": "close_long", "entry": 261.42, "pl": -1472.7200670000018, "closed_qty": 381.0, "gain": -1.4786194629332128}, "40ba26b0-1819-4a98-a902-090f5f66aacb": {"open_qty": 0.0, "kind": "close_long", "entry": 108.69, "pl": -605.8799999999969, "closed_qty": 918.0, "gain": -0.6072315760419511}, "cedb2001-d77c-4228-941a-8252478a743b": {"open_qty": 0.0, "kind": "close_long", "entry": 116.62, "pl": 990.1499999999927, "closed_qty": 861.0, "gain": 0.9861087292059608}, "cc955156-7b37-429b-82a2-69bfc00f7ed3": {"open_qty": 0.0, "kind": "close_long", "entry": 520.913073, "pl": 1635.24998399998, "closed_qty": 192.0, "gain": 1.6349996652896244}, "6de1512c-d460-473b-8606-9ecaafbe6507": {"open_qty": 0.0, "kind": "close_long", "entry": 329.0, "pl": -342.3899999999986, "closed_qty": 303.0, "gain": -0.3434650455927038}, "b503fc28-e8d2-40e2-a355-0e00860c8602": {"open_qty": 0.0, "kind": "close_long", "entry": 242.60398, "pl": -512.5197599999973, "closed_qty": 412.0, "gain": -0.5127615795915604}, "d9e02976-fe99-49fd-8e50-b97041caeac6": {"open_qty": 327.0, "kind": "open_long"}, "4c565491-3c24-486d-8fdd-eded559b6fef": {"open_qty": 145.0, "kind": "open_long"}, "901056a8-bd63-4842-9edc-6a3addb01b6b": {"open_qty": 418.0, "kind": "open_long"}}, "lots": {"CRWD": [[327.0, 258.49, "d9e02976-fe99-49fd-8e50-b97041caeac6"]], "STX": [[145.0, 687.98, "4c565491-3c24-486d-8fdd-eded559b6fef"]], "ADSK": [[418.0, 239.93, "901056a8-bd63-4842-9edc-6a3addb01b6b"]]}};
     const REFRESH_TOKEN = 'sdfsdfsdfsdf';
 
     // --- Settings panel: view/edit config.py's tunable parameters and save
@@ -5826,7 +5878,7 @@ Day trading: ${bar.getAttribute('data-orb')}`;
     // reload. Ask for the published page with a cache-busting URL, and if it
     // was built after this one, switch to it. Runs every minute, when the tab
     // comes back into view, and first thing when Refresh is pressed.
-    const PAGE_BUILT = 1793281376;
+    const PAGE_BUILT = 1793281465;
     async function checkForNewerPage(force) {
       try {
         const resp = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
