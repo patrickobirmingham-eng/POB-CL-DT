@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1062874.53,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 577863.83,
   "trade_meta": {
     "AXON": {
@@ -748,7 +748,10 @@
   "breakeven_moved": [
     "ADP"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "DASH": "2026-10-30T15:40:44.416174-04:00",
+    "PAYX": "2026-10-30T15:40:44.416174-04:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -757,6 +760,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
