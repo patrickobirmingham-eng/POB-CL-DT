@@ -45,7 +45,7 @@ name: ORB Bot Watchdog
 
 on:
   schedule:
-    - cron: "*/15 13-19 * * 1-5" # every 15 min, ~9:30 AM - ~3:45 PM ET (EDT), weekdays
+    - cron: "*/15 14-20 * * 1-5" # every 15 min, ~9:00 AM - ~3:45 PM ET (EST since 2026-11-02; EDT: 13-19), weekdays
   workflow_dispatch: # lets you trigger a check manually from the Actions tab
 
 permissions:

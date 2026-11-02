@@ -13,7 +13,7 @@ name: Credit Spreads Bot
 
 on:
   schedule:
-    - cron: "7,22,37,52 13-19 * * 1-5"
+    - cron: "7,22,37,52 14-20 * * 1-5"   # EST since 2026-11-02 (EDT: 13-19)
   workflow_dispatch:
     inputs:
       dry_run:
