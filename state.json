@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1060561.38,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 598989.465,
   "trade_meta": {
     "MELI": {
@@ -752,7 +752,12 @@
     "MPWR",
     "TTWO"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "ADSK": "2026-11-02T15:40:36.455963-05:00",
+    "GEHC": "2026-11-02T15:40:36.455963-05:00",
+    "MELI": "2026-11-02T15:40:36.455963-05:00",
+    "TTWO": "2026-11-02T15:40:36.455963-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -761,6 +766,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
