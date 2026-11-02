@@ -26,8 +26,9 @@ name: ORB Paper Trading Bot
 
 on:
   schedule:
-    - cron: "33 13 * * 1-5"   # ~9:33 AM ET (EDT) — session start, weekdays (off :30 to dodge peak load)
-    - cron: "4 17 * * 1-5"    # ~1:04 PM ET (EDT) — session continue, weekdays (off :00 to dodge peak load)
+    # Set for EST (UTC-5) on 2026-11-02. In EDT (mid-March) use 13:33 and 17:04.
+    - cron: "33 14 * * 1-5"   # ~9:33 AM ET (EST) — session start, weekdays (off :30 to dodge peak load)
+    - cron: "4 18 * * 1-5"    # ~1:04 PM ET (EST) — session continue, weekdays (off :00 to dodge peak load)
   workflow_dispatch:            # lets you trigger a run manually from the Actions tab
 
 permissions:
@@ -68,9 +69,11 @@ jobs:
         id: window
         run: |
           # cron sets GITHUB_EVENT_SCHEDULE-ish context isn't directly available,
-          # so we infer the session from the current UTC hour instead.
-          HOUR=$(date -u +%H)
-          if [ "$HOUR" -lt 15 ]; then
+          # so we infer the session from the current Eastern time instead (a UTC
+          # hour check broke in EST: a morning run started after 10:00 ET got
+          # the afternoon window). Before 12:55 ET -> morning leg.
+          HHMM=$(TZ=America/New_York date +%H%M)
+          if [ "$((10#$HHMM))" -lt 1255 ]; then
             echo "start=09:30" >> "$GITHUB_OUTPUT"
             echo "end=13:00" >> "$GITHUB_OUTPUT"
           else
