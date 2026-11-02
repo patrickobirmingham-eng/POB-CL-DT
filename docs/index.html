@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generated-at" content="1793653754">
+<meta name="generated-at" content="1793659912">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -359,8 +359,8 @@
     </div>
     <nav class="pagetabs" aria-label="Dashboards"><a class="on" href="index.html">Day Trading</a><a href="spreads.html">Credit Spreads</a></nav>
     <div id="topActions">
-      <div class="updated" id="updatedInfo" title="Last updated 2026-11-02 04:09 PM ET">
-        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Nov 2, </span><span class="upd-time">4:09 PM ET</span></span>
+      <div class="updated" id="updatedInfo" title="Last updated 2026-11-02 05:51 PM ET">
+        <span class="upd-label">Last updated</span> <span id="lastUpdated"><span class="upd-date">Nov 2, </span><span class="upd-time">5:51 PM ET</span></span>
         <span id="refreshStatus" class="muted"></span>
       </div>
       <button id="refreshBtn" onclick="refreshDashboard()" title="Refresh" aria-label="Refresh">&#8635;<span class="btn-label"> Refresh</span></button>
@@ -1098,7 +1098,7 @@ Day trading: $2,597.23</title></rect></g>
               <td class="num" data-value="683.990000">$683.99</td>
               <td class="num pos" data-value="2361.830136">$2,361.83</td>
               <td class="num pos" data-value="0.364242">+0.36%</td>
-              <td class="num" data-value="681.220000">$681.22</td>
+              <td class="num" data-value="683.260000">$683.26</td>
             </tr>
             <tr data-status="filled">
               <td data-value="2026-11-02T15:40:36.576311-05:00">2026-11-02 03:40 PM</td>
@@ -1267,7 +1267,7 @@ Day trading: $2,597.23</title></rect></g>
               <td class="num" data-value="">—</td>
               <td class="num " data-value=""><span class="muted pl-note">closed &ndash; see close row</span></td>
               <td class="num " data-value="">—</td>
-              <td class="num" data-value="681.220000">$681.22</td>
+              <td class="num" data-value="683.260000">$683.26</td>
             </tr>
             <tr data-status="replaced">
               <td data-value="2026-11-02T15:25:23.389205-05:00">2026-11-02 03:25 PM</td>
@@ -6012,7 +6012,7 @@ Day trading: ${bar.getAttribute('data-orb')}`;
     // reload. Ask for the published page with a cache-busting URL, and if it
     // was built after this one, switch to it. Runs every minute, when the tab
     // comes back into view, and first thing when Refresh is pressed.
-    const PAGE_BUILT = 1793653754;
+    const PAGE_BUILT = 1793659912;
     async function checkForNewerPage(force) {
       try {
         const resp = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
