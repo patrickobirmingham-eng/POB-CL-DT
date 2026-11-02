@@ -322,6 +322,35 @@ def _filled_qty(o):
     return float(getattr(o, "filled_qty", None) or 0)
 
 
+def _fills(orders):
+    """(order, qty, price) for each order's OWN fill, oldest first.
+
+    When the bot reprices (replaces) a partly filled order, Alpaca carries the
+    earlier fill into the replacement: filled_qty / filled_avg_price are
+    cumulative over the whole replace chain. Counting every order in the
+    chain at face value booked the same shares again (2026-11-02 TTWO: a
+    406-share take-profit fill counted twice, +$354 too much and a phantom
+    short). Subtract what the order it replaced had already filled.
+    """
+    by_id = {str(o.id): o for o in orders}
+    out = []
+    for o in orders:
+        if not (o.side and o.filled_avg_price and _filled_qty(o) > 0):
+            continue
+        qty, price = _filled_qty(o), float(o.filled_avg_price)
+        prev = by_id.get(str(getattr(o, "replaces", None) or ""))
+        prev_qty = _filled_qty(prev) if prev is not None and prev.filled_avg_price else 0.0
+        if prev_qty > 0 and qty >= prev_qty:
+            cost = qty * price - prev_qty * float(prev.filled_avg_price)
+            qty -= prev_qty
+            if qty <= 1e-9:
+                continue
+            price = cost / qty
+        out.append((o, qty, price))
+    out.sort(key=lambda f: f[0].filled_at or f[0].submitted_at)
+    return out
+
+
 def build_closed_trades(orders):
     """FIFO-matches filled orders per symbol (in chronological order) into
     closed round-trip trades, each with its own P&L. Handles both directions:
@@ -334,18 +363,13 @@ def build_closed_trades(orders):
     both directions; "side" says which came first. Called with the full
     paginated order history (see `fetch_all_orders`), not just the newest 50.
     """
-    filled = [o for o in orders if o.side and o.filled_avg_price and _filled_qty(o) > 0]
-    filled.sort(key=lambda o: o.filled_at or o.submitted_at)
-
     lots = defaultdict(deque)  # symbol -> deque[[signed qty, price]]  (+ long, - short)
     closed = []
 
-    for o in filled:
+    for o, qty, price in _fills(orders):
         side = o.side.value
         if side not in ("buy", "sell"):
             continue
-        qty = _filled_qty(o)
-        price = float(o.filled_avg_price)
         filled_at = o.filled_at or o.submitted_at
         sign = 1 if side == "buy" else -1
         queue = lots[o.symbol]
@@ -391,16 +415,12 @@ def order_outcomes(orders):
     loss that closing it actually realized. Opening orders get the shares
     still open (0 once a later order closed them).
     """
-    filled = [o for o in orders if o.side and o.filled_avg_price and _filled_qty(o) > 0]
-    filled.sort(key=lambda o: o.filled_at or o.submitted_at)
     lots = defaultdict(deque)  # symbol -> deque[[signed qty, price, opening order id]]
     info = {}
-    for o in filled:
+    for o, qty, price in _fills(orders):
         side = o.side.value
         if side not in ("buy", "sell"):
             continue
-        qty = _filled_qty(o)
-        price = float(o.filled_avg_price)
         sign = 1 if side == "buy" else -1
         queue = lots[o.symbol]
         remaining, closed_qty, entry_cost, pl, closed_kind = qty, 0.0, 0.0, 0.0, None
@@ -2257,12 +2277,25 @@ def generate(client=None):
       const info = JSON.parse(JSON.stringify(ORDER_OUTCOMES.known));  // fresh copy every refresh
       const lots = {{}};
       Object.entries(ORDER_OUTCOMES.lots || {{}}).forEach(([s, q]) => lots[s] = q.map(l => l.slice()));
+      const byId = {{}};
+      (orders || []).forEach(o => byId[o.id] = o);
       const fresh = (orders || []).filter(o => !info[o.id] && Number(o.filled_qty || 0) > 0 && o.filled_avg_price != null && (o.side === 'buy' || o.side === 'sell'))
         .sort((a, b) => new Date(a.filled_at || a.submitted_at) - new Date(b.filled_at || b.submitted_at));
       fresh.forEach(o => {{
-        const sign = o.side === 'buy' ? 1 : -1, price = Number(o.filled_avg_price);
+        // A replacement order's fill includes what the order it replaced
+        // already filled (see _fills() in dashboard.py): count only the rest.
+        let fq = Number(o.filled_qty || 0), price = Number(o.filled_avg_price);
+        const prev = o.replaces ? byId[o.replaces] : null;
+        const pq = prev && prev.filled_avg_price != null ? Number(prev.filled_qty || 0) : 0;
+        if (pq > 0 && fq >= pq) {{
+          const cost = fq * price - pq * Number(prev.filled_avg_price);
+          fq -= pq;
+          if (fq <= 1e-9) {{ info[o.id] = {{ open_qty: 0 }}; return; }}
+          price = cost / fq;
+        }}
+        const sign = o.side === 'buy' ? 1 : -1;
         const q = lots[o.symbol] = lots[o.symbol] || [];
-        let remaining = Number(o.filled_qty || 0), closedQty = 0, entryCost = 0, pl = 0, kindClosed = null;
+        let remaining = fq, closedQty = 0, entryCost = 0, pl = 0, kindClosed = null;
         while (remaining > 1e-9 && q.length && (q[0][0] > 0) !== (sign > 0)) {{
           const lot = q[0], m = Math.min(remaining, Math.abs(lot[0]));
           kindClosed = lot[0] > 0 ? 'long' : 'short';
