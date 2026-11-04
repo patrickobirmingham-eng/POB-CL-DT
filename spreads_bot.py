@@ -536,6 +536,8 @@ def run(broker, settings, dry=False, now=None):
                 sp.pop("suspect_cost", None)
             sp["last_price"], sp["last_checked"] = prices[sp["symbol"]], now.isoformat(timespec="seconds")
             action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today, valid)
+            if action != "close" or reason == "target":
+                sp.pop("close_tries", None)
             if not action:
                 continue
             if action == "roll":
@@ -569,7 +571,12 @@ def run(broker, settings, dry=False, now=None):
                 limits = ladder(round(cost, 2), round(min(max(cost, natural), cap), 2), 3)
             else:                       # stop / defensive closes: try mid, then halfway, then pay up to get out
                 # (paying the ask straight away cost a lot on wide markets, e.g. VLO 2026-10-28 at $12.40)
-                limits = ladder(round(cost, 2), round(max(cost, natural) + 0.05, 2), 3)
+                # Each run the close stays unfilled, reach further past the quoted natural price (never past
+                # the width): the indicative quotes can lag the real market, and on 2026-11-04 DELL's stop
+                # sat unfilled for 3+ hours at natural+$0.05 while the stock fell through the short strike.
+                tries = sp.get("close_tries", 0)
+                end = max(cost, natural) + 0.05 + tries * max(0.05, 0.02 * sp["width"])
+                limits = ladder(round(cost, 2), round(min(end, sp["width"]), 2), 3)
             log(f"CLOSE {sp['symbol']} ({reason}): cost ${cost:.2f}, limits {limits}")
             if not dry:
                 p = {"kind": "close", "spread_id": sp["id"], "reason": reason.split(" (")[0], "price": cost,
@@ -580,6 +587,8 @@ def run(broker, settings, dry=False, now=None):
                     apply_fill(st, p, o, now)
                 else:
                     st["pending"][oid] = p
+                    if reason != "target":
+                        sp["close_tries"] = sp.get("close_tries", 0) + 1
 
     # ---- open new spreads
     t = now.strftime("%H:%M")
