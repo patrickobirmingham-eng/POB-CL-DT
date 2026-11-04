@@ -7,6 +7,10 @@ name: Spreads Account Check
 
 on:
   workflow_dispatch:
+    inputs:
+      orders_symbol:
+        description: "Optional: also list the last 15 orders for this underlying (e.g. DELL) - read only"
+        default: ""
 
 permissions:
   contents: read
@@ -20,6 +24,7 @@ jobs:
         env:
           S_KEY: ${{ secrets.SPREADS_APCA_API_KEY_ID }}
           S_SECRET: ${{ secrets.SPREADS_APCA_API_SECRET_KEY }}
+          ORDERS_SYMBOL: ${{ inputs.orders_symbol }}
           D_KEY: ${{ secrets.APCA_API_KEY_ID }}
           D_SECRET: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
@@ -66,5 +71,29 @@ jobs:
                   sys.exit(1)
               if d:
                   print(f"OK: different from the day-bot account ...{str(d.get('account_number',''))[-4:]}")
+          sym = (os.environ.get("ORDERS_SYMBOL") or "").strip().upper()
+          if sym:
+              # Read only: why is an order not filling? Status, limit, legs, and any reject reason.
+              req = urllib.request.Request(
+                  "https://paper-api.alpaca.markets/v2/orders?status=all&limit=200&nested=true&direction=desc",
+                  headers={"APCA-API-KEY-ID": os.environ["S_KEY"], "APCA-API-SECRET-KEY": os.environ["S_SECRET"]})
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  orders = json.load(r)
+              mine = [o for o in orders if any((l.get("symbol") or "").startswith(sym) for l in (o.get("legs") or [o]))][:15]
+              print(f"--- last {len(mine)} orders touching {sym}")
+              for o in mine:
+                  legs = "; ".join(f"{l.get('side')} {l.get('symbol')} {l.get('position_intent')} {l.get('status')}"
+                                   for l in (o.get("legs") or []))
+                  print(f"{o.get('submitted_at')} {o.get('order_class')} {o.get('type')} limit={o.get('limit_price')} "
+                        f"qty={o.get('qty')} filled={o.get('filled_qty')}@{o.get('filled_avg_price')} "
+                        f"status={o.get('status')} [{legs}]")
+              req = urllib.request.Request(
+                  "https://paper-api.alpaca.markets/v2/positions",
+                  headers={"APCA-API-KEY-ID": os.environ["S_KEY"], "APCA-API-SECRET-KEY": os.environ["S_SECRET"]})
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  for p in json.load(r):
+                      if p.get("symbol", "").startswith(sym):
+                          print(f"position {p.get('symbol')} qty={p.get('qty')} avail={p.get('qty_available')} "
+                                f"price={p.get('current_price')}")
           print("RESULT: ALL GOOD" if ok else "RESULT: NEEDS ATTENTION")
           PY
