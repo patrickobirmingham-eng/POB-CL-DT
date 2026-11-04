@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1054355.99,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 576311.97,
   "trade_meta": {
     "MU": {
@@ -749,7 +749,11 @@
     "APP",
     "MSTR"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "APP": "2026-11-04T15:31:15.270592-05:00",
+    "MSTR": "2026-11-04T15:41:20.991728-05:00",
+    "PDD": "2026-11-04T15:41:20.991728-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -758,6 +762,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
