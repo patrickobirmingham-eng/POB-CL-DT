@@ -185,13 +185,23 @@ class Broker:
         o = self.trading.submit_order(req)
         return str(o.id)
 
+    def submit_single(self, symbol, side, intent, qty, limit_price):
+        """One option leg, DAY limit order (used to leg out of a spread whose combo order won't fill)."""
+        from alpaca.trading.requests import LimitOrderRequest
+        from alpaca.trading.enums import OrderSide, TimeInForce, PositionIntent
+        o = self.trading.submit_order(LimitOrderRequest(
+            symbol=symbol, qty=qty, side=OrderSide(side), time_in_force=TimeInForce.DAY,
+            limit_price=round(limit_price, 2), position_intent=PositionIntent(intent)))
+        return str(o.id)
+
     def order(self, oid):
         o = self.trading.get_order_by_id(oid)
         legs = {}
         for leg in (o.legs or []):
             legs[leg.symbol] = float(leg.filled_avg_price or 0)
         return {"status": str(o.status.value if hasattr(o.status, "value") else o.status),
-                "filled_qty": float(o.filled_qty or 0), "legs": legs}
+                "filled_qty": float(o.filled_qty or 0), "legs": legs,
+                "avg": float(o.filled_avg_price or 0)}
 
     def cancel(self, oid):
         try:
@@ -409,6 +419,66 @@ def ladder(start, end, steps=3):
     return out
 
 
+def work_single(broker, symbol, side, intent, qty, prices, secs=20):
+    """Like work_order for one leg, but never leaves an order working: returns (filled_qty, avg price)."""
+    for px in prices:
+        oid = broker.submit_single(symbol, side, intent, qty, px)
+        o = wait_fill(broker, oid, secs)
+        if o["status"] != "filled":
+            broker.cancel(oid)
+            o = broker.order(oid)
+        if o["filled_qty"] > 0:
+            return o["filled_qty"], o.get("avg") or px
+    return 0, 0.0
+
+
+def leg_out(broker, settings, st, sp, qs, now, dry):
+    """Close a spread one leg at a time when the combo close won't fill (2026-11-04: Alpaca paper never
+    filled DELL's mleg close in 33 tries, even $4.50 over the mid). Buy back the short first (that
+    removes the risk; the long left over can only lose its own premium), then sell the long. Progress
+    lives in sp["leg"] so a partial fill or an unfilled leg carries over to the next run."""
+    leg = sp.setdefault("leg", {"short_qty": 0, "short_cost": 0.0, "long_qty": 0, "long_proceeds": 0.0, "tries": 0})
+    extra = leg.get("tries", 0) * max(0.05, 0.01 * sp["width"])     # reach a bit further each unfilled run
+    qty = sp["qty"]
+    if leg["short_qty"] < qty:
+        sb, sa = qs.get(sp["short"], (0, 0))
+        if sa <= 0:
+            log(f"LEG OUT {sp['symbol']}: no ask for the short leg, retry next run")
+            return
+        n = int(qty - leg["short_qty"])
+        prices = ladder(round(mid(sb, sa), 2), round(sa + 0.05 + extra, 2), 3)
+        log(f"LEG OUT {sp['symbol']}: buy to close {n} {sp['short']} at {prices}")
+        if dry:
+            return
+        got, avg = work_single(broker, sp["short"], "buy", "buy_to_close", n, prices)
+        leg["short_qty"] += got
+        leg["short_cost"] += got * avg
+        if leg["short_qty"] < qty:
+            leg["tries"] = leg.get("tries", 0) + 1
+            return
+    if leg["long_qty"] < qty:
+        lb, la = qs.get(sp["long"], (0, 0))
+        n = int(qty - leg["long_qty"])
+        floor = max(0.01, lb - 0.05 - extra)
+        prices = ladder(round(mid(lb, la), 2), round(floor, 2), 3) if la > 0 else [round(floor, 2)]
+        log(f"LEG OUT {sp['symbol']}: sell to close {n} {sp['long']} at {prices}")
+        if dry:
+            return
+        got, avg = work_single(broker, sp["long"], "sell", "sell_to_close", n, prices)
+        leg["long_qty"] += got
+        leg["long_proceeds"] += got * avg
+        if leg["long_qty"] < qty:
+            leg["tries"] = leg.get("tries", 0) + 1
+            return
+    finish_leg_out(st, sp, now.date().isoformat())
+
+
+def finish_leg_out(st, sp, today_iso):
+    leg = sp["leg"]
+    px = (leg["short_cost"] - leg["long_proceeds"]) / sp["qty"]
+    record_close(st, sp, px, "stop", today_iso)
+
+
 def record_close(st, sp, close_px, reason, today_iso, qty=None):
     """Log a closed spread. qty < the spread's qty records a partial close and keeps the rest open."""
     qty = sp["qty"] if qty is None or qty >= sp["qty"] else qty
@@ -482,6 +552,10 @@ def reconcile(broker, st, today_iso):
     """Spreads whose legs vanished from the account expired or were assigned/closed elsewhere."""
     pos = broker.positions()
     for sid, sp in list(st["spreads"].items()):
+        if sp.get("leg"):
+            if sp["leg"]["short_qty"] >= sp["qty"] and sp["leg"]["long_qty"] >= sp["qty"]:
+                finish_leg_out(st, sp, today_iso)
+            continue                      # legging out: a missing short leg is expected
         if sp["short"] not in pos and sp["long"] not in pos:
             exp = date.fromisoformat(sp["expiration"])
             reason = "expired" if date.fromisoformat(today_iso) >= exp else "closed outside bot"
@@ -522,6 +596,9 @@ def run(broker, settings, dry=False, now=None):
                 except Exception as e:
                     log(f"price {sp['symbol']}: {e}")
                     prices[sp["symbol"]] = None
+            if sp.get("leg"):
+                leg_out(broker, settings, st, sp, qs, now, dry)
+                continue
             cost, natural = close_cost(qs, sp)
             # A put spread costs between $0 and its width to close; anything else is a bad quote
             # (2026-10-22 15:45: a wild long-leg quote put COST at -$1.26, which fired a "target"
@@ -577,6 +654,10 @@ def run(broker, settings, dry=False, now=None):
                 tries = sp.get("close_tries", 0)
                 end = max(cost, natural) + 0.05 + tries * max(0.05, 0.02 * sp["width"])
                 limits = ladder(round(cost, 2), round(min(end, sp["width"]), 2), 3)
+            if reason != "target" and sp.get("close_tries", 0) >= settings.get("LEG_OUT_AFTER_TRIES", 4):
+                log(f"CLOSE {sp['symbol']} ({reason}): combo close unfilled {sp['close_tries']} runs - legging out")
+                leg_out(broker, settings, st, sp, qs, now, dry)
+                continue
             log(f"CLOSE {sp['symbol']} ({reason}): cost ${cost:.2f}, limits {limits}")
             if not dry:
                 p = {"kind": "close", "spread_id": sp["id"], "reason": reason.split(" (")[0], "price": cost,
