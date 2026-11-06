@@ -265,3 +265,4 @@ timestamp,mode,symbol,direction,entry_price,stop_price,action,source,confidence,
 2026-11-06T09:41:36-05:00,shadow,MU,long,711.805,688.74,VETO,hard_limit,0.0,1.0,2.0,3.24,6.481,0,Stop distance 3.24% exceeds the 3.00% intraday limit.
 2026-11-06T09:42:21-05:00,shadow,PLTR,long,160.6,157.31,VETO,ai,0.42,0.25,1.5,2.05,3.07,7793,"The breakout bar closed red at 160.60, below its 160.76 open and just under the 160.94 session high, while the 2R target of 167.18 sits beyond the prior-day high of 166.88 and early-session volume pace is only modest, so the 1.8x relative volume is not enough evidence on its own."
 2026-11-06T09:43:14-05:00,shadow,AMD,long,452.855,433.97,VETO,hard_limit,0.0,1.0,2.0,4.17,8.34,0,Stop distance 4.17% exceeds the 3.00% intraday limit.
+2026-11-06T09:44:03-05:00,shadow,NBIS,long,133.49,128.53,VETO,hard_limit,0.0,1.0,2.0,3.716,7.431,0,Stop distance 3.72% exceeds the 3.00% intraday limit.
