@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1059377.11,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 515426.69999999995,
   "trade_meta": {
     "FANG": {
@@ -749,7 +749,9 @@
     "AEP",
     "FANG"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "PLTR": "2026-11-06T15:40:22.899862-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -758,6 +760,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
