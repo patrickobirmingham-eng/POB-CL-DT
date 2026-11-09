@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1048635.76,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 547161.76,
   "trade_meta": {
     "FAST": {
@@ -752,7 +752,10 @@
     "SNDK",
     "TMUS"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "ODFL": "2026-11-09T15:40:38.311536-05:00",
+    "SNDK": "2026-11-09T15:40:38.311536-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -761,6 +764,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
