@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1067450.41,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 599615.7050000001,
   "trade_meta": {
     "KDP": {
@@ -746,9 +746,14 @@
     }
   },
   "breakeven_moved": [
+    "AEP",
     "KDP"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "AEP": "2026-11-11T15:41:12.028288-05:00",
+    "KDP": "2026-11-11T15:30:57.708838-05:00",
+    "PYPL": "2026-11-11T15:41:12.028288-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -757,6 +762,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
