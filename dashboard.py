@@ -873,7 +873,7 @@ def generate(client=None):
     # Date filter bar (quick range + From/To + Reset) above a table; the JS in the
     # page (dfRange etc.) hides rows outside the range and recomputes its Total row.
     def date_filter_html(table_id):
-        ranges = [("today", "Today"), ("last7", "Last 7 Days"), ("month", "Current Month"),
+        ranges = [("all", "Show All"), ("today", "Today"), ("last7", "Last 7 Days"), ("month", "Current Month"),
                   ("prevmonth", "Last Month"), ("ytd", "Current Year"), ("lastyear", "Last Year"),
                   ("last3m", "Last 3 Months"), ("last6m", "Last 6 Months"), ("last12m", "Last 12 Months")]
         opts = "".join(f'<option value="{v}"{" selected" if v == "month" else ""}>{t}</option>' for v, t in ranges)
@@ -994,20 +994,25 @@ def generate(client=None):
         return _pop([("qqq", "QQQ momentum", qqq_pl * s_), ("orb", "Day trading", orb_pl * s_),
                      (None, "Total", total_closed_pl * s_)], note)
 
-    def _pl_card(label, value, pop):
+    def _pl_card(label, value, pop, card_id):
         cls_card = "" if value is None else ("pos-card" if value >= 0 else "neg-card")
         cls_val = "" if value is None else ("pos" if value >= 0 else "neg")
-        return (f'<div class="card {cls_card}{" has-pop" if pop else ""}"{" tabindex=0" if pop else ""}>'
+        return (f'<div id="{card_id}" class="card {cls_card}{" has-pop" if pop else ""}"{" tabindex=0" if pop else ""}>'
                 f'<div class="label">{label}</div>'
                 f'<div class="value {cls_val}">{fmt_money(value) if value is not None else "—"}</div>{pop}</div>')
     realized_card = _pl_card("Realized P&amp;L", total_closed_pl, _split_pop(
-        None, f"{n_qqq} QQQ momentum and {n_orb} day trading closed trades since {STATS_START_DATE}"))
+        None, f"{n_qqq} QQQ momentum and {n_orb} day trading closed trades since {STATS_START_DATE}"), "realizedCard")
     avg_daily_card = _pl_card("Avg. Daily Profit", avg_daily_pl, _split_pop(
         1 / trading_days if trading_days else None,
-        f"Each strategy's realized P&amp;L divided by the {trading_days} trading days with closed trades since {STATS_START_DATE}"))
+        f"Each strategy's realized P&amp;L divided by the {trading_days} trading days with closed trades since {STATS_START_DATE}"), "avgDailyCard")
     est_annual_card = _pl_card("Est. Annual Realized P&amp;L", est_annual_pl, _split_pop(
         TRADING_DAYS_PER_YEAR / trading_days if trading_days else None,
-        f"Avg. Daily Profit x {TRADING_DAYS_PER_YEAR} trading days a year"))
+        f"Avg. Daily Profit x {TRADING_DAYS_PER_YEAR} trading days a year"), "estAnnualCard")
+    # Every closed trade as [ET date, is QQQ momentum, P&L], so the page can
+    # recompute these cards for the date range picked in a table's date filter.
+    stats_trades_json = json.dumps([[t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d"),
+                                     1 if t["symbol"] == momentum_symbol else 0, round(t["pl"], 2)]
+                                    for t in closed_trades])
     daily_pl_chart_html = build_daily_pl_chart(daily_pl_points, height=400)  # taller, to fill a panel as tall as the QQQ one beside it
 
     # AI filter decisions (ai_decisions.csv, written by ai_filter.py), newest
@@ -1235,6 +1240,7 @@ def generate(client=None):
   }}
   .date-filter select:focus, .date-filter input:focus {{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }}
   .date-filter label {{ display: inline-flex; align-items: center; gap: 6px; }}
+  .stats-range {{ font-size: 12.5px; margin: -8px 0 18px; }}
   .symbol-search:focus {{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }}
   tr.no-match td {{ color: var(--muted); padding: 18px 8px; }}
   td.act-open {{ color: var(--accent); white-space: nowrap; }}
@@ -1467,9 +1473,10 @@ def generate(client=None):
       {realized_card}
       {avg_daily_card}
       {est_annual_card}
-      <div class="card"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
-      <div class="card"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
+      <div class="card" id="winRateCard"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
+      <div class="card" id="closedTradesCard"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
     </div>
+    <div class="muted stats-range" id="statsRange">Realized P&amp;L, Avg. Daily Profit, Est. Annual Realized P&amp;L, Win Rate and Closed Trades: all trades since {STATS_START_DATE}</div>
 
     <div class="chart-row{'' if momentum_panel_html else ' single'}">
     {momentum_panel_html}
@@ -1854,6 +1861,7 @@ def generate(client=None):
       const t = new Date(y0, m0 - 1, d0), y = t.getFullYear(), m = t.getMonth();
       const monthsAgo = n => new Date(y, m - n, t.getDate());
       switch (v) {{
+        case 'all': return [null, null];
         case 'today': return [t, t];
         case 'last7': return [new Date(y, m, t.getDate() - 6), t];
         case 'month': return [new Date(y, m, 1), new Date(y, m + 1, 0)];
@@ -1869,10 +1877,60 @@ def generate(client=None):
     function dfRange(id) {{
       const el = dfEl(id);
       const span = dfSpan(el.querySelector('.df-range').value);
-      if (span) {{ el.querySelector('.df-from').value = dfIso(span[0]); el.querySelector('.df-to').value = dfIso(span[1]); }}
+      if (span) {{
+        el.querySelector('.df-from').value = span[0] ? dfIso(span[0]) : '';
+        el.querySelector('.df-to').value = span[1] ? dfIso(span[1]) : '';
+      }}
       DF_APPLY[id]();
+      updateStats(id);
     }}
-    function dfCustom(id) {{ dfEl(id).querySelector('.df-range').value = 'custom'; DF_APPLY[id](); }}
+    function dfCustom(id) {{ dfEl(id).querySelector('.df-range').value = 'custom'; DF_APPLY[id](); updateStats(id); }}
+
+    // The Realized P&L / Avg. Daily Profit / Est. Annual / Win Rate / Closed
+    // Trades cards follow the date range last picked in any table's date filter.
+    const STATS_TRADES = {stats_trades_json};
+    function updateStats(id) {{
+      const el = dfEl(id);
+      if (!el) return;
+      const sel = el.querySelector('.df-range');
+      const from = el.querySelector('.df-from').value, to = el.querySelector('.df-to').value;
+      const tr = STATS_TRADES.filter(([d]) => (!from || d >= from) && (!to || d <= to));
+      const sum = f => tr.reduce((a, x) => a + (f(x) ? x[2] : 0), 0);
+      const total = sum(() => true), qqq = sum(x => x[1]), orb = total - qqq;
+      const nQqq = tr.filter(x => x[1]).length, nOrb = tr.length - nQqq;
+      const days = new Set(tr.map(x => x[0])).size, wins = tr.filter(x => x[2] > 0).length;
+      const period = sel.value === 'custom' ? (from || 'start') + ' to ' + (to || 'now') : sel.options[sel.selectedIndex].text;
+      const cls = v => v >= 0 ? 'pos' : 'neg';
+      const pop = (scale, note) => {{
+        if (!days) return '';
+        const cell = v => '<td class="num ' + cls(v) + '">' + fmtMoneyJS(v) + '</td><td class="num pop-pct">' +
+          (Math.abs(total) > 0.005 ? (v / total * 100).toFixed(1) + '%' : '—') + '</td>';
+        return '<div class="card-pop"><table>' +
+          '<tr><td><span class="pop-key qqq"></span>QQQ momentum</td>' + cell(qqq * scale) + '</tr>' +
+          '<tr><td><span class="pop-key orb"></span>Day trading</td>' + cell(orb * scale) + '</tr>' +
+          '<tr class="pop-total"><td>Total</td>' + cell(total * scale) + '</tr></table><div class="pop-note">' + note + '</div></div>';
+      }};
+      const plCard = (cid, label, v, scale, note) => {{
+        const c = document.getElementById(cid);
+        if (!c) return;
+        c.classList.remove('pos-card', 'neg-card');
+        if (v !== null) c.classList.add(v >= 0 ? 'pos-card' : 'neg-card');
+        c.innerHTML = '<div class="label">' + label + '</div><div class="value ' + (v === null ? '' : cls(v)) + '">' +
+          (v === null ? '—' : fmtMoneyJS(v)) + '</div>' + pop(scale, note);
+      }};
+      const avg = days ? total / days : null;
+      plCard('realizedCard', 'Realized P&amp;L', tr.length ? total : 0, 1,
+        nQqq + ' QQQ momentum and ' + nOrb + ' day trading closed trades (' + period + ')');
+      plCard('avgDailyCard', 'Avg. Daily Profit', avg, days ? 1 / days : 0,
+        "Each strategy's realized P&amp;L divided by the " + days + ' trading days with closed trades (' + period + ')');
+      plCard('estAnnualCard', 'Est. Annual Realized P&amp;L', avg === null ? null : avg * 252, days ? 252 / days : 0,
+        'Avg. Daily Profit x 252 trading days a year (' + period + ')');
+      document.querySelector('#winRateCard .value').textContent = tr.length ? Math.round(wins / tr.length * 100) + '%' : '—';
+      document.querySelector('#closedTradesCard .value').textContent = tr.length;
+      document.getElementById('statsRange').textContent =
+        'Realized P&L, Avg. Daily Profit, Est. Annual Realized P&L, Win Rate and Closed Trades: ' + period +
+        (from || to ? ' (' + (from || 'start') + ' to ' + (to || 'now') + ')' : ', all trades since {STATS_START_DATE}');
+    }}
     // Reset: back to Current Month, and clear the table's search box.
     const DF_SEARCH = {{ qqqClosedTable: 'qqqClosedSearch', closedTable: 'closedSearch' }};
     function dfReset(id) {{
