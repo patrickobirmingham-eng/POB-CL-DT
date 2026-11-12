@@ -870,6 +870,23 @@ def generate(client=None):
     qqq_closed_rows, _ = closed_table_rows([t for t in closed_trades if t["symbol"] == momentum_symbol],
                                            f"No closed {momentum_symbol} momentum trades yet")
 
+    # Date filter bar (quick range + From/To + Reset) above a table; the JS in the
+    # page (dfRange etc.) hides rows outside the range and recomputes its Total row.
+    def date_filter_html(table_id):
+        ranges = [("today", "Today"), ("last7", "Last 7 Days"), ("month", "Current Month"),
+                  ("prevmonth", "Last Month"), ("ytd", "Current Year"), ("lastyear", "Last Year"),
+                  ("last3m", "Last 3 Months"), ("last6m", "Last 6 Months"), ("last12m", "Last 12 Months")]
+        opts = "".join(f'<option value="{v}"{" selected" if v == "month" else ""}>{t}</option>' for v, t in ranges)
+        opts += '<option value="custom" hidden>Custom dates</option>'
+        return (f'<div class="date-filter" data-table="{table_id}">'
+                f'<select class="df-range" aria-label="Date range" onchange="dfRange(\'{table_id}\')">{opts}</select>'
+                f'<label>From <input type="date" class="df-from" onchange="dfCustom(\'{table_id}\')"></label>'
+                f'<label>To <input type="date" class="df-to" onchange="dfCustom(\'{table_id}\')"></label>'
+                f'<button type="button" class="dl-btn" onclick="dfReset(\'{table_id}\')" title="Back to Current Month">&#8634; Reset Filter</button>'
+                f'</div>')
+
+    daily_filter, qqq_closed_filter, closed_filter = (date_filter_html(t) for t in ("dailyTable", "qqqClosedTable", "closedTable"))
+
     # Income by Day — closed_trades rolled up per calendar date (ET), drawn
     # from the full paginated order history, so every trading day since the
     # account started shows up here, not just the most recent ones.
@@ -1211,6 +1228,13 @@ def generate(client=None):
     transition: border-color 0.12s ease, box-shadow 0.12s ease;
   }}
   .symbol-search::placeholder {{ color: var(--faint); }}
+  .date-filter {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }}
+  .date-filter select, .date-filter input {{
+    background: var(--bg); color: var(--text); border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 6px 8px; font-size: 13px; font-family: inherit; color-scheme: light dark;
+  }}
+  .date-filter select:focus, .date-filter input:focus {{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }}
+  .date-filter label {{ display: inline-flex; align-items: center; gap: 6px; }}
   .symbol-search:focus {{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }}
   tr.no-match td {{ color: var(--muted); padding: 18px 8px; }}
   td.act-open {{ color: var(--accent); white-space: nowrap; }}
@@ -1464,6 +1488,7 @@ def generate(client=None):
       <div class="panel-head">
         <h2>Income by Day</h2>
         <span class="muted stats-note" title="The first trading day (Sep 22) sized trades off the whole account by mistake, so it is left out of the trading stats. Account balances still include it.">Trading stats start Sep 23, 2026</span>
+        {daily_filter}
         <button type="button" class="dl-btn" onclick="downloadTableCsv('dailyTable', 'income-by-day')" title="Download this table as a CSV file that opens in Excel">&#8681; Download Table</button>
       </div>
       <div class="table-scroll">
@@ -1563,6 +1588,7 @@ def generate(client=None):
     <div class="panel">
       <div class="panel-head">
         <h2>QQQ Momentum Strategy &mdash; Concretum Bands - Closed Orders</h2>
+        {qqq_closed_filter}
         <input type="search" id="qqqClosedSearch" class="symbol-search" placeholder="Search dates, e.g. 2026-10-16"
                aria-label="Filter QQQ momentum closed orders by transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed('qqqClosedTable', 'qqqClosedSearch')">
         <button type="button" class="dl-btn" onclick="downloadTableCsv('qqqClosedTable', 'qqq-momentum-closed-orders')" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button>
@@ -1587,6 +1613,7 @@ def generate(client=None):
     <div class="panel">
       <div class="panel-head">
         <h2>Closed Orders</h2>
+        {closed_filter}
         <input type="search" id="closedSearch" class="symbol-search" placeholder="Search symbols or dates, e.g. AAPL, 2026-09-28"
                aria-label="Filter closed orders by stock symbol or transaction date" autocomplete="off" spellcheck="false" oninput="filterClosed('closedTable', 'closedSearch')">
         <button type="button" class="dl-btn" onclick="downloadTableCsv('closedTable', 'closed-orders')" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button>
@@ -1813,22 +1840,96 @@ def generate(client=None):
       tbody.appendChild(totals);
     }}
 
-    // Closed Orders tables (all trades, and the QQQ momentum one): symbol/date
-    // search; the Total row (incl. Profit / (Loss)) is recomputed for whatever
-    // is visible and restored when cleared.
-    const closedTotalsOriginal = {{}};
+    // Date filters above Income by Day / QQQ Momentum / Closed Orders: a quick
+    // range or From/To dates (Eastern-time calendar days), default Current Month.
+    const DF_APPLY = {{
+      dailyTable: () => filterDaily(),
+      qqqClosedTable: () => filterClosed('qqqClosedTable', 'qqqClosedSearch'),
+      closedTable: () => filterClosed('closedTable', 'closedSearch'),
+    }};
+    const dfEl = id => document.querySelector('.date-filter[data-table="' + id + '"]');
+    const dfIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    function dfSpan(v) {{
+      const [y0, m0, d0] = new Date().toLocaleDateString('en-CA', {{ timeZone: 'America/New_York' }}).split('-').map(Number);
+      const t = new Date(y0, m0 - 1, d0), y = t.getFullYear(), m = t.getMonth();
+      const monthsAgo = n => new Date(y, m - n, t.getDate());
+      switch (v) {{
+        case 'today': return [t, t];
+        case 'last7': return [new Date(y, m, t.getDate() - 6), t];
+        case 'month': return [new Date(y, m, 1), new Date(y, m + 1, 0)];
+        case 'prevmonth': return [new Date(y, m - 1, 1), new Date(y, m, 0)];
+        case 'ytd': return [new Date(y, 0, 1), new Date(y, 11, 31)];
+        case 'lastyear': return [new Date(y - 1, 0, 1), new Date(y - 1, 11, 31)];
+        case 'last3m': return [monthsAgo(3), t];
+        case 'last6m': return [monthsAgo(6), t];
+        case 'last12m': return [monthsAgo(12), t];
+      }}
+      return null;
+    }}
+    function dfRange(id) {{
+      const el = dfEl(id);
+      const span = dfSpan(el.querySelector('.df-range').value);
+      if (span) {{ el.querySelector('.df-from').value = dfIso(span[0]); el.querySelector('.df-to').value = dfIso(span[1]); }}
+      DF_APPLY[id]();
+    }}
+    function dfCustom(id) {{ dfEl(id).querySelector('.df-range').value = 'custom'; DF_APPLY[id](); }}
+    // Reset: back to Current Month, and clear the table's search box.
+    const DF_SEARCH = {{ qqqClosedTable: 'qqqClosedSearch', closedTable: 'closedSearch' }};
+    function dfReset(id) {{
+      if (DF_SEARCH[id]) document.getElementById(DF_SEARCH[id]).value = '';
+      dfEl(id).querySelector('.df-range').value = 'month';
+      dfRange(id);
+    }}
+    // Is the row's date (first column) inside the table's From/To range?
+    function dfInRange(tableId, row) {{
+      const el = dfEl(tableId);
+      if (!el) return true;
+      const from = el.querySelector('.df-from').value, to = el.querySelector('.df-to').value;
+      const raw = row.cells[0].getAttribute('data-value') || '';
+      const rd = raw.length === 10 ? raw : (rowDate(row) || []).map((n, i) => i ? String(n).padStart(2, '0') : n).join('-');
+      return (!from || rd >= from) && (!to || rd <= to);
+    }}
+    // Income by Day: date filter only; the Total row adds up the days shown.
+    function filterDaily() {{
+      const tbody = document.getElementById('dailyTable').tBodies[0];
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row):not(.no-match)')).filter(r => r.cells.length > 2);
+      let shown = 0, trades = 0, cost = 0, sold = 0, pl = 0;
+      const val = (r, i) => parseFloat(r.cells[i].getAttribute('data-value')) || 0;
+      rows.forEach(row => {{
+        const ok = dfInRange('dailyTable', row);
+        row.style.display = ok ? '' : 'none';
+        if (!ok) return;
+        shown++; trades += val(row, 1); cost += val(row, 2); sold += val(row, 3); pl += val(row, 4);
+      }});
+      setNoMatch('dailyTable', rows.length > 0 && shown === 0, 'No trading days in this date range.');
+      const totals = tbody.querySelector('tr.totals-row');
+      if (!totals) return;
+      totals.style.display = shown ? '' : 'none';
+      if (!shown) return;
+      const gain = cost ? pl / cost * 100 : 0;
+      totals.cells[1].textContent = trades;
+      totals.cells[2].textContent = fmtMoneyJS(cost);
+      totals.cells[3].textContent = fmtMoneyJS(sold);
+      totals.cells[4].textContent = fmtMoneyJS(pl);
+      totals.cells[4].className = 'num ' + (pl >= 0 ? 'pos' : 'neg');
+      totals.cells[5].textContent = pctJS(gain);
+      totals.cells[5].className = 'num ' + (gain >= 0 ? 'pos' : 'neg');
+    }}
+
+    // Closed Orders tables (all trades, and the QQQ momentum one): date filter
+    // plus symbol/date search; the Total row (incl. Profit / (Loss)) is
+    // recomputed for whatever is visible.
     function filterClosed(tableId, searchId) {{
       const table = document.getElementById(tableId);
       if (!table) return;
       const tbody = table.tBodies[0];
       const totals = tbody.querySelector('tr.totals-row');
-      if (totals && !(tableId in closedTotalsOriginal)) closedTotalsOriginal[tableId] = totals.innerHTML;
       const q = parseSearch(searchId);
       const hasQuery = q.symbols.length > 0 || q.dates.length > 0;
       const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row):not(.no-match)')).filter(r => r.cells.length > 2);
       let shown = 0, cost = 0, proceeds = 0, pl = 0;
       rows.forEach(row => {{
-        const ok = rowMatches(row, q);
+        const ok = rowMatches(row, q) && dfInRange(tableId, row);
         row.style.display = ok ? '' : 'none';
         if (!ok) return;
         shown++;
@@ -1837,12 +1938,10 @@ def generate(client=None):
         proceeds += shares * parseFloat(row.cells[5].getAttribute('data-value'));
         pl += parseFloat(row.cells[6].getAttribute('data-value'));
       }});
-      setNoMatch(tableId, rows.length > 0 && shown === 0, 'No closed orders for ' + describeQuery(q) + '.');
+      setNoMatch(tableId, rows.length > 0 && shown === 0,
+        'No closed orders in this date range' + (hasQuery ? ' for ' + describeQuery(q) : '') + '.');
       if (!totals) return;
-      if (!hasQuery) {{
-        totals.style.display = '';
-        if (tableId in closedTotalsOriginal) totals.innerHTML = closedTotalsOriginal[tableId];
-      }} else if (shown === 0) {{
+      if (shown === 0) {{
         totals.style.display = 'none';
       }} else {{
         totals.style.display = '';
@@ -2463,8 +2562,8 @@ def generate(client=None):
     // Apply the default status filter (Filled only, checked above) on first
     // load, same as if the user had just toggled the checkboxes themselves.
     filterOrders();
-    filterClosed('closedTable', 'closedSearch');
-    filterClosed('qqqClosedTable', 'qqqClosedSearch');
+    // Date filters start on Current Month (this also applies the search boxes).
+    Object.keys(DF_APPLY).forEach(id => {{ if (dfEl(id)) dfRange(id); }});
 
     // --- Dark / light theme toggle ------------------------------------------------
     // Defaults to dark (matches the original look) and remembers the choice

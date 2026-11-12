@@ -300,6 +300,7 @@ input[type=search]{width:260px;max-width:100%}
 .phead h2:before{content:"";width:3px;height:15px;border-radius:2px;background:var(--accent)}
 .phead .sub{color:var(--muted);font-size:13px}
 .phead input{margin-left:auto}
+.tdf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:13px}.tdf label{display:inline-flex;align-items:center;gap:6px}.tdf input{margin-left:0}
 .btn.dl{font-size:13px;padding:6px 11px;white-space:nowrap}
 .row2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
 @media (max-width:1000px){.row2{grid-template-columns:1fr}}
@@ -399,7 +400,7 @@ svg text{fill:var(--muted);font-size:11px}
   <div class="groups" id="groups"></div>
 
   <div class="panel">
-    <div class="phead"><h2>Open spreads</h2><span class="sub" id="opensub"></span>
+    <div class="phead"><h2>Open spreads</h2><span class="sub" id="opensub"></span><div class="tdf" data-t="open"></div>
       <input type="search" id="qOpen" placeholder="Search stock or sector…"><button class="btn dl" onclick="dlOpen()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button></div>
     <div class="tw"><table id="open"></table></div>
     <div class="note" id="opennote"></div>
@@ -418,13 +419,13 @@ svg text{fill:var(--muted);font-size:11px}
   </div>
 
   <div class="panel">
-    <div class="phead"><h2>Closed spreads</h2><span class="sub" id="closedsub"></span>
+    <div class="phead"><h2>Closed spreads</h2><span class="sub" id="closedsub"></span><div class="tdf" data-t="closed"></div>
       <input type="search" id="qClosed" placeholder="Search stock, sector or reason…"><button class="btn dl" onclick="dlClosed()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button></div>
     <div class="tw"><table id="closed"></table></div>
   </div>
 
   <div class="panel">
-    <div class="phead"><h2>Transactions</h2><span class="sub" id="txsub"></span>
+    <div class="phead"><h2>Transactions</h2><span class="sub" id="txsub"></span><div class="tdf" data-t="tx"></div>
       <input type="search" id="qTx" placeholder="Search…"><button class="btn dl" onclick="dlTx()" title="Download the rows shown as a CSV file that opens in Excel">&#8681; Download Table</button></div>
     <div class="tw"><table id="tx"></table></div>
   </div>
@@ -488,7 +489,8 @@ const spreads=DATA.spreads.map(s=>{
 const tx=DATA.tx;
 const ACTS=['Buy to Close','Assigned','Called Away','Sell to Close','Expired','Sell to Open','Buy to Open'];
 $('status').innerHTML=ACTS.map(a=>`<label><input type="checkbox" value="${a}" checked> ${a}</label>`).join('');
-function setRange(v){
+// [from, to] dates for a quick-range choice (null for "custom")
+function span(v){
   const y=today.getFullYear(), m=today.getMonth(), ago=d=>new Date(today-d*864e5), monthsAgo=n=>new Date(y,m-n,today.getDate());
   let f,t=today;
   if(v==='all'){f=new Date(2000,0,1);t=new Date(2100,0,1)}
@@ -501,9 +503,26 @@ function setRange(v){
   else if(v==='last3m'){f=monthsAgo(3)}
   else if(v==='last6m'){f=monthsAgo(6)}
   else if(v==='last12m'){f=monthsAgo(12)}
-  else return;
-  $('from').value=iso(f);$('to').value=iso(t);
+  else return null;
+  return [f,t];
 }
+function setRange(v){const r=span(v);if(r){$('from').value=iso(r[0]);$('to').value=iso(r[1])}}
+// Each table's own date filter (Open spreads by date opened, Closed spreads by date closed,
+// Transactions by date): quick range or From/To dates, default Current Month. The filter bar
+// at the top drives the summary tiles.
+const RANGES=[['today','Today'],['last7','Last 7 Days'],['month','Current Month'],['prevmonth','Last Month'],['ytd','Current Year'],['lastyear','Last Year'],['last3m','Last 3 Months'],['last6m','Last 6 Months'],['last12m','Last 12 Months']];
+const TQ={open:'qOpen',closed:'qClosed',tx:'qTx'};
+document.querySelectorAll('.tdf').forEach(el=>{
+  el.innerHTML=`<select aria-label="Date range">${RANGES.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}<option value="custom" hidden>Custom dates</option></select>`+
+    `<label>From <input type="date"></label><label>To <input type="date"></label><button class="btn" title="Back to Current Month">&#8634; Reset Filter</button>`;
+  const sel=el.querySelector('select'),[f,t]=el.querySelectorAll('input');
+  const set=v=>{sel.value=v;const r=span(v);if(r){f.value=iso(r[0]);t.value=iso(r[1])}};
+  sel.onchange=()=>{set(sel.value);draw()};
+  f.onchange=t.onchange=()=>{sel.value='custom';draw()};
+  el.querySelector('button').onclick=()=>{set('month');$(TQ[el.dataset.t]).value='';draw()};
+  set('month');
+});
+const tIn=(k,d)=>{const [f,t]=document.querySelectorAll(`.tdf[data-t="${k}"] input`);return !!d&&(!f.value||d>=f.value)&&(!t.value||d<=t.value)};
 const sortState={tx:{k:0,dir:-1}};
 const SHOWN={open:[],closed:[],tx:[]};
 // "Download Table": the rows currently shown (search, filters and sort applied) + a Total row,
@@ -579,6 +598,7 @@ function draw(){
   const opens=sum(ftx.filter(t=>t.act==='Sell to Open'||t.act==='Buy to Open'),t=>t.amt);
   const closes=sum(ftx.filter(t=>t.act==='Buy to Close'||t.act==='Sell to Close'),t=>t.amt);
   const openSp=spreads.filter(s=>s.open), closedR=spreads.filter(s=>!s.open&&inR(s.c)), openedR=spreads.filter(s=>inR(s.o));
+  const openT=openSp.filter(s=>tIn('open',s.o)), closedT=spreads.filter(s=>!s.open&&tIn('closed',s.c)), txT=tx.filter(t=>tIn('tx',t.dt)&&acts.includes(t.act));
   const realized=sum(closedR,s=>s.pl), openPrem=sum(openSp,s=>s.credit), assigned=sum(closedR.filter(s=>s.why==='assigned'),s=>s.pl);
   const avgPrem=openedR.length?sum(openedR,s=>s.credit)/openedR.length:0;
   const captured=sum(closedR,s=>s.credit)?realized/sum(closedR,s=>s.credit)*100:0;
@@ -590,18 +610,18 @@ function draw(){
    group('PROFIT &amp; LOSS',[tile('Realized Profit / Loss',tm(realized),cls(realized)),tile('Open Premium',tm(openPrem),'warn'),tile('Assigned Premium',tm(assigned),'warn')])+
    group('PERFORMANCE',[tile('Avg Premium per Trade',tm(avgPrem),'pos'),tile('% Premium Captured',closedR.length?captured.toFixed(1)+'%':'—',captured>=50?'pos':closedR.length?'neg':'muted'),tile('Commission Drag',tm(fees),'warn')])+
    group('ACTIVITY',[tile('Open / Closed Positions',`${openSp.length} / ${closedR.length}`,'warn'),tile('Open / Closed Contracts',`${sum(openSp,s=>s.q)} / ${sum(closedR,s=>s.q)}`,'warn'),tile('Avg Days Held',closedR.length?days.toFixed(1)+'d':'—','warn')]);
-  SHOWN.open=sortable('open',openCols,openSp,s=>`<tr><td class="l">${sym(s)}${s.rolls?` <span class="tag rolled" title="rolled ${s.rolls}×">rolled</span>`:''}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.e))} <span class="muted">(${s.dte}d)</span></td><td>${s.q}</td><td>${s.d.toFixed(2)}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td>${bar(s)}</td><td>${m0(s.ml)}</td></tr>`,'qOpen',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),pl=S(s=>s.pl);
+  SHOWN.open=sortable('open',openCols,openT,s=>`<tr><td class="l">${sym(s)}${s.rolls?` <span class="tag rolled" title="rolled ${s.rolls}×">rolled</span>`:''}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.e))} <span class="muted">(${s.dte}d)</span></td><td>${s.q}</td><td>${s.d.toFixed(2)}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td>${bar(s)}</td><td>${m0(s.ml)}</td></tr>`,'qOpen',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),pl=S(s=>s.pl);
     return totalRow(openCols,r,{[openCols.findIndex(c=>c.key==='credit')]:m0(S(s=>s.credit)),[openCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
       [openCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(pl)}">${money(pl,true,0)}</span>`,
       [openCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(pl)}">${pctS(roi({pl,credit:S(s=>s.credit)}))}</span>`})});
-  $('opensub').textContent=`${openSp.length} of ${MAXN} · ${m0(openPrem)} credit collected`;
-  SHOWN.closed=sortable('closed',closedCols,closedR,s=>`<tr><td class="l">${sym(s)}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${fmt(D(s.e))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
+  $('opensub').textContent=`${openT.length} opened in range · ${openSp.length} of ${MAXN} open · ${m0(openPrem)} credit collected`;
+  SHOWN.closed=sortable('closed',closedCols,closedT,s=>`<tr><td class="l">${sym(s)}</td><td>${px(s)}</td><td>${s.sk}/${s.lk} put</td><td>${fmt(D(s.o))}</td><td>${fmt(D(s.c))}</td><td>${fmt(D(s.e))}</td><td>${s.days}</td><td>${s.q}</td><td>${m0(s.credit)}</td><td>${m0(s.cost)}</td><td class="${cls(s.pl)}">${money(s.pl,true,0)}</td><td class="${cls(roi(s)||0)}">${pctS(roi(s))}</td><td><span class="tag ${esc(s.why.split(' ')[0])}">${esc(s.why)}</span>${s.note?` <span class="tag note" title="${esc(s.note)}">${esc(s.note)}</span>`:''}</td></tr>`,'qClosed',r=>{const S=f=>r.reduce((x,y)=>x+f(y),0),t={pl:S(s=>s.pl),credit:S(s=>s.credit)};
     return totalRow(closedCols,r,{[closedCols.findIndex(c=>c.key==='credit')]:m0(t.credit),[closedCols.findIndex(c=>c.key==='cost')]:m0(S(s=>s.cost)),
       [closedCols.findIndex(c=>c.key==='pl')]:`<span class="${cls(t.pl)}">${money(t.pl,true,0)}</span>`,[closedCols.findIndex(c=>c.t==='ROI %')]:`<span class="${cls(t.pl)}">${pctS(roi(t))}</span>`})});
-  $('closedsub').textContent=`${closedR.length} in range · ${closedR.filter(s=>s.pl>0).length} winners`;
-  SHOWN.tx=sortable('tx',txCols,ftx,x=>`<tr><td>${fmt(D(x.dt))}</td><td>${esc(x.act)}</td><td class="l sym">${esc(x.sym)}</td><td>${esc(x.leg)}</td><td>${fmt(D(x.exp))}</td><td>${x.q}</td><td>${x.px?money(Math.abs(x.px)):'—'}</td><td>${money(x.fee)}</td><td class="${cls(x.amt)}">${money(x.amt,true)}</td></tr>`,'qTx',r=>{const a=r.reduce((x,y)=>x+y.amt,0);
+  $('closedsub').textContent=`${closedT.length} in range · ${closedT.filter(s=>s.pl>0).length} winners`;
+  SHOWN.tx=sortable('tx',txCols,txT,x=>`<tr><td>${fmt(D(x.dt))}</td><td>${esc(x.act)}</td><td class="l sym">${esc(x.sym)}</td><td>${esc(x.leg)}</td><td>${fmt(D(x.exp))}</td><td>${x.q}</td><td>${x.px?money(Math.abs(x.px)):'—'}</td><td>${money(x.fee)}</td><td class="${cls(x.amt)}">${money(x.amt,true)}</td></tr>`,'qTx',r=>{const a=r.reduce((x,y)=>x+y.amt,0);
     return totalRow(txCols,r,{[txCols.findIndex(c=>c.key==='amt')]:`<span class="${cls(a)}">${money(a,true)}</span>`})});
-  $('txsub').textContent=`${ftx.length} in range`;
+  $('txsub').textContent=`${txT.length} in range`;
   const risk=sum(openSp,s=>s.ml), by={};openSp.forEach(s=>{const k=s.sec.replace(' ETF','');by[k]=(by[k]||0)+1});
   $('risk').innerHTML=`<div style="font-size:22px;font-weight:650">${m0(risk)}</div><div class="muted" style="font-size:12px;margin-bottom:10px">of ${m0(MAXN*MAXL)} allowed (${MAXN} × ${m0(MAXL)})</div>`+(Object.keys(by).length?Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<div class="sector"><span>${esc(s)}</span><div class="track"><div class="fill ${n>=MAXSEC?'full':''}" style="width:${Math.min(100,n/MAXSEC*100)}%"></div></div><span class="muted">${n}/${MAXSEC}</span></div>`).join(''):'<div class="empty">No open spreads</div>');
 }
@@ -611,7 +631,7 @@ $('risknote').textContent=`Limits: ${MAXSEC} spreads per sector · ${R.MAX_PER_S
 $('range').onchange=e=>{setRange(e.target.value);draw()};
 $('status').onchange=draw;
 ['qOpen','qClosed','qTx'].forEach(id=>$(id).oninput=draw);
-$('reset').onclick=()=>{document.querySelectorAll('#status input').forEach(i=>i.checked=true);$('range').value='month';setRange('month');['qOpen','qClosed','qTx'].forEach(id=>$(id).value='');for(const k in sortState)delete sortState[k];sortState.tx={k:0,dir:-1};draw()};
+$('reset').onclick=()=>{document.querySelectorAll('.tdf').forEach(el=>{el.querySelector('select').value='month';const r=span('month'),[f,t]=el.querySelectorAll('input');f.value=iso(r[0]);t.value=iso(r[1])});document.querySelectorAll('#status input').forEach(i=>i.checked=true);$('range').value='month';setRange('month');['qOpen','qClosed','qTx'].forEach(id=>$(id).value='');for(const k in sortState)delete sortState[k];sortState.tx={k:0,dir:-1};draw()};
 $('range').value='month';setRange('month');draw();
 // daily P&L chart
 (function(){
