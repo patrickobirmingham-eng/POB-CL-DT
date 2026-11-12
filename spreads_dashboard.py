@@ -508,18 +508,19 @@ function span(v){
 }
 function setRange(v){const r=span(v);if(r){$('from').value=iso(r[0]);$('to').value=iso(r[1])}}
 // Each table's own date filter (Open spreads by date opened, Closed spreads by date closed,
-// Transactions by date): quick range or From/To dates, default Current Month. The filter bar
-// at the top drives the summary tiles.
-const RANGES=[['today','Today'],['last7','Last 7 Days'],['month','Current Month'],['prevmonth','Last Month'],['ytd','Current Year'],['lastyear','Last Year'],['last3m','Last 3 Months'],['last6m','Last 6 Months'],['last12m','Last 12 Months']];
+// Transactions by date): quick range or From/To dates, default Current Month. Picking a range in
+// a table also sets the filter bar at the top, which drives all the summary tiles.
+const RANGES=[['all','Show All'],['today','Today'],['last7','Last 7 Days'],['month','Current Month'],['prevmonth','Last Month'],['ytd','Current Year'],['lastyear','Last Year'],['last3m','Last 3 Months'],['last6m','Last 6 Months'],['last12m','Last 12 Months']];
 const TQ={open:'qOpen',closed:'qClosed',tx:'qTx'};
 document.querySelectorAll('.tdf').forEach(el=>{
   el.innerHTML=`<select aria-label="Date range">${RANGES.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}<option value="custom" hidden>Custom dates</option></select>`+
     `<label>From <input type="date"></label><label>To <input type="date"></label><button class="btn" title="Back to Current Month">&#8634; Reset Filter</button>`;
   const sel=el.querySelector('select'),[f,t]=el.querySelectorAll('input');
   const set=v=>{sel.value=v;const r=span(v);if(r){f.value=iso(r[0]);t.value=iso(r[1])}};
-  sel.onchange=()=>{set(sel.value);draw()};
-  f.onchange=t.onchange=()=>{sel.value='custom';draw()};
-  el.querySelector('button').onclick=()=>{set('month');$(TQ[el.dataset.t]).value='';draw()};
+  const toTop=()=>{$('range').value=sel.value;$('from').value=f.value;$('to').value=t.value};
+  sel.onchange=()=>{set(sel.value);toTop();draw()};
+  f.onchange=t.onchange=()=>{sel.value='custom';toTop();draw()};
+  el.querySelector('button').onclick=()=>{set('month');$(TQ[el.dataset.t]).value='';toTop();draw()};
   set('month');
 });
 const tIn=(k,d)=>{const [f,t]=document.querySelectorAll(`.tdf[data-t="${k}"] input`);return !!d&&(!f.value||d>=f.value)&&(!t.value||d<=t.value)};
