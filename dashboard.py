@@ -1465,19 +1465,6 @@ def generate(client=None):
   <div class="wrap">
 
     <div id="cardPop" role="tooltip"></div>
-    <div class="cards">
-      <div class="card primary"><div class="label">Equity</div><div class="value">{fmt_money(account.equity)}</div></div>
-      <div class="card"><div class="label">Cash</div><div class="value">{fmt_money(account.cash)}</div></div>
-      <div class="card"><div class="label">Buying Power</div><div class="value">{fmt_money(account.buying_power)}</div></div>
-      <div class="card"><div class="label">Open Positions</div><div class="value">{len(positions)}</div></div>
-      {realized_card}
-      {avg_daily_card}
-      {est_annual_card}
-      <div class="card" id="winRateCard"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
-      <div class="card" id="closedTradesCard"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
-    </div>
-    <div class="muted stats-range" id="statsRange">Realized P&amp;L, Avg. Daily Profit, Est. Annual Realized P&amp;L, Win Rate and Closed Trades: all trades since {STATS_START_DATE}</div>
-
     <div class="chart-row{'' if momentum_panel_html else ' single'}">
     {momentum_panel_html}
 
@@ -1490,6 +1477,19 @@ def generate(client=None):
       </div>
     </div>
     </div>
+
+    <div class="cards">
+      <div class="card primary"><div class="label">Equity</div><div class="value">{fmt_money(account.equity)}</div></div>
+      <div class="card"><div class="label">Cash</div><div class="value">{fmt_money(account.cash)}</div></div>
+      <div class="card"><div class="label">Buying Power</div><div class="value">{fmt_money(account.buying_power)}</div></div>
+      <div class="card"><div class="label">Open Positions</div><div class="value">{len(positions)}</div></div>
+      {realized_card}
+      {avg_daily_card}
+      {est_annual_card}
+      <div class="card" id="winRateCard"><div class="label">Win Rate</div><div class="value">{win_rate_text}</div></div>
+      <div class="card" id="closedTradesCard"><div class="label">Closed Trades</div><div class="value">{len(closed_trades)}</div></div>
+    </div>
+    <div class="muted stats-range" id="statsRange">Realized P&amp;L, Avg. Daily Profit, Est. Annual Realized P&amp;L, Win Rate and Closed Trades: all trades since {STATS_START_DATE}</div>
 
     <div class="panel">
       <div class="panel-head">
@@ -1874,15 +1874,43 @@ def generate(client=None):
       }}
       return null;
     }}
-    function dfRange(id) {{
+    function dfFill(id) {{
       const el = dfEl(id);
       const span = dfSpan(el.querySelector('.df-range').value);
       if (span) {{
         el.querySelector('.df-from').value = span[0] ? dfIso(span[0]) : '';
         el.querySelector('.df-to').value = span[1] ? dfIso(span[1]) : '';
       }}
-      DF_APPLY[id]();
-      updateStats(id);
+    }}
+    function dfRange(id) {{ dfFill(id); DF_APPLY[id](); updateStats(id); }}
+    // The chosen filters are remembered in this browser (switching to the Credit
+    // Spreads tab and back, a refresh or the auto-reload keep them). A quick range
+    // is re-dated from today when restored; custom From/To dates are kept as is.
+    const DF_KEY = 'dayDashFilters';
+    function dfSave(statsId) {{
+      const tables = {{}};
+      Object.keys(DF_APPLY).forEach(id => {{
+        const el = dfEl(id);
+        if (el) tables[id] = {{ r: el.querySelector('.df-range').value, f: el.querySelector('.df-from').value, t: el.querySelector('.df-to').value }};
+      }});
+      try {{ localStorage.setItem(DF_KEY, JSON.stringify({{ tables, stats: statsId }})); }} catch (e) {{}}
+    }}
+    function dfRestore() {{
+      let saved = {{}};
+      try {{ saved = JSON.parse(localStorage.getItem(DF_KEY) || '{{}}') || {{}}; }} catch (e) {{}}
+      Object.keys(DF_APPLY).forEach(id => {{
+        const el = dfEl(id);
+        if (!el) return;
+        const s = (saved.tables || {{}})[id];
+        const sel = el.querySelector('.df-range');
+        if (s && [...sel.options].some(o => o.value === s.r)) {{
+          sel.value = s.r;
+          if (s.r === 'custom') {{ el.querySelector('.df-from').value = s.f || ''; el.querySelector('.df-to').value = s.t || ''; }}
+        }}
+        dfFill(id);
+        DF_APPLY[id]();
+      }});
+      updateStats(saved.stats && dfEl(saved.stats) ? saved.stats : 'closedTable');
     }}
     function dfCustom(id) {{ dfEl(id).querySelector('.df-range').value = 'custom'; DF_APPLY[id](); updateStats(id); }}
 
@@ -1927,9 +1955,10 @@ def generate(client=None):
         'Avg. Daily Profit x 252 trading days a year (' + period + ')');
       document.querySelector('#winRateCard .value').textContent = tr.length ? Math.round(wins / tr.length * 100) + '%' : '—';
       document.querySelector('#closedTradesCard .value').textContent = tr.length;
+      dfSave(id);
       document.getElementById('statsRange').textContent =
         'Realized P&L, Avg. Daily Profit, Est. Annual Realized P&L, Win Rate and Closed Trades: ' + period +
-        (from || to ? ' (' + (from || 'start') + ' to ' + (to || 'now') + ')' : ', all trades since {STATS_START_DATE}');
+        (sel.value === 'custom' ? '' : from || to ? ' (' + (from || 'start') + ' to ' + (to || 'now') + ')' : ', all trades since {STATS_START_DATE}');
     }}
     // Reset: back to Current Month, and clear the table's search box.
     const DF_SEARCH = {{ qqqClosedTable: 'qqqClosedSearch', closedTable: 'closedSearch' }};
@@ -2620,8 +2649,8 @@ def generate(client=None):
     // Apply the default status filter (Filled only, checked above) on first
     // load, same as if the user had just toggled the checkboxes themselves.
     filterOrders();
-    // Date filters start on Current Month (this also applies the search boxes).
-    Object.keys(DF_APPLY).forEach(id => {{ if (dfEl(id)) dfRange(id); }});
+    // Date filters: restore the ones chosen last time (default Current Month); this also applies the search boxes.
+    dfRestore();
 
     // --- Dark / light theme toggle ------------------------------------------------
     // Defaults to dark (matches the original look) and remembers the choice

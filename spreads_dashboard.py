@@ -590,7 +590,32 @@ const closedCols=[
  {t:'Stock',key:'sym',l:1,search:s=>s.sec},{t:'Stock price at close',key:'price'},{t:'Spread',key:'sk'},{t:'Opened',key:'o'},{t:'Closed',key:'c'},{t:'Expires',key:'e'},{t:'Days held',key:'days'},{t:'Qty',key:'q'},
  {t:'Total credit',key:'credit'},{t:'Total cost to close',key:'cost'},{t:'P&amp;L',key:'pl'},{t:'ROI %',sort:s=>roi(s)??-1e9},{t:'Why',key:'why'}];
 const txCols=[{t:'Date',key:'dt'},{t:'Action',key:'act'},{t:'Stock',key:'sym',l:1},{t:'Option',key:'leg'},{t:'Expires',key:'exp'},{t:'Qty',key:'q'},{t:'Price',key:'px'},{t:'Fees',key:'fee'},{t:'Amount',key:'amt'}];
+// The chosen filters are remembered in this browser (switching to the Day Trading tab and back, a
+// refresh or a reload keep them). A quick range is re-dated from today when restored; custom
+// From/To dates are kept as is.
+const FKEY='spreadsDashFilters';
+function saveFilters(){
+  const tables={};
+  document.querySelectorAll('.tdf').forEach(el=>{const [f,t]=el.querySelectorAll('input');tables[el.dataset.t]={r:el.querySelector('select').value,f:f.value,t:t.value}});
+  try{localStorage.setItem(FKEY,JSON.stringify({tables,top:{r:$('range').value,f:$('from').value,t:$('to').value},
+    off:[...document.querySelectorAll('#status input:not(:checked)')].map(i=>i.value)}))}catch(e){}
+}
+function restoreFilters(){
+  let s={};try{s=JSON.parse(localStorage.getItem(FKEY)||'{}')||{}}catch(e){}
+  const has=(sel,v)=>[...sel.options].some(o=>o.value===v);
+  document.querySelectorAll('.tdf').forEach(el=>{
+    const v=(s.tables||{})[el.dataset.t],sel=el.querySelector('select'),[f,t]=el.querySelectorAll('input');
+    if(!v||!has(sel,v.r))return;
+    sel.value=v.r;
+    if(v.r==='custom'){f.value=v.f||'';t.value=v.t||''}else{const r=span(v.r);f.value=iso(r[0]);t.value=iso(r[1])}
+  });
+  const top=s.top||{};
+  if(has($('range'),top.r)){$('range').value=top.r;if(top.r==='custom'){$('from').value=top.f||'';$('to').value=top.t||''}else setRange(top.r)}
+  else{$('range').value='month';setRange('month')}
+  (s.off||[]).forEach(a=>document.querySelectorAll('#status input').forEach(i=>{if(i.value===a)i.checked=false}));
+}
 function draw(){
+  saveFilters();
   const from=$('from').value, to=$('to').value;
   const acts=[...document.querySelectorAll('#status input:checked')].map(i=>i.value);
   const inR=d=>d&&d>=from&&d<=to;
@@ -633,7 +658,7 @@ $('range').onchange=e=>{setRange(e.target.value);draw()};
 $('status').onchange=draw;
 ['qOpen','qClosed','qTx'].forEach(id=>$(id).oninput=draw);
 $('reset').onclick=()=>{document.querySelectorAll('.tdf').forEach(el=>{el.querySelector('select').value='month';const r=span('month'),[f,t]=el.querySelectorAll('input');f.value=iso(r[0]);t.value=iso(r[1])});document.querySelectorAll('#status input').forEach(i=>i.checked=true);$('range').value='month';setRange('month');['qOpen','qClosed','qTx'].forEach(id=>$(id).value='');for(const k in sortState)delete sortState[k];sortState.tx={k:0,dir:-1};draw()};
-$('range').value='month';setRange('month');draw();
+restoreFilters();draw();
 // daily P&L chart
 (function(){
   const pts=DATA.daily;
