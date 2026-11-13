@@ -691,7 +691,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1065385.35,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 564388.885,
   "trade_meta": {
     "META": {
@@ -735,7 +735,11 @@
     "ALNY",
     "CMCSA"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "APP": "2026-11-13T15:41:33.200538-05:00",
+    "KDP": "2026-11-13T15:41:33.200538-05:00",
+    "PDD": "2026-11-13T15:41:33.200538-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -744,6 +748,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
