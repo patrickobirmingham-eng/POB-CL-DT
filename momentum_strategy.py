@@ -93,6 +93,7 @@ def decide(position: int, price: float, upper: float, lower: float, vwap: float,
            allow_shorts: bool = True):
     """position: +1 long, -1 short, 0 flat. Returns (exit_now, new_side) where
     new_side is +1/-1 to open after any exit, or 0 for no new position."""
+    held = position
     exit_now = False
     if position > 0 and price < max(upper, vwap):
         exit_now = True
@@ -106,4 +107,9 @@ def decide(position: int, price: float, upper: float, lower: float, vwap: float,
             new_side = 1
         elif price < lower and allow_shorts:
             new_side = -1
+    if exit_now and new_side == held:
+        # The trailing stop and a fresh entry signal on the same side at the
+        # same check: closing and reopening the identical position only adds
+        # two fills of spread/slippage, so keep holding instead.
+        return False, 0
     return exit_now, new_side
