@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1054174.58,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 565783.315,
   "trade_meta": {
     "DXCM": {
@@ -757,6 +757,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
