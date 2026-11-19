@@ -458,6 +458,17 @@ def leg_out(broker, settings, st, sp, qs, now, dry):
             return
     if leg["long_qty"] < qty:
         lb, la = qs.get(sp["long"], (0, 0))
+        if lb <= 0:
+            # Nobody bids for the long put: it is worthless (far out of the money, or already expired), so a
+            # sell order can never fill. The risk left with the short leg already, so book the spread with
+            # $0 for the long and let the leftover long expire. (2026-11-19: TRV 350P, stock $387 a day
+            # before expiry, sat 10 runs unfilled at $0.01-0.03; after expiry it would have kept the spread
+            # "open" forever, holding a slot and never booking its P&L.)
+            log(f"LEG OUT {sp['symbol']}: long {sp['long']} has no bid - booking it at $0 and letting it expire")
+            if dry:
+                return
+            finish_leg_out(st, sp, now.date().isoformat())
+            return
         n = int(qty - leg["long_qty"])
         floor = max(0.01, lb - 0.05 - extra)
         prices = ladder(round(mid(lb, la), 2), round(floor, 2), 3) if la > 0 else [round(floor, 2)]
@@ -476,7 +487,8 @@ def leg_out(broker, settings, st, sp, qs, now, dry):
 def finish_leg_out(st, sp, today_iso):
     leg = sp["leg"]
     px = (leg["short_cost"] - leg["long_proceeds"]) / sp["qty"]
-    record_close(st, sp, px, "stop", today_iso)
+    reason = leg.get("reason", "stop")
+    record_close(st, sp, px, reason, today_iso)
 
 
 def record_close(st, sp, close_px, reason, today_iso, qty=None):
@@ -656,6 +668,8 @@ def run(broker, settings, dry=False, now=None):
                 limits = ladder(round(cost, 2), round(min(end, sp["width"]), 2), 3)
             if reason != "target" and sp.get("close_tries", 0) >= settings.get("LEG_OUT_AFTER_TRIES", 4):
                 log(f"CLOSE {sp['symbol']} ({reason}): combo close unfilled {sp['close_tries']} runs - legging out")
+                sp.setdefault("leg", {"short_qty": 0, "short_cost": 0.0, "long_qty": 0, "long_proceeds": 0.0,
+                                      "tries": 0, "reason": reason.split(" (")[0]})
                 leg_out(broker, settings, st, sp, qs, now, dry)
                 continue
             log(f"CLOSE {sp['symbol']} ({reason}): cost ${cost:.2f}, limits {limits}")
