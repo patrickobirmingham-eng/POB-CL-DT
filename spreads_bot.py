@@ -597,6 +597,7 @@ def run(broker, settings, dry=False, now=None):
     reconcile(broker, st, today.isoformat())
 
     # ---- manage open spreads
+    bp_blocked = False
     if st["spreads"]:
         syms = {s for sp in st["spreads"].values() for s in (sp["short"], sp["long"])}
         qs = broker.quotes(syms)
@@ -667,7 +668,8 @@ def run(broker, settings, dry=False, now=None):
                     tries = sp.get("close_tries", 0)
                     end = max(cost, natural) + 0.05 + tries * max(0.05, 0.02 * sp["width"])
                     limits = ladder(round(cost, 2), round(min(end, sp["width"]), 2), 3)
-                if reason != "target" and sp.get("close_tries", 0) >= settings.get("LEG_OUT_AFTER_TRIES", 4):
+                if (reason != "target" and not sp.get("no_leg_out")
+                    and sp.get("close_tries", 0) >= settings.get("LEG_OUT_AFTER_TRIES", 4)):
                     log(f"CLOSE {sp['symbol']} ({reason}): combo close unfilled {sp['close_tries']} runs - legging out")
                     sp.setdefault("leg", {"short_qty": 0, "short_cost": 0.0, "long_qty": 0, "long_proceeds": 0.0,
                                           "tries": 0, "reason": reason.split(" (")[0]})
@@ -686,6 +688,16 @@ def run(broker, settings, dry=False, now=None):
                         if reason != "target":
                             sp["close_tries"] = sp.get("close_tries", 0) + 1
             except Exception as e:
+                if "buying power" in str(e):
+                    bp_blocked = True
+                    lg = sp.get("leg")
+                    if lg and not lg.get("short_qty") and not lg.get("long_qty"):
+                        # Buying the short back on its own needs its full premium in buying power, which the
+                        # combo close does not (2026-11-20 LITE: "insufficient options buying power, required
+                        # $38,760"). Nothing has been legged yet, so go back to combo closes for this spread.
+                        sp.pop("leg", None)
+                        sp["no_leg_out"] = True
+                        log(f"{sp['symbol']}: not enough buying power to leg out - back to combo closes")
                 # One bad spread must not stop the run (2026-11-20: Alpaca rejected SNDK's close with
                 # "contract is not active" and the crash left every other spread unmanaged and the state
                 # unsaved for each run). Log it, flag it on the dashboard once a day, carry on.
@@ -697,7 +709,12 @@ def run(broker, settings, dry=False, now=None):
 
     # ---- open new spreads
     t = now.strftime("%H:%M")
-    if dry or settings["OPEN_START_ET"] <= t <= settings["OPEN_END_ET"]:
+    closing = [sp["symbol"] for sp in st["spreads"].values() if sp.get("leg") or sp.get("no_leg_out")]
+    if bp_blocked or closing:
+        # A stop close can't get done (or is being legged out): new spreads would use the buying power the
+        # close needs (2026-11-20: the bot kept opening INTC/COIN while LITE's close was rejected for buying power).
+        log(f"not opening new spreads this run: closing blocked/in progress for {', '.join(closing) or 'buying power'}")
+    elif dry or settings["OPEN_START_ET"] <= t <= settings["OPEN_END_ET"]:
         open_new(broker, settings, st, today, now, dry)
     save_state(st)
     return st
