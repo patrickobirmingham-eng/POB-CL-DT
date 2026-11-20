@@ -602,88 +602,98 @@ def run(broker, settings, dry=False, now=None):
         qs = broker.quotes(syms)
         prices = {}
         for sp in list(st["spreads"].values()):
-            if sp["symbol"] not in prices:
-                try:
-                    prices[sp["symbol"]] = broker.stock_price(sp["symbol"])
-                except Exception as e:
-                    log(f"price {sp['symbol']}: {e}")
-                    prices[sp["symbol"]] = None
-            if sp.get("leg"):
-                leg_out(broker, settings, st, sp, qs, now, dry)
-                continue
-            cost, natural = close_cost(qs, sp)
-            # A put spread costs between $0 and its width to close; anything else is a bad quote
-            # (2026-10-22 15:45: a wild long-leg quote put COST at -$1.26, which fired a "target"
-            # close and showed +161% ROI on the dashboard). Keep the last good cost instead.
-            valid = quotes_ok(qs, sp) and -0.005 <= cost <= sp["width"] + 0.005
-            if valid and not plausible_move(sp, cost, prices[sp["symbol"]]):
-                valid = False
-                log(f"{sp['symbol']}: cost ${cost:.2f} vs ${sp['last_cost']:.2f} last run is too big a jump for the "
-                    f"stock's move — treating as a bad quote unless the next run sees it too")
-            if valid:
-                sp["last_cost"], sp["cost_price"] = round(cost, 2), prices[sp["symbol"]]
-                sp.pop("suspect_cost", None)
-            sp["last_price"], sp["last_checked"] = prices[sp["symbol"]], now.isoformat(timespec="seconds")
-            action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today, valid)
-            if action != "close" or reason == "target":
-                sp.pop("close_tries", None)
-            if not action:
-                continue
-            if action == "roll":
-                new = roll_candidate(broker, settings, sp, prices[sp["symbol"]], cost, today)
-                if new and new["credit"] > cost:
-                    net = new["credit"] - cost
-                    log(f"ROLL {sp['symbol']}: close ${cost:.2f} -> new {new['short_strike']:g}/{new['long_strike']:g} "
-                        f"{new['expiration']} credit ${new['credit']:.2f} (net +${net:.2f})")
-                    if not dry:
-                        legs = [(sp["short"], "buy", "buy_to_close"), (sp["long"], "sell", "sell_to_close"),
-                                (new["short"], "sell", "sell_to_open"), (new["long"], "buy", "buy_to_open")]
-                        p = {"kind": "roll", "spread_id": sp["id"], "spread": new, "price": cost, "symbol": sp["symbol"]}
-                        # net credit from mid down to 1 cent: a roll is only worth doing for a credit
-                        oid, o = work_order(broker, legs, sp["qty"], ladder(-round(net, 2), -0.01))
-                        if o["filled_qty"] > 0:
-                            apply_fill(st, p, o, now)
-                        else:
-                            st["pending"][oid] = p
+            try:
+                if sp["symbol"] not in prices:
+                    try:
+                        prices[sp["symbol"]] = broker.stock_price(sp["symbol"])
+                    except Exception as e:
+                        log(f"price {sp['symbol']}: {e}")
+                        prices[sp["symbol"]] = None
+                if sp.get("leg"):
+                    leg_out(broker, settings, st, sp, qs, now, dry)
                     continue
-                reason = "touched short strike (no roll for a credit)"
-            # close
-            if reason == "target":      # mid, halfway, then the natural price, never above the target price
-                # (credit x (1 - TAKE_PROFIT_PCT)), so a target close always keeps the target profit. An
-                # unfilled order is cancelled next run and re-priced off the new mid; no need to chase.
-                # (Was capped at 75% of the credit: on 2026-10-20 a wide market closed UNH at $1.40 with
-                # the mid at $0.42, keeping 25% of the credit instead of the 50% target. Until 2026-10-28 it
-                # also stopped at halfway even when the natural price was inside the target, e.g. AVGO
-                # natural ~$0.95 vs a $1.01 target sat unfilled at $0.86; paying the natural then still
-                # keeps the target profit and fills.)
-                cap = sp["credit"] * (1 - settings["TAKE_PROFIT_PCT"])
-                limits = ladder(round(cost, 2), round(min(max(cost, natural), cap), 2), 3)
-            else:                       # stop / defensive closes: try mid, then halfway, then pay up to get out
-                # (paying the ask straight away cost a lot on wide markets, e.g. VLO 2026-10-28 at $12.40)
-                # Each run the close stays unfilled, reach further past the quoted natural price (never past
-                # the width): the indicative quotes can lag the real market, and on 2026-11-04 DELL's stop
-                # sat unfilled for 3+ hours at natural+$0.05 while the stock fell through the short strike.
-                tries = sp.get("close_tries", 0)
-                end = max(cost, natural) + 0.05 + tries * max(0.05, 0.02 * sp["width"])
-                limits = ladder(round(cost, 2), round(min(end, sp["width"]), 2), 3)
-            if reason != "target" and sp.get("close_tries", 0) >= settings.get("LEG_OUT_AFTER_TRIES", 4):
-                log(f"CLOSE {sp['symbol']} ({reason}): combo close unfilled {sp['close_tries']} runs - legging out")
-                sp.setdefault("leg", {"short_qty": 0, "short_cost": 0.0, "long_qty": 0, "long_proceeds": 0.0,
-                                      "tries": 0, "reason": reason.split(" (")[0]})
-                leg_out(broker, settings, st, sp, qs, now, dry)
-                continue
-            log(f"CLOSE {sp['symbol']} ({reason}): cost ${cost:.2f}, limits {limits}")
-            if not dry:
-                p = {"kind": "close", "spread_id": sp["id"], "reason": reason.split(" (")[0], "price": cost,
-                     "symbol": sp["symbol"]}
-                oid, o = work_order(broker, [(sp["short"], "buy", "buy_to_close"), (sp["long"], "sell", "sell_to_close")],
-                                    sp["qty"], [max(0.01, x) for x in limits])
-                if o["filled_qty"] > 0:
-                    apply_fill(st, p, o, now)
-                else:
-                    st["pending"][oid] = p
-                    if reason != "target":
-                        sp["close_tries"] = sp.get("close_tries", 0) + 1
+                cost, natural = close_cost(qs, sp)
+                # A put spread costs between $0 and its width to close; anything else is a bad quote
+                # (2026-10-22 15:45: a wild long-leg quote put COST at -$1.26, which fired a "target"
+                # close and showed +161% ROI on the dashboard). Keep the last good cost instead.
+                valid = quotes_ok(qs, sp) and -0.005 <= cost <= sp["width"] + 0.005
+                if valid and not plausible_move(sp, cost, prices[sp["symbol"]]):
+                    valid = False
+                    log(f"{sp['symbol']}: cost ${cost:.2f} vs ${sp['last_cost']:.2f} last run is too big a jump for the "
+                        f"stock's move — treating as a bad quote unless the next run sees it too")
+                if valid:
+                    sp["last_cost"], sp["cost_price"] = round(cost, 2), prices[sp["symbol"]]
+                    sp.pop("suspect_cost", None)
+                sp["last_price"], sp["last_checked"] = prices[sp["symbol"]], now.isoformat(timespec="seconds")
+                action, reason = decide(settings, sp, cost, prices[sp["symbol"]], today, valid)
+                if action != "close" or reason == "target":
+                    sp.pop("close_tries", None)
+                if not action:
+                    continue
+                if action == "roll":
+                    new = roll_candidate(broker, settings, sp, prices[sp["symbol"]], cost, today)
+                    if new and new["credit"] > cost:
+                        net = new["credit"] - cost
+                        log(f"ROLL {sp['symbol']}: close ${cost:.2f} -> new {new['short_strike']:g}/{new['long_strike']:g} "
+                            f"{new['expiration']} credit ${new['credit']:.2f} (net +${net:.2f})")
+                        if not dry:
+                            legs = [(sp["short"], "buy", "buy_to_close"), (sp["long"], "sell", "sell_to_close"),
+                                    (new["short"], "sell", "sell_to_open"), (new["long"], "buy", "buy_to_open")]
+                            p = {"kind": "roll", "spread_id": sp["id"], "spread": new, "price": cost, "symbol": sp["symbol"]}
+                            # net credit from mid down to 1 cent: a roll is only worth doing for a credit
+                            oid, o = work_order(broker, legs, sp["qty"], ladder(-round(net, 2), -0.01))
+                            if o["filled_qty"] > 0:
+                                apply_fill(st, p, o, now)
+                            else:
+                                st["pending"][oid] = p
+                        continue
+                    reason = "touched short strike (no roll for a credit)"
+                # close
+                if reason == "target":      # mid, halfway, then the natural price, never above the target price
+                    # (credit x (1 - TAKE_PROFIT_PCT)), so a target close always keeps the target profit. An
+                    # unfilled order is cancelled next run and re-priced off the new mid; no need to chase.
+                    # (Was capped at 75% of the credit: on 2026-10-20 a wide market closed UNH at $1.40 with
+                    # the mid at $0.42, keeping 25% of the credit instead of the 50% target. Until 2026-10-28 it
+                    # also stopped at halfway even when the natural price was inside the target, e.g. AVGO
+                    # natural ~$0.95 vs a $1.01 target sat unfilled at $0.86; paying the natural then still
+                    # keeps the target profit and fills.)
+                    cap = sp["credit"] * (1 - settings["TAKE_PROFIT_PCT"])
+                    limits = ladder(round(cost, 2), round(min(max(cost, natural), cap), 2), 3)
+                else:                       # stop / defensive closes: try mid, then halfway, then pay up to get out
+                    # (paying the ask straight away cost a lot on wide markets, e.g. VLO 2026-10-28 at $12.40)
+                    # Each run the close stays unfilled, reach further past the quoted natural price (never past
+                    # the width): the indicative quotes can lag the real market, and on 2026-11-04 DELL's stop
+                    # sat unfilled for 3+ hours at natural+$0.05 while the stock fell through the short strike.
+                    tries = sp.get("close_tries", 0)
+                    end = max(cost, natural) + 0.05 + tries * max(0.05, 0.02 * sp["width"])
+                    limits = ladder(round(cost, 2), round(min(end, sp["width"]), 2), 3)
+                if reason != "target" and sp.get("close_tries", 0) >= settings.get("LEG_OUT_AFTER_TRIES", 4):
+                    log(f"CLOSE {sp['symbol']} ({reason}): combo close unfilled {sp['close_tries']} runs - legging out")
+                    sp.setdefault("leg", {"short_qty": 0, "short_cost": 0.0, "long_qty": 0, "long_proceeds": 0.0,
+                                          "tries": 0, "reason": reason.split(" (")[0]})
+                    leg_out(broker, settings, st, sp, qs, now, dry)
+                    continue
+                log(f"CLOSE {sp['symbol']} ({reason}): cost ${cost:.2f}, limits {limits}")
+                if not dry:
+                    p = {"kind": "close", "spread_id": sp["id"], "reason": reason.split(" (")[0], "price": cost,
+                         "symbol": sp["symbol"]}
+                    oid, o = work_order(broker, [(sp["short"], "buy", "buy_to_close"), (sp["long"], "sell", "sell_to_close")],
+                                        sp["qty"], [max(0.01, x) for x in limits])
+                    if o["filled_qty"] > 0:
+                        apply_fill(st, p, o, now)
+                    else:
+                        st["pending"][oid] = p
+                        if reason != "target":
+                            sp["close_tries"] = sp.get("close_tries", 0) + 1
+            except Exception as e:
+                # One bad spread must not stop the run (2026-11-20: Alpaca rejected SNDK's close with
+                # "contract is not active" and the crash left every other spread unmanaged and the state
+                # unsaved for each run). Log it, flag it on the dashboard once a day, carry on.
+                log(f"ERROR managing {sp['symbol']}: {e}")
+                flag = f"{sp['id']}:{today.isoformat()}"
+                if sp.get("error_flag") != flag:
+                    sp["error_flag"] = flag
+                    event(st, "warning", f"{sp['symbol']}: could not manage this spread ({str(e)[:160]}) - check the account")
 
     # ---- open new spreads
     t = now.strftime("%H:%M")
