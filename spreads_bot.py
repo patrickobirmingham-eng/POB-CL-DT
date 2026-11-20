@@ -784,6 +784,23 @@ def open_new(broker, settings, st, today, now, dry):
 
     if len(open_sp) >= settings["MAX_OPEN_SPREADS"] or day_full():
         return
+    # Never let the worst case of all open spreads exceed the account. MAX_OPEN_SPREADS x MAX_LOSS_PER_SPREAD
+    # was sized for a $1M account; on 2026-11-20 losses had cut equity to $412K while the open spreads could
+    # still lose $541K and buying power was $0, so new spreads were starving the stop closes of buying power.
+    risk = sum((sp["width"] - sp["credit"]) * 100 * sp["qty"] for sp in open_sp)
+    try:
+        equity = float(broker.account().equity)
+    except Exception as e:
+        log(f"account equity unavailable ({e}) - not opening new spreads this run")
+        return
+    if risk + settings["MAX_LOSS_PER_SPREAD"] > equity:
+        msg = (f"not opening new spreads: open spreads could lose ${risk:,.0f}, plus up to "
+               f"${settings['MAX_LOSS_PER_SPREAD']:,.0f} for a new one, vs account equity ${equity:,.0f}")
+        log(msg)
+        if st.get("risk_block_day") != today.isoformat():
+            st["risk_block_day"] = today.isoformat()
+            event(st, "warning", msg)
+        return
     earnings, earn_ok = load_earnings(today, settings) if settings["AVOID_EARNINGS"] else ({}, True)
     skipped = {}
     per_sym, per_sec = {}, {}
