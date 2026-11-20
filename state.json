@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1028987.69,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 569614.025,
   "trade_meta": {
     "CTAS": {
@@ -758,6 +758,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
