@@ -853,6 +853,19 @@ def main():
             return
 
         now = datetime.now(ET)
+        if getattr(main, "_close_checked", None) != now.date():
+            # Early-close days (Nov 27 2026, Dec 24 ...): the market shuts at 1 PM, so the normal 15:45
+            # flatten would never happen and day positions would be carried over the weekend.
+            main._close_checked = now.date()
+            try:
+                close_dt = trading_client.get_clock().next_close.astimezone(ET)
+                if close_dt.date() == now.date():
+                    early = strategy.set_early_close(close_dt.time())
+                    if early is not None:
+                        log(f"Early close today at {close_dt:%H:%M} ET - flattening at {early:%H:%M} ET instead of {config.FLATTEN_TIME}.")
+            except Exception as e:
+                log(f"Could not read today's close time ({e}); keeping flatten at {config.FLATTEN_TIME}.")
+            flatten_t = strategy.flatten_time()
         today_str = now.strftime("%Y-%m-%d")
 
         if day_state["date"] != today_str:

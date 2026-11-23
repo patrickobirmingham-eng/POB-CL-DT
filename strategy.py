@@ -128,6 +128,22 @@ def position_size(equity: float, risk_per_share: float) -> int:
     return max(shares, 0)
 
 
+_FLATTEN_OVERRIDE = None    # set by live_bot on early-close days (e.g. the day after Thanksgiving, 1 PM close)
+
+
+def set_early_close(close_t):
+    """On a shortened session, flatten 15 minutes before the real close instead of at FLATTEN_TIME."""
+    global _FLATTEN_OVERRIDE
+    h, m = map(int, config.FLATTEN_TIME.split(":"))
+    normal = time(h, m)
+    mins = close_t.hour * 60 + close_t.minute - 15
+    early = time(mins // 60, mins % 60)
+    _FLATTEN_OVERRIDE = early if early < normal else None
+    return _FLATTEN_OVERRIDE
+
+
 def flatten_time() -> time:
+    if _FLATTEN_OVERRIDE is not None:
+        return _FLATTEN_OVERRIDE
     h, m = map(int, config.FLATTEN_TIME.split(":"))
     return time(h, m)
