@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1034156.17,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 599366.97,
   "trade_meta": {
     "DASH": {
@@ -748,9 +748,13 @@
   "breakeven_moved": [
     "ALNY",
     "AMGN",
+    "CPRT",
     "DASH"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "AMGN": "2026-11-23T15:40:56.110838-05:00",
+    "CPRT": "2026-11-23T15:40:56.110838-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -759,6 +763,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
