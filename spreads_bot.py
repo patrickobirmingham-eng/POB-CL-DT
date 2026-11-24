@@ -148,6 +148,14 @@ class Broker:
                         pass
         return out
 
+    def day_change(self, sym):
+        """Today's % change vs the previous close (e.g. -0.021 = down 2.1%)."""
+        from alpaca.data.requests import StockSnapshotRequest
+        from alpaca.data.enums import DataFeed
+        snap = self.stk.get_stock_snapshot(StockSnapshotRequest(symbol_or_symbols=sym, feed=DataFeed.IEX))[sym]
+        prev = float(snap.previous_daily_bar.close)
+        return float(snap.latest_trade.price) / prev - 1
+
     def put_chain(self, sym, exp_gte, exp_lte):
         """{symbol: {strike, expiration, bid, ask, delta}} for puts in the date window."""
         from alpaca.data.requests import OptionChainRequest
@@ -495,6 +503,10 @@ def record_close(st, sp, close_px, reason, today_iso, qty=None):
     """Log a closed spread. qty < the spread's qty records a partial close and keeps the rest open."""
     qty = sp["qty"] if qty is None or qty >= sp["qty"] else qty
     pl = round((sp["credit"] - close_px) * 100 * qty, 2)
+    if reason not in ("target", "expired", "expiring", "rolled", "closed outside bot"):
+        st.setdefault("stopped_today", [])
+        if sp["symbol"] not in st["stopped_today"]:
+            st["stopped_today"].append(sp["symbol"])
     append_trade({"closed_at": today_iso, "symbol": sp["symbol"], "sector": sp["sector"],
                   "short_strike": sp["short_strike"], "long_strike": sp["long_strike"],
                   "expiration": sp["expiration"], "qty": qty, "opened_at": sp["opened_at"],
@@ -582,7 +594,7 @@ def run(broker, settings, dry=False, now=None):
     today = now.date()
     st = load_state()
     if st["day"] != today.isoformat():
-        st.update(day=today.isoformat(), opened_today=0, skipped=[])
+        st.update(day=today.isoformat(), opened_today=0, skipped=[], stopped_today=[])
     if not settings.get("ENABLED", True):
         log("spreads bot disabled in settings")
         save_state(st)
@@ -801,8 +813,37 @@ def open_new(broker, settings, st, today, now, dry):
             st["risk_block_day"] = today.isoformat()
             event(st, "warning", msg)
         return
+    # Owner decision 2026-11-24 ("do it"): pause new spreads on big down days. On Nov 5 and Nov 20 the bot kept
+    # opening spreads into a falling market and most of them were stopped within days.
+    pause = settings.get("DOWN_DAY_PAUSE_PCT") or 0
+    if pause > 0:
+        sym = settings.get("DOWN_DAY_SYMBOL", "QQQ")
+        try:
+            chg = broker.day_change(sym)
+        except Exception as e:
+            log(f"down-day check: {sym} change unavailable ({e}) - not opening new spreads this run")
+            return
+        if chg <= -pause:
+            msg = f"not opening new spreads: {sym} is down {-chg:.1%} today (pause at {pause:.1%})"
+            log(msg)
+            if st.get("down_day_block") != today.isoformat():
+                st["down_day_block"] = today.isoformat()
+                event(st, "warning", msg)
+            return
     earnings, earn_ok = load_earnings(today, settings) if settings["AVOID_EARNINGS"] else ({}, True)
     skipped = {}
+    # Owner decision 2026-11-24: cap groups of related sectors (chips/AI/memory moved together on Nov 5,
+    # Nov 17-20) and don't re-open a stock the bot stopped out of today (HOOD Nov 17, AMD/SKHY Nov 20).
+    groups = settings.get("GROUP_CAPS") or []
+    stopped = set(st.get("stopped_today", [])) if settings.get("NO_REOPEN_AFTER_STOP", False) else set()
+
+    def group_full(sec):
+        for g in groups:
+            if sec in g["sectors"]:
+                n = sum(1 for sp in open_sp if sp["sector"] in g["sectors"])
+                if n >= g["max"]:
+                    return f"{g['name']} already has {n} open spreads (cap {g['max']})"
+        return None
     per_sym, per_sec = {}, {}
     for sp in open_sp:
         per_sym[sp["symbol"]] = per_sym.get(sp["symbol"], 0) + 1
@@ -823,6 +864,13 @@ def open_new(broker, settings, st, today, now, dry):
             continue
         if per_sec.get(sec, 0) >= settings["MAX_PER_SECTOR"]:
             skip(sym, f"{sec} already has {per_sec[sec]} open spreads")
+            continue
+        if sym in stopped:
+            skip(sym, "stopped out earlier today - no re-open until tomorrow")
+            continue
+        why = group_full(sec)
+        if why:
+            skip(sym, why)
             continue
         ed = earnings.get(sym)
         if settings["AVOID_EARNINGS"] and not is_etf(sym):
@@ -880,6 +928,10 @@ def open_new(broker, settings, st, today, now, dry):
             continue
         if per_sec.get(sec, 0) >= settings["MAX_PER_SECTOR"]:
             skip(sym, f"{sec} already has {per_sec[sec]} open spreads")
+            continue
+        why = group_full(sec)
+        if why:
+            skip(sym, why)
             continue
         sp = new_spread(settings, sym, pick, qty, today)
         # ask for the mid credit first, then step toward the natural price, never below the minimum credit

@@ -57,7 +57,22 @@
     "STOP_LOSS_MULT": 2.0,
     "STOP_CONFIRM_CHECKS": 2,
     "STOP_STOCK_GATE_PCT": 0.05,
-    "MAX_LOSS_PER_SPREAD": 31000.0,
+    "DOWN_DAY_PAUSE_PCT": 0.015,
+    "DOWN_DAY_SYMBOL": "QQQ",
+    "NO_REOPEN_AFTER_STOP": true,
+    "GROUP_CAPS": [
+        {
+            "name": "Chips/AI/Memory",
+            "sectors": [
+                "Chips",
+                "AI",
+                "Memory"
+            ],
+            "max": 4
+        }
+    ],
+    "_risk_rules_note": "Owner decision 2026-11-24 (do it): max loss $5,000 per spread; no new spreads when QQQ is down 1.5%+ on the day (DOWN_DAY_PAUSE_PCT, 0 = off); at most 4 open spreads across Chips/AI/Memory (GROUP_CAPS); no re-opening a stock stopped out the same day (NO_REOPEN_AFTER_STOP).",
+    "MAX_LOSS_PER_SPREAD": 5000.0,
     "MAX_OPEN_SPREADS": 20,
     "MAX_PER_SYMBOL": 2,
     "MAX_PER_SECTOR": 5,
