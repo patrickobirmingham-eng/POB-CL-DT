@@ -40,27 +40,6 @@
       "last_checked": "2026-11-24T10:30:44-05:00",
       "stop_hits": 0
     },
-    "SNDK-2026-12-18-670-104638": {
-      "id": "SNDK-2026-12-18-670-104638",
-      "symbol": "SNDK",
-      "sector": "Memory",
-      "short": "SNDK261218P00670000",
-      "long": "SNDK261218P00640000",
-      "short_strike": 670.0,
-      "long_strike": 640.0,
-      "width": 30.0,
-      "expiration": "2026-12-18",
-      "qty": 11,
-      "credit": 4.4,
-      "delta": 0.167,
-      "opened_at": "2026-11-10",
-      "last_cost": 9.92,
-      "cost_price": 76.38,
-      "last_price": 76.38,
-      "last_checked": "2026-11-24T10:30:44-05:00",
-      "stop_hits": 0,
-      "error_flag": "SNDK-2026-12-18-670-104638:2026-11-24"
-    },
     "STX-2026-12-18-400-141653": {
       "id": "STX-2026-12-18-400-141653",
       "symbol": "STX",
@@ -1064,6 +1043,11 @@
       "at": "2026-11-24T09:45:43-05:00",
       "kind": "warning",
       "text": "not opening new spreads: open spreads could lose $541,481, plus up to $31,000 for a new one, vs account equity $447,580"
+    },
+    {
+      "at": "2026-11-24T10:32:30-05:00",
+      "kind": "warning",
+      "text": "SNDK 670/640 put x11 removed from the bot by the owner: the stock split left its contracts inactive, so the bot could not close it - close or check the position in Alpaca by hand"
     }
   ],
   "skipped": [],
