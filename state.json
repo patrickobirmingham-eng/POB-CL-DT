@@ -691,7 +691,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1037776.01,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 561549.605,
   "trade_meta": {
     "ALNY": {
@@ -734,7 +734,13 @@
   "breakeven_moved": [
     "KDP"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "ALNY": "2026-11-24T15:40:51.322288-05:00",
+    "CEG": "2026-11-24T15:40:51.322288-05:00",
+    "GEHC": "2026-11-24T15:40:51.322288-05:00",
+    "KDP": "2026-11-24T14:45:01.806959-05:00",
+    "VRTX": "2026-11-24T15:40:51.322288-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -743,6 +749,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
