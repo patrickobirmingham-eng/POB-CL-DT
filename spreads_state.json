@@ -14,10 +14,10 @@
       "credit": 3.2,
       "delta": 0.182,
       "opened_at": "2026-11-04",
-      "last_cost": 4.83,
-      "cost_price": 357.57,
-      "last_price": 357.57,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 5.55,
+      "cost_price": 354.63,
+      "last_price": 354.63,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "ARM-2026-12-18-145-095312": {
@@ -34,10 +34,10 @@
       "credit": 1.1,
       "delta": 0.159,
       "opened_at": "2026-11-09",
-      "last_cost": 3.28,
-      "cost_price": 158.98,
-      "last_price": 158.98,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 3.16,
+      "cost_price": 160.29,
+      "last_price": 160.29,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "STX-2026-12-18-400-141653": {
@@ -54,40 +54,11 @@
       "credit": 2.7,
       "delta": 0.185,
       "opened_at": "2026-11-10",
-      "last_cost": 4.15,
-      "cost_price": 482.63,
-      "last_price": 482.63,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 3.91,
+      "cost_price": 484.14,
+      "last_price": 484.14,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
-    },
-    "CLS-2026-12-18-195-100411": {
-      "id": "CLS-2026-12-18-195-100411",
-      "symbol": "CLS",
-      "sector": "Misc",
-      "short": "CLS261218P00195000",
-      "long": "CLS261218P00180000",
-      "short_strike": 195.0,
-      "long_strike": 180.0,
-      "width": 15.0,
-      "expiration": "2026-12-18",
-      "qty": 23,
-      "credit": 1.9,
-      "delta": 0.194,
-      "opened_at": "2026-11-11",
-      "last_cost": 6.16,
-      "cost_price": 198.37,
-      "last_price": 198.37,
-      "last_checked": "2026-11-24T11:30:41-05:00",
-      "stop_hits": 6,
-      "close_tries": 4,
-      "leg": {
-        "short_qty": 23.0,
-        "short_cost": 434.7,
-        "long_qty": 0,
-        "long_proceeds": 0.0,
-        "tries": 1,
-        "reason": "stop"
-      }
     },
     "CBRS-2026-12-24-80-110151": {
       "id": "CBRS-2026-12-24-80-110151",
@@ -103,10 +74,10 @@
       "credit": 1.35,
       "delta": 0.185,
       "opened_at": "2026-11-16",
-      "last_cost": 3.27,
-      "cost_price": 88.15,
-      "last_price": 88.15,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 3.33,
+      "cost_price": 87.2,
+      "last_price": 87.2,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "BE-2026-12-24-130-111739": {
@@ -123,10 +94,10 @@
       "credit": 2.1,
       "delta": 0.174,
       "opened_at": "2026-11-17",
-      "last_cost": 3.8,
-      "cost_price": 153.015,
-      "last_price": 153.015,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 3.94,
+      "cost_price": 154.86,
+      "last_price": 154.86,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "NBIS-2026-12-24-75-130324": {
@@ -143,10 +114,10 @@
       "credit": 1.3,
       "delta": 0.142,
       "opened_at": "2026-11-17",
-      "last_cost": 3.25,
-      "cost_price": 85.16,
-      "last_price": 85.16,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 3.31,
+      "cost_price": 85.975,
+      "last_price": 85.975,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "HOOD-2026-12-24-55-133208": {
@@ -163,10 +134,10 @@
       "credit": 0.56,
       "delta": 0.161,
       "opened_at": "2026-11-17",
-      "last_cost": 1.01,
-      "cost_price": 64.05,
-      "last_price": 64.05,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 1.06,
+      "cost_price": 64.12,
+      "last_price": 64.12,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "NOW-2026-12-24-80-153126": {
@@ -183,10 +154,10 @@
       "credit": 0.73,
       "delta": 0.185,
       "opened_at": "2026-11-17",
-      "last_cost": 0.85,
-      "cost_price": 91.93,
-      "last_price": 91.93,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 0.79,
+      "cost_price": 91.945,
+      "last_price": 91.945,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "CRWV-2026-12-24-35-094924": {
@@ -203,10 +174,10 @@
       "credit": 0.74,
       "delta": 0.166,
       "opened_at": "2026-11-18",
-      "last_cost": 1.27,
-      "cost_price": 41.57,
-      "last_price": 41.57,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 1.21,
+      "cost_price": 42.54,
+      "last_price": 42.54,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "RDDT-2026-12-24-80-101718": {
@@ -223,10 +194,10 @@
       "credit": 0.52,
       "delta": 0.188,
       "opened_at": "2026-11-19",
-      "last_cost": 1.19,
-      "cost_price": 90.6,
-      "last_price": 90.6,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 1.13,
+      "cost_price": 90.765,
+      "last_price": 90.765,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "MSTR-2026-12-24-70-133127": {
@@ -243,10 +214,10 @@
       "credit": 1.04,
       "delta": 0.18,
       "opened_at": "2026-11-19",
-      "last_cost": 2.67,
-      "cost_price": 78.7,
-      "last_price": 78.7,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 2.81,
+      "cost_price": 78.55,
+      "last_price": 78.55,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "SMH-2026-12-24-365-101752": {
@@ -263,10 +234,10 @@
       "credit": 2.35,
       "delta": 0.177,
       "opened_at": "2026-11-20",
-      "last_cost": 4.75,
-      "cost_price": 420.61,
-      "last_price": 420.61,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 5.13,
+      "cost_price": 421.32,
+      "last_price": 421.32,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "INTC-2026-12-24-45-110410": {
@@ -283,10 +254,10 @@
       "credit": 0.6,
       "delta": 0.198,
       "opened_at": "2026-11-20",
-      "last_cost": 0.89,
-      "cost_price": 53.89,
-      "last_price": 53.89,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 0.86,
+      "cost_price": 54.185,
+      "last_price": 54.185,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "COIN-2026-12-24-85-121917": {
@@ -303,10 +274,10 @@
       "credit": 1.11,
       "delta": 0.165,
       "opened_at": "2026-11-20",
-      "last_cost": 1.54,
-      "cost_price": 102.9,
-      "last_price": 102.9,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 1.59,
+      "cost_price": 102.87,
+      "last_price": 102.87,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "AMD-2026-12-24-335-131832": {
@@ -323,10 +294,10 @@
       "credit": 2.8,
       "delta": 0.151,
       "opened_at": "2026-11-20",
-      "last_cost": 6.22,
-      "cost_price": 397.55,
-      "last_price": 397.55,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 5.49,
+      "cost_price": 403.32,
+      "last_price": 403.32,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     },
     "SKHY-2026-12-24-85-133232": {
@@ -343,10 +314,10 @@
       "credit": 1.71,
       "delta": 0.181,
       "opened_at": "2026-11-20",
-      "last_cost": 1.93,
-      "cost_price": 111.92,
-      "last_price": 111.92,
-      "last_checked": "2026-11-24T11:30:41-05:00",
+      "last_cost": 1.76,
+      "cost_price": 111.89,
+      "last_price": 111.89,
+      "last_checked": "2026-11-24T11:45:48-05:00",
       "stop_hits": 0
     }
   },
@@ -1048,6 +1019,11 @@
       "at": "2026-11-24T10:32:30-05:00",
       "kind": "warning",
       "text": "SNDK 670/640 put x11 removed from the bot by the owner: the stock split left its contracts inactive, so the bot could not close it - close or check the position in Alpaca by hand"
+    },
+    {
+      "at": "2026-11-24T11:46:12-05:00",
+      "kind": "stop",
+      "text": "CLS 195/180 x23 closed at $6.70 (credit $1.90) P&L $-11,040"
     }
   ],
   "skipped": [],
