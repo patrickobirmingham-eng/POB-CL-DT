@@ -705,7 +705,7 @@
   ],
   "trade_count": 6,
   "starting_equity": 1037288.78,
-  "flattened": false,
+  "flattened": true,
   "notional_deployed_today": 599789.42,
   "trade_meta": {
     "EXC": {
@@ -747,9 +747,15 @@
   },
   "breakeven_moved": [
     "AXON",
-    "BKR"
+    "BKR",
+    "CSCO",
+    "MCHP"
   ],
-  "last_tightened_at": {},
+  "last_tightened_at": {
+    "CSCO": "2026-11-25T15:40:33.947246-05:00",
+    "EXC": "2026-11-25T15:40:33.947246-05:00",
+    "MCHP": "2026-11-25T15:40:33.947246-05:00"
+  },
   "ai_vetoed": [],
   "ai_context_version": 2,
   "momentum_done": [
@@ -758,6 +764,12 @@
     "11:00",
     "11:30",
     "12:00",
-    "12:30"
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
   ]
 }
