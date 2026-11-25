@@ -1013,7 +1013,17 @@ def generate(client=None):
     stats_trades_json = json.dumps([[t["transaction_date"].astimezone(ET).strftime("%Y-%m-%d"),
                                      1 if t["symbol"] == momentum_symbol else 0, round(t["pl"], 2)]
                                     for t in closed_trades])
-    daily_pl_chart_html = build_daily_pl_chart(daily_pl_points, height=400)  # taller, to fill a panel as tall as the QQQ one beside it
+    # Three versions (both strategies / QQQ momentum only / day trading only), each with its own Y scale;
+    # the two checkboxes above the chart pick which one shows (owner request 2026-11-25).
+    daily_pl_chart_html = (
+        '<div class="pl-view" data-view="both">'
+        + build_daily_pl_chart(daily_pl_points, height=400)  # taller, to fill a panel as tall as the QQQ one beside it
+        + '</div><div class="pl-view" data-view="qqq" hidden>'
+        + build_daily_pl_chart([(d, 0.0, q) for d, o, q in daily_pl_points], height=400)
+        + '</div><div class="pl-view" data-view="orb" hidden>'
+        + build_daily_pl_chart([(d, o, 0.0) for d, o, q in daily_pl_points], height=400)
+        + '</div>'
+    )
 
     # AI filter decisions (ai_decisions.csv, written by ai_filter.py), newest
     # first. Confirmed trades are matched to that symbol's realized P&L for the
@@ -1287,6 +1297,10 @@ def generate(client=None):
   .pl-legend {{ display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: -4px 0 8px 0; }}
   .pl-legend span {{ display: inline-flex; align-items: center; gap: 6px; }}
   .pl-key {{ width: 10px; height: 10px; border-radius: 2px; display: inline-block; }}
+  .pl-pick {{ display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }}
+  .pl-pick input {{ margin: 0; cursor: pointer; }}
+  .pl-view[hidden] {{ display: none; }}
+  .pl-view {{ width: 100%; }}
   .pl-key.net {{ width: 12px; height: 2px; background: var(--text); border-radius: 1px; }}
   .card.has-pop {{ cursor: help; }}
   .card-pop {{ display: none; }}
@@ -1470,7 +1484,7 @@ def generate(client=None):
 
     <div class="panel pl-panel">
       <h2>Daily Profit / (Loss)</h2>
-      <div class="pl-legend"><span><i class="pl-key qqq"></i>QQQ momentum</span><span><i class="pl-key orb"></i>Day trading</span><span><i class="pl-key net"></i>Net for the day (when one gained and one lost)</span></div>
+      <div class="pl-legend"><label class="pl-pick"><input type="checkbox" id="plShowQqq"><i class="pl-key qqq"></i>QQQ momentum</label><label class="pl-pick"><input type="checkbox" id="plShowOrb"><i class="pl-key orb"></i>Day trading</label><span class="pl-net-key"><i class="pl-key net"></i>Net for the day (when one gained and one lost)</span></div>
       <div class="chart-wrap">
         {daily_pl_chart_html}
         <div id="plTooltip" class="pl-tooltip"></div>
@@ -2070,6 +2084,23 @@ def generate(client=None):
       }});
       document.addEventListener('click', hide);
       window.addEventListener('scroll', hide, {{ passive: true }});
+    }})();
+
+    // Daily Profit / (Loss): a checked box shows only that strategy; none (default) or both checked shows both.
+    (function() {{
+      const q = document.getElementById('plShowQqq'), o = document.getElementById('plShowOrb');
+      if (!q || !o) return;
+      const KEY = 'dayDashPlView';
+      try {{ const v = JSON.parse(localStorage.getItem(KEY) || '{{}}'); q.checked = !!v.qqq; o.checked = !!v.orb; }} catch (e) {{}}
+      function show() {{
+        const view = (q.checked && !o.checked) ? 'qqq' : (o.checked && !q.checked) ? 'orb' : 'both';
+        document.querySelectorAll('.pl-view').forEach(el => {{ el.hidden = el.getAttribute('data-view') !== view; }});
+        const net = document.querySelector('.pl-net-key');
+        if (net) net.style.display = view === 'both' ? '' : 'none';
+        try {{ localStorage.setItem(KEY, JSON.stringify({{qqq: q.checked, orb: o.checked}})); }} catch (e) {{}}
+      }}
+      q.addEventListener('change', show); o.addEventListener('change', show);
+      show();
     }})();
 
     (function() {{
