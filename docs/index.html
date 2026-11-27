@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generated-at" content="1795802413">
+<meta name="generated-at" content="1795802451">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -8205,7 +8205,7 @@ Day trading: ${bar.getAttribute('data-orb')}`;
     // reload. Ask for the published page with a cache-busting URL, and if it
     // was built after this one, switch to it. Runs every minute, when the tab
     // comes back into view, and first thing when Refresh is pressed.
-    const PAGE_BUILT = 1795802413;
+    const PAGE_BUILT = 1795802451;
     async function checkForNewerPage(force) {
       try {
         const resp = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
